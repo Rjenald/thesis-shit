@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(ls:*)",
+      "Bash(java -version)",
+      "Bash(flutter doctor:*)",
+      "Read(//c/Program Files/Java//**)",
+      "Bash(/dev/null ls:*)",
+      "Bash(/dev/null echo:*)",
+      "Bash(1)",
+      "Bash(/dev/null find:*)",
+      "Bash(flutter config:*)",
+      "Bash(find '/c/Users/Ryan Paul/Documents/Flutter-workspace/huni/android' -name *.gradle -o -name *.gradle.kts)",
+      "Bash(\"C:/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot/bin/java\" -version 2>&1)",
+      "Bash(grep:*)",
+      "Bash(echo $ANDROID_HOME)",
+      "Bash(echo $ANDROID_SDK_ROOT)",
+      "Read(//c/Android/Sdk/platforms/**)",
+      "Read(//c/Android/Sdk/**)",
+      "Bash(\"C:/Android/Sdk/cmdline-tools/latest/bin/sdkmanager.bat\" --list_installed 2>&1)",
+      "Bash(yes)",
+      "Bash(\"C:/Android/Sdk/cmdline-tools/latest/bin/sdkmanager.bat\" --licenses)",
+      "Bash(\"C:/Android/Sdk/cmdline-tools/latest/bin/sdkmanager.bat\" \"build-tools;35.0.0\")",
+      "Bash(\"C:/Android/Sdk/cmdline-tools/latest/bin/sdkmanager.bat\" \"platforms;android-36\" \"build-tools;28.0.3\")",
+      "Bash(adb devices:*)",
+      "Bash(adb kill-server:*)",
+      "Bash(adb start-server:*)",
+      "Bash(\"C:/Android/Sdk/platform-tools/adb.exe\" kill-server:*)",
+      "Bash(\"C:/Android/Sdk/platform-tools/adb.exe\" start-server:*)",
+      "Bash(\"C:/Android/Sdk/platform-tools/adb.exe\" devices:*)",
+      "Bash(find . -not -path */.dart_tool/* -not -path */.git/* -not -path */build/*)",
+      "Bash(python3 -:*)",
+      "Bash(2)",
+      "Bash(flutter build:*)"
+    ]
+  }
+}
