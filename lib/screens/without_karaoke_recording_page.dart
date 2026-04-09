@@ -110,7 +110,8 @@ class _WithoutKaraokeRecordingPageState
           }
           // New bar height based on current signal
           final base = _feedback == PitchFeedback.noSignal ? 0.05 : 0.2;
-          final noise = Random().nextDouble() *
+          final noise =
+              Random().nextDouble() *
               (_feedback == PitchFeedback.noSignal ? 0.05 : 0.6);
           _bars[_barCount - 1] = (base + noise).clamp(0.03, 1.0);
         });
@@ -192,13 +193,17 @@ class _WithoutKaraokeRecordingPageState
                       Navigator.pop(dialogCtx);
                       Navigator.pop(context);
                     },
-                    child: const Text('Yes',
-                        style: TextStyle(color: Colors.blue)),
+                    child: const Text(
+                      'Yes',
+                      style: TextStyle(color: Colors.blue),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(dialogCtx),
-                    child: const Text('No',
-                        style: TextStyle(color: Colors.red)),
+                    child: const Text(
+                      'No',
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
                 ],
               ),
@@ -222,8 +227,11 @@ class _WithoutKaraokeRecordingPageState
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back,
-                        color: AppColors.white, size: 26),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.white,
+                      size: 26,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Text(
@@ -267,7 +275,7 @@ class _WithoutKaraokeRecordingPageState
                           Text(
                             _freqDisplay,
                             style: TextStyle(
-                              color: AppColors.grey.withValues(alpha:0.75),
+                              color: AppColors.grey.withValues(alpha: 0.75),
                               fontSize: 14,
                               fontFamily: 'Roboto',
                             ),
@@ -301,8 +309,9 @@ class _WithoutKaraokeRecordingPageState
                                 width: 5,
                                 height: 80 * _bars[i],
                                 decoration: BoxDecoration(
-                                  color: _feedbackColor
-                                      .withValues(alpha:0.4 + _bars[i] * 0.6),
+                                  color: _feedbackColor.withValues(
+                                    alpha: 0.4 + _bars[i] * 0.6,
+                                  ),
                                   borderRadius: BorderRadius.circular(3),
                                 ),
                               );
@@ -326,23 +335,30 @@ class _WithoutKaraokeRecordingPageState
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Flat',
-                                  style: TextStyle(
-                                      color: AppColors.grey.withValues(alpha:0.6),
-                                      fontSize: 11,
-                                      fontFamily: 'Roboto')),
+                              Text(
+                                'Flat',
+                                style: TextStyle(
+                                  color: AppColors.grey.withValues(alpha: 0.6),
+                                  fontSize: 11,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
                               Text(
                                 '${_cents.toStringAsFixed(1)} cents',
                                 style: const TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 11,
-                                    fontFamily: 'Roboto'),
+                                  color: AppColors.white,
+                                  fontSize: 11,
+                                  fontFamily: 'Roboto',
+                                ),
                               ),
-                              Text('Sharp',
-                                  style: TextStyle(
-                                      color: AppColors.grey.withValues(alpha:0.6),
-                                      fontSize: 11,
-                                      fontFamily: 'Roboto')),
+                              Text(
+                                'Sharp',
+                                style: TextStyle(
+                                  color: AppColors.grey.withValues(alpha: 0.6),
+                                  fontSize: 11,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 5),
@@ -352,8 +368,9 @@ class _WithoutKaraokeRecordingPageState
                               value: (_cents.clamp(-50, 50) + 50) / 100,
                               minHeight: 7,
                               backgroundColor: AppColors.inputBg,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(_feedbackColor),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                _feedbackColor,
+                              ),
                             ),
                           ),
                         ],
@@ -388,7 +405,7 @@ class _WithoutKaraokeRecordingPageState
                     _isRecording ? Icons.mic : Icons.mic_none,
                     color: _isRecording
                         ? AppColors.primaryCyan
-                        : AppColors.white.withValues(alpha:0.4),
+                        : AppColors.white.withValues(alpha: 0.4),
                     size: 36,
                   ),
 
@@ -404,12 +421,12 @@ class _WithoutKaraokeRecordingPageState
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _isRecording
-                            ? Colors.red.withValues(alpha:0.75)
+                            ? Colors.red.withValues(alpha: 0.75)
                             : Colors.red,
                         boxShadow: _isRecording
                             ? [
                                 BoxShadow(
-                                  color: Colors.red.withValues(alpha:0.5),
+                                  color: Colors.red.withValues(alpha: 0.5),
                                   blurRadius: 16,
                                   spreadRadius: 4,
                                 ),
@@ -436,8 +453,11 @@ class _WithoutKaraokeRecordingPageState
                         color: AppColors.white,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Icon(Icons.close,
-                          color: Colors.black, size: 20),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -455,14 +475,20 @@ class _CrosshairPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha:0.3)
+      ..color = Colors.white.withValues(alpha: 0.3)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
     canvas.drawLine(
-        Offset(size.width / 2, 0), Offset(size.width / 2, size.height), paint);
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
+      paint,
+    );
     canvas.drawLine(
-        Offset(0, size.height / 2), Offset(size.width, size.height / 2), paint);
+      Offset(0, size.height / 2),
+      Offset(size.width, size.height / 2),
+      paint,
+    );
   }
 
   @override

@@ -202,8 +202,8 @@ class _LibraryPageState extends State<LibraryPage> {
     final scoreColor = score >= 90
         ? AppColors.primaryCyan
         : score >= 75
-            ? const Color(0xFF4CAF50)
-            : const Color(0xFFFFA726);
+        ? const Color(0xFF4CAF50)
+        : const Color(0xFFFFA726);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

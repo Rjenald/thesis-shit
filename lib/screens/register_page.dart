@@ -27,7 +27,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Timer? _timer;
 
   final List<String> _backgroundImages = [
-    'https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=1470&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1744527912638-5d30b9908313?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1470&auto=format&fit=crop',

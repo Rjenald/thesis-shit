@@ -127,11 +127,15 @@ class _HomePageState extends State<HomePage> {
                             _isMenuOpen = !_isMenuOpen;
                           });
                         },
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 20,
-                          backgroundImage: NetworkImage(
+                          backgroundColor: AppColors.inputBg,
+                          backgroundImage: const NetworkImage(
                             'https://philnews.ph/wp-content/uploads/2023/05/Kween-Yasmin-768x432.png',
                           ),
+                          onBackgroundImageError: (_, _) {},
+                          child: const Icon(Icons.person,
+                              color: AppColors.grey, size: 20),
                         ),
                       ),
                     ],
@@ -222,11 +226,15 @@ class _HomePageState extends State<HomePage> {
                               padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
-                                  const CircleAvatar(
+                                  CircleAvatar(
                                     radius: 20,
-                                    backgroundImage: NetworkImage(
+                                    backgroundColor: AppColors.inputBg,
+                                    backgroundImage: const NetworkImage(
                                       'https://philnews.ph/wp-content/uploads/2023/05/Kween-Yasmin-768x432.png',
                                     ),
+                                    onBackgroundImageError: (_, _) {},
+                                    child: const Icon(Icons.person,
+                                        color: AppColors.grey, size: 20),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -301,12 +309,19 @@ class _HomePageState extends State<HomePage> {
             horizontal: 16,
             vertical: 12,
           ),
-          leading: ClipOval(
-            child: Image.network(
-              song['image']!,
-              width: 48,
-              height: 48,
-              fit: BoxFit.cover,
+          leading: SizedBox(
+            width: 48,
+            height: 48,
+            child: ClipOval(
+              child: Image.network(
+                song['image']!,
+                fit: BoxFit.cover,
+                errorBuilder: (ctx, err, st) => Container(
+                  color: AppColors.inputBg,
+                  child: const Icon(Icons.music_note,
+                      color: AppColors.grey, size: 24),
+                ),
+              ),
             ),
           ),
           title: Text(

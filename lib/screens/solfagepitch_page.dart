@@ -295,8 +295,9 @@ class _SolfegePitchPageState extends State<SolfegePitchPage> {
                         value: (_cents.clamp(-50, 50) + 50) / 100,
                         minHeight: 8,
                         backgroundColor: AppColors.inputBg,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(_feedbackColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _feedbackColor,
+                        ),
                       ),
                     ),
                   ],
@@ -313,11 +314,7 @@ class _SolfegePitchPageState extends State<SolfegePitchPage> {
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        Icons.piano,
-                        color: AppColors.primaryCyan,
-                        size: 16,
-                      ),
+                      Icon(Icons.piano, color: AppColors.primaryCyan, size: 16),
                       const SizedBox(width: 6),
                       Text(
                         'Voice → Piano',
@@ -508,17 +505,24 @@ class _PianoPainter extends CustomPainter {
 
   // Solfège labels for white keys
   static const List<String> _solfegeLabels = [
-    'Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Ti', 'Do'
+    'Do',
+    'Re',
+    'Mi',
+    'Fa',
+    'Sol',
+    'La',
+    'Ti',
+    'Do',
   ];
 
   // Black keys: MIDI value → center position as a fraction of whiteKeyWidth
   // (i.e. how many white-key widths from the left edge to the black key centre)
   static const Map<int, double> _blackKeyCenters = {
-    61: 1.0,  // C#4 – between C4 (index 0) and D4 (index 1)
-    63: 2.0,  // D#4 – between D4 and E4
-    66: 4.0,  // F#4 – between F4 (index 3) and G4 (index 4)
-    68: 5.0,  // G#4 – between G4 and A4
-    70: 6.0,  // A#4 – between A4 and B4
+    61: 1.0, // C#4 – between C4 (index 0) and D4 (index 1)
+    63: 2.0, // D#4 – between D4 and E4
+    66: 4.0, // F#4 – between F4 (index 3) and G4 (index 4)
+    68: 5.0, // G#4 – between G4 and A4
+    70: 6.0, // A#4 – between A4 and B4
   };
 
   // Map any MIDI note to its equivalent pitch class in C4–B4 (MIDI 60–71).
@@ -591,17 +595,11 @@ class _PianoPainter extends CustomPainter {
           fontFamily: 'Roboto',
         ),
       );
-      final tp = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      );
+      final tp = TextPainter(text: textSpan, textDirection: TextDirection.ltr);
       tp.layout(maxWidth: whiteW);
       tp.paint(
         canvas,
-        Offset(
-          i * whiteW + (whiteW - tp.width) / 2,
-          whiteH - tp.height - 4,
-        ),
+        Offset(i * whiteW + (whiteW - tp.width) / 2, whiteH - tp.height - 4),
       );
     }
 

@@ -64,9 +64,11 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
     if (_query.trim().isEmpty) return _songs;
     final q = _query.toLowerCase();
     return _songs
-        .where((s) =>
-            s['title']!.toLowerCase().contains(q) ||
-            s['artist']!.toLowerCase().contains(q))
+        .where(
+          (s) =>
+              s['title']!.toLowerCase().contains(q) ||
+              s['artist']!.toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -204,8 +206,9 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                                     errorBuilder: (ctx, err, st) => Container(
                                       width: 52,
                                       height: 52,
-                                      color: AppColors.grey
-                                          .withValues(alpha: 0.3),
+                                      color: AppColors.grey.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       child: const Icon(
                                         Icons.music_note,
                                         color: AppColors.white,
@@ -233,8 +236,9 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                                       Text(
                                         song['artist']!,
                                         style: TextStyle(
-                                          color: AppColors.grey
-                                              .withValues(alpha: 0.8),
+                                          color: AppColors.grey.withValues(
+                                            alpha: 0.8,
+                                          ),
                                           fontSize: 13,
                                           fontFamily: 'Roboto',
                                         ),

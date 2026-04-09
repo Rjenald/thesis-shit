@@ -263,8 +263,9 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
                         value: (_cents.clamp(-50, 50) + 50) / 100,
                         minHeight: 8,
                         backgroundColor: AppColors.inputBg,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(_feedbackColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _feedbackColor,
+                        ),
                       ),
                     ),
                   ],
@@ -478,16 +479,23 @@ class _PianoPainter extends CustomPainter {
 
   // Note name labels for white keys
   static const List<String> _noteLabels = [
-    'C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'A',
+    'B',
+    'C',
   ];
 
   // Black keys: MIDI value → centre position as a multiple of whiteKeyWidth
   static const Map<int, double> _blackKeyCenters = {
-    61: 1.0,  // C#4
-    63: 2.0,  // D#4
-    66: 4.0,  // F#4
-    68: 5.0,  // G#4
-    70: 6.0,  // A#4
+    61: 1.0, // C#4
+    63: 2.0, // D#4
+    66: 4.0, // F#4
+    68: 5.0, // G#4
+    70: 6.0, // A#4
   };
 
   // Map any MIDI note to its pitch class in C4–B4 (MIDI 60–71).
@@ -547,17 +555,11 @@ class _PianoPainter extends CustomPainter {
           fontFamily: 'Roboto',
         ),
       );
-      final tp = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      );
+      final tp = TextPainter(text: textSpan, textDirection: TextDirection.ltr);
       tp.layout(maxWidth: whiteW);
       tp.paint(
         canvas,
-        Offset(
-          i * whiteW + (whiteW - tp.width) / 2,
-          whiteH - tp.height - 4,
-        ),
+        Offset(i * whiteW + (whiteW - tp.width) / 2, whiteH - tp.height - 4),
       );
     }
 
