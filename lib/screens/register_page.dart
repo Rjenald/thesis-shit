@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import 'home_page.dart';
 import '../constants/app_colors.dart';
 import '../widgets/curve_painter.dart';
+import '../services/api_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -16,12 +18,13 @@ class _RegisterPageState extends State<RegisterPage> {
   bool obscureRePassword = true;
   bool showUsernameError = false;
   bool showPasswordError = false;
+  bool _isLoading = false;
 
   final TextEditingController username = TextEditingController();
+  final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController confirmPassword = TextEditingController();
 
-  // Background image carousel
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _timer;
@@ -36,7 +39,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    // Auto-change background every 5 seconds
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_currentPage < _backgroundImages.length - 1) {
         _currentPage++;
@@ -58,9 +60,79 @@ class _RegisterPageState extends State<RegisterPage> {
     _timer?.cancel();
     _pageController.dispose();
     username.dispose();
+    email.dispose();
     password.dispose();
     confirmPassword.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    setState(() {
+      showUsernameError = false;
+      showPasswordError = false;
+    });
+
+    setState(() => _isLoading = true);
+
+    try {
+      // STEP 1: Register
+      final registerData = await ApiService.register(
+        username.text.trim(),
+        password.text,
+        confirmPassword.text,
+        email.text.trim(),
+      );
+
+      if (registerData['success'] != true) {
+        if (!mounted) return;
+
+        final error = registerData['error'] ?? 'Registration failed.';
+
+        if (error.toLowerCase().contains('username')) {
+          setState(() => showUsernameError = true);
+        } else if (error.toLowerCase().contains('password')) {
+          setState(() => showPasswordError = true);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // STEP 2: Auto-login
+      final loginData = await ApiService.login(
+        username.text.trim(),
+        password.text,
+      );
+
+      if (!mounted) return;
+
+      if (loginData['success'] == true) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registered! Please log in.')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -69,14 +141,12 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Changing Background Images with PageView
+          // Background carousel
           PageView.builder(
             controller: _pageController,
             itemCount: _backgroundImages.length,
             onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
+              setState(() => _currentPage = index);
             },
             itemBuilder: (context, index) {
               return Image.network(
@@ -99,7 +169,7 @@ class _RegisterPageState extends State<RegisterPage> {
             },
           ),
 
-          // Page indicators (dots)
+          // Page indicator dots
           Positioned(
             top: MediaQuery.of(context).padding.top + 20,
             right: 20,
@@ -122,7 +192,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
 
-          // Top Bar (Back)
+          // Back button
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -148,7 +218,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
 
-          // Bottom Sheet with CurvePainter
+          // Bottom form sheet
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomPaint(
@@ -163,16 +233,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 child: SingleChildScrollView(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 40),
 
-                      // Title
-                      Center(
+                      const Center(
                         child: Text(
                           'Register',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.w800,
                             color: AppColors.primaryCyan,
@@ -196,7 +264,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 40),
 
-                      // Username Field
+                      // Username field
                       if (showUsernameError)
                         const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
@@ -229,8 +297,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 16),
 
-                      // Email Field
+                      // Email field
                       TextField(
+                        controller: email,
                         style: const TextStyle(color: Colors.white),
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
@@ -250,7 +319,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 16),
 
-                      // Password Field
+                      // Password field
                       if (showPasswordError)
                         const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
@@ -283,9 +352,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: AppColors.grey,
                             ),
                             onPressed: () {
-                              setState(() {
-                                obscurePassword = !obscurePassword;
-                              });
+                              setState(() => obscurePassword = !obscurePassword);
                             },
                           ),
                           border: OutlineInputBorder(
@@ -297,7 +364,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 16),
 
-                      // Re-Password Field
+                      // Confirm password field
                       TextField(
                         controller: confirmPassword,
                         obscureText: obscureRePassword,
@@ -318,9 +385,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: AppColors.grey,
                             ),
                             onPressed: () {
-                              setState(() {
-                                obscureRePassword = !obscureRePassword;
-                              });
+                              setState(() => obscureRePassword = !obscureRePassword);
                             },
                           ),
                           border: OutlineInputBorder(
@@ -332,34 +397,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 32),
 
-                      // Register Button
+                      // Register button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (password.text != confirmPassword.text) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Passwords do not match'),
-                                ),
-                              );
-                              return;
-                            }
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Registration successful! Please log in.',
-                                ),
-                              ),
-                            );
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LoginPage(),
-                              ),
-                              (route) => false,
-                            );
-                          },
+                          onPressed: _isLoading ? null : _register,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryCyan,
                             foregroundColor: Colors.black,
@@ -369,20 +411,29 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Register',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto',
+                                  ),
+                                ),
                         ),
                       ),
 
                       const SizedBox(height: 24),
 
-                      // Login Link
+                      // Login link
                       Center(
                         child: GestureDetector(
                           onTap: () {

@@ -4,6 +4,7 @@ import 'home_page.dart';
 import 'register_page.dart';
 import '../constants/app_colors.dart';
 import '../widgets/curve_painter.dart';
+import '../services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,11 +17,11 @@ class _LoginPageState extends State<LoginPage> {
   bool obscurePassword = true;
   bool showUsernameError = false;
   bool showPasswordError = false;
+  bool _isLoading = false;
 
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
 
-  // Background image carousel
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _timer;
@@ -35,7 +36,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // Auto-change background every 5 seconds
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_currentPage < _backgroundImages.length - 1) {
         _currentPage++;
@@ -61,20 +61,63 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  Future<void> _login() async {
+    setState(() {
+      showUsernameError = false;
+      showPasswordError = false;
+    });
+
+    setState(() => _isLoading = true);
+
+    try {
+      final loginData = await ApiService.login(
+        username.text.trim(),
+        password.text,
+      );
+
+      if (!mounted) return;
+
+      if (loginData['success'] == true) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      } else {
+        final error = loginData['error'] ?? 'Login failed.';
+
+        if (error.toLowerCase().contains('username')) {
+          setState(() => showUsernameError = true);
+        } else if (error.toLowerCase().contains('password')) {
+          setState(() => showPasswordError = true);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Changing Background Images with PageView
+          // Background carousel
           PageView.builder(
             controller: _pageController,
             itemCount: _backgroundImages.length,
             onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
+              setState(() => _currentPage = index);
             },
             itemBuilder: (context, index) {
               return Image.network(
@@ -97,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
             },
           ),
 
-          // Page indicators (dots)
+          // Page indicator dots
           Positioned(
             top: MediaQuery.of(context).padding.top + 20,
             right: 20,
@@ -120,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // Top Bar (Back)
+          // Back button
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -146,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // Bottom Sheet with CurvePainter
+          // Bottom form sheet
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomPaint(
@@ -166,11 +209,10 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       const SizedBox(height: 40),
 
-                      // Title
-                      Center(
+                      const Center(
                         child: Text(
                           'Login',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.w800,
                             color: AppColors.primaryCyan,
@@ -194,7 +236,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       const SizedBox(height: 40),
 
-                      // Username Field
+                      // Username field
                       if (showUsernameError)
                         const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
@@ -227,7 +269,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       const SizedBox(height: 16),
 
-                      // Password Field
+                      // Password field
                       if (showPasswordError)
                         const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
@@ -260,9 +302,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: AppColors.grey,
                             ),
                             onPressed: () {
-                              setState(() {
-                                obscurePassword = !obscurePassword;
-                              });
+                              setState(() => obscurePassword = !obscurePassword);
                             },
                           ),
                           border: OutlineInputBorder(
@@ -274,12 +314,12 @@ class _LoginPageState extends State<LoginPage> {
 
                       const SizedBox(height: 8),
 
-                      // Forgot Password
+                      // Forgot password
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {},
-                          child: Text(
+                          child: const Text(
                             'Forgot Password?',
                             style: TextStyle(
                               color: AppColors.primaryCyan,
@@ -292,19 +332,11 @@ class _LoginPageState extends State<LoginPage> {
 
                       const SizedBox(height: 24),
 
-                      // Login Button
+                      // Login button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HomePage(),
-                              ),
-                              (route) => false,
-                            );
-                          },
+                          onPressed: _isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryCyan,
                             foregroundColor: Colors.black,
@@ -314,20 +346,29 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto',
+                                  ),
+                                ),
                         ),
                       ),
 
                       const SizedBox(height: 24),
 
-                      // Register Link
+                      // Register link
                       Center(
                         child: GestureDetector(
                           onTap: () {
