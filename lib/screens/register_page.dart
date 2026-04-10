@@ -306,7 +306,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: 'Email',
                           hintStyle: TextStyle(
                             color: AppColors.grey.withValues(alpha: 0.6),
-                            fontFamily: 'Roboto',
+                            fontFamily: 'Roboto', 
                           ),
                           filled: true,
                           fillColor: AppColors.inputBg,
