@@ -50,6 +50,7 @@ class _WithoutKaraokeRecordingPageState
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
+    _audioService.initialize();
   }
 
   @override
