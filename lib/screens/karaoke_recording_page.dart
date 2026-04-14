@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../core/audio_service.dart';
+import '../core/note_utils.dart';
 import '../data/lyrics.dart';
-import 'dart:async';
+import '../models/session_result.dart';
 import 'results_page.dart';
 
 class KaraokeRecordingPage extends StatefulWidget {
@@ -13,7 +16,7 @@ class KaraokeRecordingPage extends StatefulWidget {
     super.key,
     this.songTitle = 'Dadalhin',
     this.songArtist = 'Regine Velasquez',
-    this.songImage = 'https://i.pravatar.cc/150?img=1',
+    this.songImage = '',
   });
 
   @override
@@ -22,14 +25,37 @@ class KaraokeRecordingPage extends StatefulWidget {
 
 class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
     with SingleTickerProviderStateMixin {
+  // ── Playback state ─────────────────────────────────────────────────────────
   bool _isPlaying = false;
   bool _isRecording = false;
   int _currentLineIndex = 0;
   Timer? _lyricTimer;
+
+  // ── Session timer ──────────────────────────────────────────────────────────
+  int _elapsedSeconds = 0;
+  Timer? _sessionTimer;
+
   final ScrollController _scrollController = ScrollController();
 
-  late final List<LyricLine> _lyrics;
+  // ── Audio & pitch ──────────────────────────────────────────────────────────
+  final AudioService _audioService = AudioService();
+  StreamSubscription<NoteResult?>? _audioSub;
 
+  // Live pitch display
+  PitchFeedback _liveFeedback = PitchFeedback.noSignal;
+  String _liveNote = '';
+  double _liveCents = 0;
+
+  // ── Per-line pitch accumulation ────────────────────────────────────────────
+  // Index mirrors _lyrics; each sub-list grows as readings arrive.
+  late List<List<double>> _linePitch;
+  late List<List<double>> _lineCents;
+
+  // Finalised lyric data (in order, built as lines are completed).
+  final List<LyricPitchData> _completedLines = [];
+
+  // ── Lyrics ─────────────────────────────────────────────────────────────────
+  late final List<LyricLine> _lyrics;
   late final List<GlobalKey> _lineKeys;
 
   @override
@@ -37,7 +63,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
     super.initState();
     _lyrics = SongLyrics.forSong(widget.songTitle);
     _lineKeys = List.generate(_lyrics.length, (_) => GlobalKey());
+    _linePitch = List.generate(_lyrics.length, (_) => []);
+    _lineCents = List.generate(_lyrics.length, (_) => []);
   }
+
+  // ── Lyric advancement ──────────────────────────────────────────────────────
 
   void _startLyrics() {
     _advanceLine();
@@ -45,10 +75,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
 
   void _advanceLine() {
     if (!mounted || _currentLineIndex >= _lyrics.length) return;
-
     final line = _lyrics[_currentLineIndex];
+
     _lyricTimer = Timer(Duration(seconds: line.durationSeconds), () {
       if (!mounted) return;
+      _sealCurrentLine();
       setState(() {
         if (_currentLineIndex < _lyrics.length - 1) {
           _currentLineIndex++;
@@ -59,9 +90,23 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
     });
   }
 
+  /// Lock in the pitch data for the current lyric line.
+  void _sealCurrentLine() {
+    final i = _currentLineIndex;
+    if (i >= _lyrics.length) return;
+    _completedLines.add(LyricPitchData(
+      lyricText: _lyrics[i].text,
+      pitchReadings: List<double>.from(_linePitch[i]),
+      centsReadings: List<double>.from(_lineCents[i]),
+    ));
+    _linePitch[i].clear();
+    _lineCents[i].clear();
+  }
+
+  void _pauseLyrics() => _lyricTimer?.cancel();
+
   void _scrollToCurrentLine() {
-    final key = _lineKeys[_currentLineIndex];
-    final ctx = key.currentContext;
+    final ctx = _lineKeys[_currentLineIndex].currentContext;
     if (ctx != null) {
       Scrollable.ensureVisible(
         ctx,
@@ -72,24 +117,140 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
     }
   }
 
-  void _pauseLyrics() {
-    _lyricTimer?.cancel();
+  // ── Recording toggle ───────────────────────────────────────────────────────
+
+  Future<void> _startRecording() async {
+    final ok = await _audioService.start();
+    if (!ok) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Microphone permission denied')),
+        );
+      }
+      return;
+    }
+
+    _audioSub = _audioService.results.listen((result) {
+      if (!mounted) return;
+      final i = _currentLineIndex;
+      if (i < _linePitch.length) {
+        if (result != null) {
+          _linePitch[i].add(result.frequency);
+          _lineCents[i].add(result.cents);
+        } else {
+          _linePitch[i].add(0);
+          _lineCents[i].add(0);
+        }
+      }
+      setState(() {
+        if (result != null) {
+          _liveFeedback = result.feedback;
+          _liveNote = result.fullName;
+          _liveCents = result.cents;
+        } else {
+          _liveFeedback = PitchFeedback.noSignal;
+          _liveNote = '';
+          _liveCents = 0;
+        }
+      });
+    });
   }
 
-  void _stopAll() {
+  Future<void> _stopRecording() async {
+    await _audioSub?.cancel();
+    _audioSub = null;
+    await _audioService.stop();
+    setState(() {
+      _liveFeedback = PitchFeedback.noSignal;
+      _liveNote = '';
+      _liveCents = 0;
+    });
+  }
+
+  // ── Stop & navigate to results ─────────────────────────────────────────────
+
+  Future<void> _stopAll() async {
     _lyricTimer?.cancel();
+    _sessionTimer?.cancel();
+    if (_isRecording) await _stopRecording();
     setState(() {
       _isPlaying = false;
       _isRecording = false;
     });
   }
 
+  Future<void> _finishAndShowResults() async {
+    await _stopAll();
+
+    // Seal whatever line we were on
+    _sealCurrentLine();
+
+    // Fill any remaining lines with empty data
+    for (int i = _completedLines.length; i < _lyrics.length; i++) {
+      _completedLines.add(LyricPitchData(
+        lyricText: _lyrics[i].text,
+        pitchReadings: const [],
+        centsReadings: const [],
+      ));
+    }
+
+    final session = SessionResult(
+      songTitle: widget.songTitle,
+      songArtist: widget.songArtist,
+      songImage: widget.songImage,
+      completedAt: DateTime.now(),
+      lyricResults: List<LyricPitchData>.from(_completedLines),
+      durationSeconds: _elapsedSeconds,
+    );
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultsPage(session: session),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _lyricTimer?.cancel();
+    _sessionTimer?.cancel();
+    _audioSub?.cancel();
+    _audioService.dispose();
     _scrollController.dispose();
     super.dispose();
   }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  Color get _feedbackColor {
+    switch (_liveFeedback) {
+      case PitchFeedback.correct:
+        return AppColors.primaryCyan;
+      case PitchFeedback.tooHigh:
+        return Colors.orangeAccent;
+      case PitchFeedback.tooLow:
+        return Colors.blueAccent;
+      case PitchFeedback.noSignal:
+        return AppColors.grey;
+    }
+  }
+
+  String get _feedbackLabel {
+    switch (_liveFeedback) {
+      case PitchFeedback.correct:
+        return 'In Tune ✓';
+      case PitchFeedback.tooHigh:
+        return 'Sharp ↑';
+      case PitchFeedback.tooLow:
+        return 'Flat ↓';
+      case PitchFeedback.noSignal:
+        return _isRecording ? 'Listening…' : '';
+    }
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +261,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
           children: [
             _buildHeader(),
             _buildSongInfo(),
-            const SizedBox(height: 8),
+            if (_isRecording) _buildLivePitchBar(),
+            const SizedBox(height: 4),
             Expanded(child: _buildLyricsArea()),
             _buildControls(),
           ],
@@ -144,11 +306,17 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
             ],
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.more_horiz,
-                color: AppColors.white, size: 26),
-            onPressed: () {},
+          Text(
+            '${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:'
+            '${(_elapsedSeconds % 60).toString().padLeft(2, '0')}',
+            style: TextStyle(
+              color: AppColors.white.withValues(alpha: 0.6),
+              fontSize: 12,
+              fontFamily: 'Roboto',
+              letterSpacing: 1,
+            ),
           ),
+          const SizedBox(width: 8),
         ],
       ),
     );
@@ -161,79 +329,151 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
-            child: Image.network(
-              widget.songImage,
-              width: 42,
-              height: 42,
-              fit: BoxFit.cover,
-              errorBuilder: (ctx, err, st) => Container(
-                width: 42,
-                height: 42,
-                color: AppColors.inputBg,
-                child: const Icon(Icons.music_note,
-                    color: AppColors.grey, size: 20),
-              ),
-            ),
+            child: widget.songImage.isNotEmpty
+                ? Image.network(
+                    widget.songImage,
+                    width: 42,
+                    height: 42,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, e, st) => _musicIcon(),
+                  )
+                : _musicIcon(),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.songTitle,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  widget.songArtist,
-                  style: TextStyle(
-                    color: AppColors.white.withValues(alpha: 0.55),
-                    fontSize: 13,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
+                Text(widget.songTitle,
+                    style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Roboto'),
+                    overflow: TextOverflow.ellipsis),
+                Text(widget.songArtist,
+                    style: TextStyle(
+                        color: AppColors.white.withValues(alpha: 0.55),
+                        fontSize: 13,
+                        fontFamily: 'Roboto')),
               ],
             ),
           ),
           if (_isRecording)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  const Text(
-                    'REC',
+              child: Row(children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                      color: Colors.red, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 5),
+                const Text('REC',
                     style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
+                        color: Colors.red,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto')),
+              ]),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _musicIcon() => Container(
+        width: 42,
+        height: 42,
+        color: AppColors.inputBg,
+        child: const Icon(Icons.music_note, color: AppColors.grey, size: 20),
+      );
+
+  /// Real-time pitch bar shown while recording is active.
+  Widget _buildLivePitchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.inputBg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: _feedbackColor.withValues(alpha: 0.35), width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.graphic_eq, color: _feedbackColor, size: 18),
+            const SizedBox(width: 8),
+            // Note name
+            Text(
+              _liveNote.isEmpty ? '—' : _liveNote,
+              style: TextStyle(
+                color: _feedbackColor,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Roboto',
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Cents meter
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Flat',
+                          style: TextStyle(
+                              color: AppColors.grey.withValues(alpha: 0.6),
+                              fontSize: 9,
+                              fontFamily: 'Roboto')),
+                      Text('${_liveCents.toStringAsFixed(0)} ¢',
+                          style: const TextStyle(
+                              color: AppColors.white,
+                              fontSize: 9,
+                              fontFamily: 'Roboto')),
+                      Text('Sharp',
+                          style: TextStyle(
+                              color: AppColors.grey.withValues(alpha: 0.6),
+                              fontSize: 9,
+                              fontFamily: 'Roboto')),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: (_liveCents.clamp(-50, 50) + 50) / 100,
+                      minHeight: 5,
+                      backgroundColor: AppColors.inputBg,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(_feedbackColor),
                     ),
                   ),
                 ],
               ),
             ),
-        ],
+            const SizedBox(width: 10),
+            // Feedback label
+            Text(
+              _feedbackLabel,
+              style: TextStyle(
+                  color: _feedbackColor,
+                  fontSize: 11,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -248,7 +488,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
             Colors.transparent,
             Colors.white,
             Colors.white,
-            Colors.transparent,
+            Colors.transparent
           ],
           stops: [0.0, 0.12, 0.82, 1.0],
         ).createShader(rect);
@@ -301,18 +541,16 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Restart lyrics
+          // Restart
           IconButton(
             icon: Icon(Icons.skip_previous_rounded,
                 color: AppColors.white.withValues(alpha: 0.7), size: 32),
             onPressed: () {
               _pauseLyrics();
               setState(() => _currentLineIndex = 0);
-              _scrollController.animateTo(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
+              _scrollController.animateTo(0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut);
               if (_isPlaying) _startLyrics();
             },
           ),
@@ -323,19 +561,23 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
               setState(() => _isPlaying = !_isPlaying);
               if (_isPlaying) {
                 _startLyrics();
+                _sessionTimer = Timer.periodic(
+                    const Duration(seconds: 1),
+                    (_) => setState(() => _elapsedSeconds++));
               } else {
                 _pauseLyrics();
+                _sessionTimer?.cancel();
               }
             },
             child: Container(
               width: 60,
               height: 60,
               decoration: const BoxDecoration(
-                color: AppColors.white,
-                shape: BoxShape.circle,
-              ),
+                  color: AppColors.white, shape: BoxShape.circle),
               child: Icon(
-                _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                _isPlaying
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
                 color: Colors.black,
                 size: 34,
               ),
@@ -344,7 +586,12 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
 
           // Record toggle
           GestureDetector(
-            onTap: () {
+            onTap: () async {
+              if (_isRecording) {
+                await _stopRecording();
+              } else {
+                await _startRecording();
+              }
               setState(() => _isRecording = !_isRecording);
             },
             child: Container(
@@ -355,33 +602,17 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
                 color: _isRecording
                     ? Colors.red
                     : Colors.red.withValues(alpha: 0.15),
-                border: Border.all(
-                  color: Colors.red,
-                  width: 2,
-                ),
+                border: Border.all(color: Colors.red, width: 2),
               ),
-              child: Icon(
-                Icons.mic,
-                color: _isRecording ? AppColors.white : Colors.red,
-                size: 24,
-              ),
+              child: Icon(Icons.mic,
+                  color: _isRecording ? AppColors.white : Colors.red,
+                  size: 24),
             ),
           ),
 
           // Stop & go to results
           GestureDetector(
-            onTap: () {
-              _stopAll();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ResultsPage(
-                    songTitle: widget.songTitle,
-                    songArtist: widget.songArtist,
-                  ),
-                ),
-              );
-            },
+            onTap: _finishAndShowResults,
             child: Container(
               width: 40,
               height: 40,
@@ -389,11 +620,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
                 color: AppColors.white.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.stop_rounded,
-                color: AppColors.white.withValues(alpha: 0.8),
-                size: 22,
-              ),
+              child: Icon(Icons.stop_rounded,
+                  color: AppColors.white.withValues(alpha: 0.8), size: 22),
             ),
           ),
         ],

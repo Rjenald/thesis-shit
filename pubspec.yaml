@@ -15,6 +15,7 @@ dependencies:
   record: ^6.0.0
   permission_handler: ^11.3.0
   just_audio: ^0.9.36
+  shared_preferences: ^2.3.0
 
   
 dev_dependencies:

@@ -18,46 +18,21 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
   String _query = '';
 
   static const List<Map<String, String>> _songs = [
-    {
-      'title': 'Dadalhin',
-      'artist': 'Regine Velasquez',
-      'image': 'https://i.pravatar.cc/150?img=1',
-    },
-    {
-      'title': 'Ikaw',
-      'artist': 'Yeng Constantino',
-      'image': 'https://i.pravatar.cc/150?img=2',
-    },
-    {
-      'title': 'Kahit Maputi Na Ang Buhok Ko',
-      'artist': 'Rey Valera',
-      'image': 'https://i.pravatar.cc/150?img=3',
-    },
-    {
-      'title': 'Narda',
-      'artist': 'Kamikazee',
-      'image': 'https://i.pravatar.cc/150?img=4',
-    },
-    {
-      'title': 'Hawak Kamay',
-      'artist': 'Yeng Constantino',
-      'image': 'https://i.pravatar.cc/150?img=5',
-    },
-    {
-      'title': 'Pare Ko',
-      'artist': 'Eraserheads',
-      'image': 'https://i.pravatar.cc/150?img=6',
-    },
-    {
-      'title': 'Pag-ibig',
-      'artist': 'Kyla',
-      'image': 'https://i.pravatar.cc/150?img=7',
-    },
-    {
-      'title': 'Magmahal Muli',
-      'artist': 'Martin Nievera',
-      'image': 'https://i.pravatar.cc/150?img=8',
-    },
+    {'title': 'Dadalhin', 'artist': 'Regine Velasquez', 'image': 'https://media.philstar.com/photos/2022/04/19/regine-1_2022-04-19_17-19-51.jpg'},
+    {'title': 'Ikaw', 'artist': 'Yeng Constantino', 'image': 'https://upload.wikimedia.org/wikipedia/en/b/b4/Yeng_Constantino_-_Ikaw_%28Yeng_Version%29.jpg'},
+    {'title': 'Kahit Maputi Na Ang Buhok Ko', 'artist': 'Rey Valera', 'image': 'https://i.ytimg.com/vi/UxAX0RjxBeM/maxresdefault.jpg'},
+    {'title': 'Narda', 'artist': 'Kamikazee', 'image': 'https://i.ytimg.com/vi/L8MzUHxAimI/maxresdefault.jpg'},
+    {'title': 'Hawak Kamay', 'artist': 'Yeng Constantino', 'image': 'https://i.ytimg.com/vi/UxAX0RjxBeM/maxresdefault.jpg'},
+    {'title': 'Pare Ko', 'artist': 'Eraserheads', 'image': 'https://i.ytimg.com/vi/ZeO4kW4j3tI/maxresdefault.jpg'},
+    {'title': 'Pag-ibig', 'artist': 'Kyla', 'image': 'https://i.ytimg.com/vi/UxAX0RjxBeM/maxresdefault.jpg'},
+    {'title': 'Magmahal Muli', 'artist': 'Martin Nievera', 'image': 'https://i.ytimg.com/vi/UxAX0RjxBeM/maxresdefault.jpg'},
+    {'title': 'Paalam Muna Sandali', 'artist': 'Darren Espanto', 'image': 'https://tse4.mm.bing.net/th/id/OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3'},
+    {'title': 'Nasa Iyo Na Ang Lahat', 'artist': 'Daniel Padilla', 'image': 'https://images.genius.com/e817d67292e5c1ac1e72b0c8573161e5.900x900x1.jpg'},
+    {'title': 'Ulap', 'artist': 'Rob Daniel', 'image': 'https://tse3.mm.bing.net/th/id/OIP.4AnzA3S0-AUEBFjst492KwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3'},
+    {'title': 'Fallen', 'artist': 'Lola Amour', 'image': 'https://images.genius.com/b62c08396330faf55dae7e6a73b26324.1000x1000x1.png'},
+    {'title': 'Binibini', 'artist': 'Arthur Nery', 'image': 'https://i.pinimg.com/736x/c4/51/fd/c451fd1b67b8e80830aaca56188e46d8.jpg'},
+    {'title': 'Kumpas', 'artist': 'Moira Dela Torre', 'image': 'https://tse2.mm.bing.net/th/id/OIP.2Uaip4XK2mxVqOEL_zu4cAHaFj?rs=1&pid=ImgDetMain&o=7&rm=3'},
+    {'title': 'Randomantic', 'artist': 'James Reid', 'image': 'https://images.genius.com/f428806fd40d83f4a6f934680bdbd7e8.1000x1000x1.jpg'},
   ];
 
   List<Map<String, String>> get _filtered {

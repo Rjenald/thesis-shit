@@ -1,9 +1,12 @@
 import 'package:final_thesis_ui/screens/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../models/session_result.dart';
+import '../services/session_storage_service.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
 import 'record_selection_page.dart';
+import 'results_page.dart';
 
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
@@ -13,72 +16,29 @@ class LibraryPage extends StatefulWidget {
 }
 
 class _LibraryPageState extends State<LibraryPage> {
-  final List<Map<String, String>> librarySongs = [
-    {
-      'title': 'Dadalhin',
-      'artist': 'Regine Velasquez',
-      'image':
-          'https://media.philstar.com/photos/2022/04/19/regine-1_2022-04-19_17-19-51.jpg',
-      'date': '10-30-26',
-      'score': '90',
-    },
-    {
-      'title': 'Paalam Muna Sandali',
-      'artist': 'Darren Espanto',
-      'image':
-          'https://tse4.mm.bing.net/th/id/OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
-      'date': '10-30-26',
-      'score': '85',
-    },
-    {
-      'title': 'Nasa Iyo Na Ang Lahat',
-      'artist': 'Daniel Padilla',
-      'image':
-          'https://images.genius.com/e817d67292e5c1ac1e72b0c8573161e5.900x900x1.jpg',
-      'date': '10-30-26',
-      'score': '78',
-    },
-    {
-      'title': 'Ulap',
-      'artist': 'Rob Daniel',
-      'image':
-          'https://tse3.mm.bing.net/th/id/OIP.4AnzA3S0-AUEBFjst492KwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3',
-      'date': '10-30-26',
-      'score': '92',
-    },
-    {
-      'title': 'Fallen',
-      'artist': 'Lola Amour',
-      'image':
-          'https://images.genius.com/b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
-      'date': '10-30-26',
-      'score': '88',
-    },
-    {
-      'title': 'Binibini',
-      'artist': 'Arthur Nery',
-      'image':
-          'https://i.pinimg.com/736x/c4/51/fd/c451fd1b67b8e80830aaca56188e46d8.jpg',
-      'date': '10-30-26',
-      'score': '76',
-    },
-    {
-      'title': 'Kumpas',
-      'artist': 'Moira Dela Torre',
-      'image':
-          'https://tse2.mm.bing.net/th/id/OIP.2Uaip4XK2mxVqOEL_zu4cAHaFj?rs=1&pid=ImgDetMain&o=7&rm=3',
-      'date': '10-30-26',
-      'score': '95',
-    },
-    {
-      'title': 'Randomantic',
-      'artist': 'james reid',
-      'image':
-          'https://images.genius.com/f428806fd40d83f4a6f934680bdbd7e8.1000x1000x1.jpg',
-      'date': '10-30-26',
-      'score': '82',
-    },
-  ];
+  List<SessionResult> _sessions = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  Future<void> _loadSessions() async {
+    final sessions = await SessionStorageService.loadSessions();
+    if (mounted) {
+      setState(() {
+        _sessions = sessions;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _deleteSession(int index) async {
+    await SessionStorageService.deleteSession(index);
+    await _loadSessions();
+  }
 
   void _onItemTapped(int index) {
     if (index == 0) {
@@ -89,14 +49,10 @@ class _LibraryPageState extends State<LibraryPage> {
       );
     } else if (index == 2) {
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const RecordSelectionPage()),
-      );
+          context, MaterialPageRoute(builder: (_) => const RecordSelectionPage()));
     } else if (index == 3) {
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const EducationModePage()),
-      );
+          context, MaterialPageRoute(builder: (_) => const EducationModePage()));
     }
   }
 
@@ -113,31 +69,22 @@ class _LibraryPageState extends State<LibraryPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: AppColors.white,
-                      size: 26,
-                    ),
+                    icon: const Icon(Icons.arrow_back,
+                        color: AppColors.white, size: 26),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
-                    child: Text(
-                      'Library',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.white,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
+                    child: Text('Library',
+                        style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.white,
+                            fontFamily: 'Roboto')),
                   ),
                   IconButton(
-                    icon: const Icon(
-                      Icons.search,
-                      color: AppColors.white,
-                      size: 26,
-                    ),
-                    onPressed: () {},
+                    icon: const Icon(Icons.refresh,
+                        color: AppColors.white, size: 24),
+                    onPressed: _loadSessions,
                   ),
                 ],
               ),
@@ -148,151 +95,243 @@ class _LibraryPageState extends State<LibraryPage> {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
               child: Row(
                 children: [
-                  Text(
-                    'Your Recordings',
-                    style: TextStyle(
-                      color: AppColors.grey.withValues(alpha: 0.7),
-                      fontSize: 13,
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
+                  Text('Your Recordings',
+                      style: TextStyle(
+                          color: AppColors.grey.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontFamily: 'Roboto')),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
+                        horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.primaryCyan.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
-                      '${librarySongs.length}',
-                      style: const TextStyle(
-                        color: AppColors.primaryCyan,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
+                    child: Text('${_sessions.length}',
+                        style: const TextStyle(
+                            color: AppColors.primaryCyan,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Roboto')),
                   ),
                 ],
               ),
             ),
 
-            // Library List
+            // List
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: librarySongs.length,
-                itemBuilder: (context, index) {
-                  return _buildLibraryItem(librarySongs[index]);
-                },
-              ),
+              child: _loading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: AppColors.primaryCyan))
+                  : _sessions.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _sessions.length,
+                          itemBuilder: (context, index) {
+                            return _buildSessionItem(_sessions[index], index);
+                          },
+                        ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 1, onTap: _onItemTapped),
+      bottomNavigationBar:
+          BottomNavBar(currentIndex: 1, onTap: _onItemTapped),
     );
   }
 
-  Widget _buildLibraryItem(Map<String, String> song) {
-    final score = int.tryParse(song['score'] ?? '0') ?? 0;
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.library_music_outlined,
+              color: AppColors.grey.withValues(alpha: 0.4), size: 64),
+          const SizedBox(height: 16),
+          Text('No recordings yet',
+              style: TextStyle(
+                  color: AppColors.grey.withValues(alpha: 0.6),
+                  fontSize: 16,
+                  fontFamily: 'Roboto')),
+          const SizedBox(height: 8),
+          Text('Sing a song and save your results!',
+              style: TextStyle(
+                  color: AppColors.grey.withValues(alpha: 0.4),
+                  fontSize: 13,
+                  fontFamily: 'Roboto')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionItem(SessionResult session, int index) {
+    final score = session.score.round();
     final scoreColor = score >= 90
         ? AppColors.primaryCyan
         : score >= 75
-        ? const Color(0xFF4CAF50)
-        : const Color(0xFFFFA726);
+            ? const Color(0xFF4CAF50)
+            : const Color(0xFFFFA726);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              song['image']!,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 56,
-                height: 56,
-                color: AppColors.inputBg,
-                child: const Icon(Icons.music_note, color: AppColors.grey),
-              ),
-            ),
+    final date = session.completedAt;
+    final dateStr =
+        '${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}-${date.year}';
+    final timeStr =
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ResultsPage(session: session),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  song['title']!,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    fontFamily: 'Roboto',
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  song['artist']!,
-                  style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.8),
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  song['date'] ?? '',
-                  style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.5),
-                    fontSize: 11,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Score badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: scoreColor.withValues(alpha: 0.12),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(14)),
+        child: Row(
+          children: [
+            // Album art or icon
+            ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: scoreColor.withValues(alpha: 0.35)),
+              child: session.songImage.isNotEmpty
+                  ? Image.network(session.songImage,
+                      width: 56, height: 56, fit: BoxFit.cover,
+                      errorBuilder: (ctx, e, st) => _iconBox())
+                  : _iconBox(),
             ),
-            child: Text(
-              '${song['score']}',
-              style: TextStyle(
-                color: scoreColor,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(session.songTitle,
+                      style: const TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          fontFamily: 'Roboto'),
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(session.songArtist,
+                      style: TextStyle(
+                          color: AppColors.grey.withValues(alpha: 0.8),
+                          fontSize: 12,
+                          fontFamily: 'Roboto')),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text('$dateStr  $timeStr',
+                          style: TextStyle(
+                              color: AppColors.grey.withValues(alpha: 0.5),
+                              fontSize: 11,
+                              fontFamily: 'Roboto')),
+                      const SizedBox(width: 8),
+                      // Flat/sharp badge
+                      if (session.avgFlatPercent > 35)
+                        _badge('Flat', _flatBadgeColor),
+                      if (session.avgSharpPercent > 35)
+                        _badge('Sharp', _sharpBadgeColor),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(
-              Icons.delete_outline,
-              color: AppColors.grey.withValues(alpha: 0.6),
-              size: 20,
+            // Score
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: scoreColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                    color: scoreColor.withValues(alpha: 0.35)),
+              ),
+              child: Text('$score',
+                  style: TextStyle(
+                      color: scoreColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto')),
             ),
-            onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: Icon(Icons.delete_outline,
+                  color: AppColors.grey.withValues(alpha: 0.6), size: 20),
+              onPressed: () => _confirmDelete(index),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const _flatBadgeColor = Color(0xFFFFA726);
+  static const _sharpBadgeColor = Color(0xFFF44336);
+
+  Widget _badge(String label, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(right: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Roboto')),
+    );
+  }
+
+  Widget _iconBox() => Container(
+        width: 56,
+        height: 56,
+        color: AppColors.inputBg,
+        child: const Icon(Icons.music_note,
+            color: AppColors.grey, size: 24),
+      );
+
+  void _confirmDelete(int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBg,
+        title: const Text('Move to Trash',
+            style: TextStyle(
+                color: AppColors.white, fontFamily: 'Roboto')),
+        content: const Text(
+            'This session will be moved to Recently Deleted.\nYou can restore it within 30 days.',
+            style: TextStyle(
+                color: AppColors.grey, fontFamily: 'Roboto')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel',
+                style: TextStyle(
+                    color: AppColors.grey.withValues(alpha: 0.8),
+                    fontFamily: 'Roboto')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteSession(index);
+            },
+            child: const Text('Move to Trash',
+                style: TextStyle(
+                    color: Color(0xFFF44336), fontFamily: 'Roboto')),
           ),
         ],
       ),
