@@ -1,0 +1,23 @@
+# Huni CREPE Pitch Detection Backend — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# Web framework & server
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+websockets>=12.0
+
+# Pitch detection
+crepe>=0.0.16
+
+# Audio / numerical
+numpy>=1.24.0,<2.0.0
+resampy>=0.4.3
+librosa>=0.10.0
+
+# Deep learning runtime for CREPE
+# Use tensorflow-cpu if you don't have a GPU — much lighter install:
+#   pip install tensorflow-cpu
+tensorflow>=2.13.0
+
+# Required by CREPE's Viterbi decoder
+hmmlearn>=0.3.0

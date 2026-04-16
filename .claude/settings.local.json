@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(flutter pub:*)",
+      "Bash(flutter build:*)",
+      "Bash(adb devices:*)",
+      "Bash(flutter devices:*)",
+      "Bash(flutter emulators:*)",
+      "Bash(flutter run:*)",
+      "Bash(flutter install:*)",
+      "Bash(C:\\\\Users\\\\acer\\\\AppData\\\\Local\\\\Android\\\\sdk\\\\platform-tools\\\\adb.exe -s emulator-5554 wait-for-device)",
+      "Bash(C:\\\\Users\\\\acer\\\\AppData\\\\Local\\\\Android\\\\sdk\\\\platform-tools\\\\adb.exe -s emulator-5554 install -r \"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\")",
+      "Bash(flutter --version)",
+      "Bash(dir /B \"C:/Users/acer/AppData/Local/Android/sdk/platform-tools/\")",
+      "WebSearch",
+      "WebFetch(domain:developer.musixmatch.com)",
+      "WebFetch(domain:lrclib.net)",
+      "WebFetch(domain:docs-en.kkbox.codes)",
+      "Read(//c/Users/acer/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/a2efc1b4-0c21-4cb7-aeec-446897c57e61/ab6f428d-d0d4-4499-9aec-dbb112960af0/skills/docx/**)",
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\acer\\\\Downloads\\\\FOR-REVISION.docx\" -o output.md)",
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\acer\\\\Downloads\\\\FOR-REVISION.docx\" unpacked_thesis/)",
+      "Bash(python -c ':*)",
+      "Bash(python -c \"import sys; print\\(sys.stdin.buffer.read\\(\\).decode\\('utf-8','replace'\\)[:12000]\\)\")",
+      "Bash(C:\\\\Users\\\\acer\\\\AppData\\\\Local\\\\Android\\\\sdk\\\\platform-tools\\\\adb.exe devices:*)",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" devices:*)",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5554 wait-for-device)",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5554 install -r \"C:/Users/acer/OneDrive/Desktop/final thesis UI/thesis-shit/build/app/outputs/flutter-apk/app-debug.apk\")",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" kill-server:*)",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" start-server:*)",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5554 wait-for-device shell getprop sys.boot_completed)",
+      "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5556 wait-for-device shell getprop sys.boot_completed)",
+      "WebFetch(domain:www.stingray.com)"
+    ]
+  }
+}

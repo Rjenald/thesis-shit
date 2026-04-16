@@ -113,20 +113,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomPaint(
-              size: Size(MediaQuery.of(context).size.width, 450),
+              size: Size(MediaQuery.of(context).size.width, 480),
               painter: CurvePainter(),
               child: Container(
-                height: 450,
+                height: 480,
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
-                  vertical: 60,
+                  vertical: 50,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
 
                     // Title - HUNI
                     const Text(
@@ -151,7 +151,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 36),
 
                     // Register Button (White)
                     SizedBox(

@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Microphone for pitch detection and recording -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Storage for saving WAV recordings (Android < 10) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
     <application
         android:label="Huni"
         android:name="${applicationName}"

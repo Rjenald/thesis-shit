@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
+import 'teacher_account_page.dart';
 import '../constants/app_colors.dart';
 import '../widgets/curve_painter.dart';
 import '../services/api_service.dart';
+import '../services/session_storage_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,9 +20,14 @@ class _LoginPageState extends State<LoginPage> {
   bool showUsernameError = false;
   bool showPasswordError = false;
   bool _isLoading = false;
+  bool _isTeacher = false;
+  bool _wrongCode = false;
+
+  static const _teacherCode = 'MAPEH2024';
 
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
+  final TextEditingController teacherCodeCtrl = TextEditingController();
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -58,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
     _pageController.dispose();
     username.dispose();
     password.dispose();
+    teacherCodeCtrl.dispose();
     super.dispose();
   }
 
@@ -65,7 +73,15 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       showUsernameError = false;
       showPasswordError = false;
+      _wrongCode = false;
     });
+
+    // Teacher access code check
+    if (_isTeacher &&
+        teacherCodeCtrl.text.trim().toUpperCase() != _teacherCode) {
+      setState(() => _wrongCode = true);
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -78,29 +94,30 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (loginData['success'] == true) {
+        final name =
+            username.text.trim().isEmpty ? 'User' : username.text.trim();
+        await SessionStorageService.saveUsername(name);
+        await SessionStorageService.saveRole(
+            _isTeacher ? 'teacher' : 'student');
+        if (!mounted) return;
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(
+            builder: (_) =>
+                _isTeacher ? const TeacherAccountPage() : const HomePage(),
+          ),
           (route) => false,
         );
       } else {
         final error = loginData['error'] ?? 'Login failed.';
-
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -302,7 +319,9 @@ class _LoginPageState extends State<LoginPage> {
                               color: AppColors.grey,
                             ),
                             onPressed: () {
-                              setState(() => obscurePassword = !obscurePassword);
+                              setState(
+                                () => obscurePassword = !obscurePassword,
+                              );
                             },
                           ),
                           border: OutlineInputBorder(
@@ -312,7 +331,109 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
+
+                      // Teacher login toggle
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _isTeacher = !_isTeacher;
+                          _wrongCode = false;
+                          teacherCodeCtrl.clear();
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _isTeacher
+                                ? AppColors.primaryCyan.withValues(alpha: 0.12)
+                                : AppColors.inputBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _isTeacher
+                                  ? AppColors.primaryCyan.withValues(alpha: 0.5)
+                                  : Colors.transparent,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.school_outlined,
+                                size: 18,
+                                color: _isTeacher
+                                    ? AppColors.primaryCyan
+                                    : AppColors.grey,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Login as Teacher',
+                                style: TextStyle(
+                                  color: _isTeacher
+                                      ? AppColors.primaryCyan
+                                      : AppColors.grey,
+                                  fontSize: 13,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: _isTeacher
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              const Spacer(),
+                              Icon(
+                                _isTeacher
+                                    ? Icons.check_circle
+                                    : Icons.circle_outlined,
+                                size: 16,
+                                color: _isTeacher
+                                    ? AppColors.primaryCyan
+                                    : AppColors.grey.withValues(alpha: 0.4),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Teacher access code field
+                      if (_isTeacher) ...[
+                        const SizedBox(height: 10),
+                        if (_wrongCode)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              'Invalid teacher access code',
+                              style: TextStyle(
+                                color: AppColors.errorRed,
+                                fontSize: 12,
+                                fontFamily: 'Roboto',
+                              ),
+                            ),
+                          ),
+                        TextField(
+                          controller: teacherCodeCtrl,
+                          style: const TextStyle(
+                              color: Colors.white, fontFamily: 'Roboto'),
+                          textCapitalization: TextCapitalization.characters,
+                          onChanged: (_) {
+                            if (_wrongCode) setState(() => _wrongCode = false);
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'e.g. MAPEH2024',
+                            hintStyle: TextStyle(
+                              color: AppColors.grey.withValues(alpha: 0.6),
+                              fontFamily: 'Roboto',
+                            ),
+                            filled: true,
+                            fillColor: AppColors.inputBg,
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: AppColors.grey, size: 18),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 4),
 
                       // Forgot password
                       Align(

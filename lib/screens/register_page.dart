@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'home_page.dart';
+import 'teacher_account_page.dart';
 import '../constants/app_colors.dart';
 import '../widgets/curve_painter.dart';
 import '../services/api_service.dart';
+import '../services/session_storage_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -19,11 +21,17 @@ class _RegisterPageState extends State<RegisterPage> {
   bool showUsernameError = false;
   bool showPasswordError = false;
   bool _isLoading = false;
+  bool _isTeacher = false;
+  bool _wrongCode = false;
+
+  // Teacher access code — change this to your chosen code
+  static const _teacherCode = 'MAPEH2024';
 
   final TextEditingController username = TextEditingController();
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController confirmPassword = TextEditingController();
+  final TextEditingController teacherCodeCtrl = TextEditingController();
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -63,6 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
     email.dispose();
     password.dispose();
     confirmPassword.dispose();
+    teacherCodeCtrl.dispose();
     super.dispose();
   }
 
@@ -70,12 +79,18 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() {
       showUsernameError = false;
       showPasswordError = false;
+      _wrongCode = false;
     });
+
+    if (_isTeacher &&
+        teacherCodeCtrl.text.trim().toUpperCase() != _teacherCode) {
+      setState(() => _wrongCode = true);
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      // STEP 1: Register
       final registerData = await ApiService.register(
         username.text.trim(),
         password.text,
@@ -83,53 +98,33 @@ class _RegisterPageState extends State<RegisterPage> {
         email.text.trim(),
       );
 
-      if (registerData['success'] != true) {
+      if (!mounted) return;
+
+      if (registerData['success'] == true) {
+        final name =
+            username.text.trim().isEmpty ? 'User' : username.text.trim();
+        await SessionStorageService.saveUsername(name);
+        await SessionStorageService.saveRole(
+            _isTeacher ? 'teacher' : 'student');
         if (!mounted) return;
-
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                _isTeacher ? const TeacherAccountPage() : const HomePage(),
+          ),
+          (route) => false,
+        );
+      } else {
         final error = registerData['error'] ?? 'Registration failed.';
-
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
-        setState(() => _isLoading = false);
-        return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
       }
-
-      // STEP 2: Auto-login
-      final loginData = await ApiService.login(
-        username.text.trim(),
-        password.text,
-      );
-
-      if (!mounted) return;
-
-      if (loginData['success'] == true) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-          (route) => false,
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registered! Please log in.')),
-        );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -306,7 +301,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: 'Email',
                           hintStyle: TextStyle(
                             color: AppColors.grey.withValues(alpha: 0.6),
-                            fontFamily: 'Roboto', 
+                            fontFamily: 'Roboto',
                           ),
                           filled: true,
                           fillColor: AppColors.inputBg,
@@ -352,7 +347,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: AppColors.grey,
                             ),
                             onPressed: () {
-                              setState(() => obscurePassword = !obscurePassword);
+                              setState(
+                                () => obscurePassword = !obscurePassword,
+                              );
                             },
                           ),
                           border: OutlineInputBorder(
@@ -385,7 +382,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: AppColors.grey,
                             ),
                             onPressed: () {
-                              setState(() => obscureRePassword = !obscureRePassword);
+                              setState(
+                                () => obscureRePassword = !obscureRePassword,
+                              );
                             },
                           ),
                           border: OutlineInputBorder(
@@ -395,7 +394,121 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
+
+                      // Teacher Account toggle
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _isTeacher = !_isTeacher;
+                          _wrongCode = false;
+                          teacherCodeCtrl.clear();
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _isTeacher
+                                ? AppColors.primaryCyan.withValues(alpha: 0.12)
+                                : AppColors.inputBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _isTeacher
+                                  ? AppColors.primaryCyan.withValues(alpha: 0.5)
+                                  : AppColors.grey.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.school_outlined,
+                                size: 16,
+                                color: _isTeacher
+                                    ? AppColors.primaryCyan
+                                    : AppColors.grey,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Register as Teacher',
+                                style: TextStyle(
+                                  color: _isTeacher
+                                      ? AppColors.primaryCyan
+                                      : AppColors.grey,
+                                  fontSize: 13,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: _isTeacher
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                _isTeacher
+                                    ? Icons.check_circle
+                                    : Icons.radio_button_unchecked,
+                                size: 16,
+                                color: _isTeacher
+                                    ? AppColors.primaryCyan
+                                    : AppColors.grey,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Teacher code field (shown only when teacher is selected)
+                      if (_isTeacher) ...[
+                        const SizedBox(height: 12),
+                        if (_wrongCode)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              'Incorrect teacher access code',
+                              style: TextStyle(
+                                color: AppColors.errorRed,
+                                fontSize: 12,
+                                fontFamily: 'Roboto',
+                              ),
+                            ),
+                          ),
+                        TextField(
+                          controller: teacherCodeCtrl,
+                          style: const TextStyle(color: Colors.white),
+                          textCapitalization: TextCapitalization.characters,
+                          onChanged: (_) {
+                            if (_wrongCode) setState(() => _wrongCode = false);
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'e.g. MAPEH2024',
+                            hintStyle: TextStyle(
+                              color: AppColors.grey.withValues(alpha: 0.6),
+                              fontFamily: 'Roboto',
+                            ),
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: AppColors.primaryCyan, size: 18),
+                            filled: true,
+                            fillColor: AppColors.inputBg,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: _wrongCode
+                                    ? AppColors.errorRed
+                                    : Colors.transparent,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: _wrongCode
+                                    ? AppColors.errorRed
+                                    : Colors.transparent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
 
                       // Register button
                       SizedBox(

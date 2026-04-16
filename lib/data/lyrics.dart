@@ -391,8 +391,31 @@ class SongLyrics {
     ],
   };
 
-  /// Returns the lyrics for [songTitle], or an empty list if not found.
+  /// Returns the lyrics for [songTitle].
+  /// Songs not in the database get generic placeholder lines so the
+  /// karaoke page still functions with pitch detection.
   static List<LyricLine> forSong(String songTitle) {
-    return _db[songTitle] ?? [];
+    if (_db.containsKey(songTitle)) return _db[songTitle]!;
+    return [
+      LyricLine('♪  $songTitle  ♪', 4),
+      LyricLine('', 1),
+      LyricLine('Kumanta kasama ang musika', 4),
+      LyricLine('At hayaan ang iyong boses na lumipad', 5),
+      LyricLine('', 1),
+      LyricLine('Sundan ang ritmo ng kanta', 4),
+      LyricLine('At ipakita ang iyong talento', 4),
+      LyricLine('', 1),
+      LyricLine('♪  Kumanta nang may puso  ♪', 4),
+      LyricLine('Hayaan ang musika na gumagabay', 5),
+      LyricLine('', 1),
+      LyricLine('Patuloy na kumanta', 3),
+      LyricLine('Ipakita ang iyong puso', 3),
+      LyricLine('At ang musika ang bahala', 4),
+      LyricLine('', 1),
+      LyricLine('♪  $songTitle  ♪', 4),
+    ];
   }
+
+  /// All song titles available in the database.
+  static List<String> get allTitles => _db.keys.toList();
 }
