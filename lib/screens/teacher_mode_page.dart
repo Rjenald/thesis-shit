@@ -1,6 +1,18 @@
+<<<<<<< HEAD
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
+import '../core/audio_service.dart';
+import '../core/note_utils.dart';
+import '../core/pitch_server_config.dart';
+=======
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../constants/app_colors.dart';
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 import '../data/lyrics.dart';
 import '../models/session_result.dart';
 import '../services/session_storage_service.dart';
@@ -20,12 +32,35 @@ class _TeacherModePageState extends State<TeacherModePage> {
   List<Map<String, dynamic>> _classes = [];
   List<SessionResult> _allSessions = [];
   bool _loading = true;
+<<<<<<< HEAD
+  int _tab = 0; // 0 = Classes, 1 = Reports, 2 = Session Log, 3 = Live Pitch
+
+  // ── Live Pitch (CREPE) state ─────────────────────────────────────────────────
+  final _audioService = AudioService();
+  StreamSubscription<NoteResult?>? _audioSub;
+  final List<double> _pitchHistory = [];
+  bool _pitchWorking = false;
+  bool _isListening = false;
+  NoteResult? _currentNote;
+=======
   int _tab = 0; // 0 = Classes, 1 = Reports, 2 = Session Log
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 
   @override
   void initState() {
     super.initState();
     _load();
+<<<<<<< HEAD
+    _audioService.initialize();
+  }
+
+  @override
+  void dispose() {
+    _audioSub?.cancel();
+    _audioService.dispose();
+    super.dispose();
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   }
 
   Future<void> _load() async {
@@ -94,16 +129,38 @@ class _TeacherModePageState extends State<TeacherModePage> {
   }
 
   Widget _buildTabs() {
+<<<<<<< HEAD
+    final tabs = ['Classes', 'Reports', 'Log', 'Live Pitch'];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Row(
+        children: List.generate(4, (i) {
+          final selected = _tab == i;
+          final isLive = i == 3;
+=======
     final tabs = ['Classes', 'Reports', 'Session Log'];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Row(
         children: List.generate(3, (i) {
           final selected = _tab == i;
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
           return Expanded(
             child: GestureDetector(
               onTap: () => setState(() => _tab = i),
               child: Container(
+<<<<<<< HEAD
+                margin: EdgeInsets.only(right: i < 3 ? 8 : 0),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selected ? AppColors.primaryCyan : AppColors.inputBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: !selected && isLive
+                      ? Border.all(
+                          color: AppColors.primaryCyan.withValues(alpha: 0.3),
+                          width: 1)
+                      : null,
+=======
                 margin: EdgeInsets.only(right: i < 2 ? 8 : 0),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
@@ -111,15 +168,24 @@ class _TeacherModePageState extends State<TeacherModePage> {
                       ? AppColors.primaryCyan
                       : AppColors.inputBg,
                   borderRadius: BorderRadius.circular(10),
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
                 ),
                 child: Text(tabs[i],
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         color: selected
                             ? Colors.black
+<<<<<<< HEAD
+                            : isLive
+                                ? AppColors.primaryCyan
+                                : AppColors.grey,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+=======
                             : AppColors.grey,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
                         fontFamily: 'Roboto')),
               ),
             ),
@@ -137,6 +203,11 @@ class _TeacherModePageState extends State<TeacherModePage> {
         return _buildReportsTab();
       case 2:
         return _buildSessionLogTab();
+<<<<<<< HEAD
+      case 3:
+        return _buildLivePitchTab();
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       default:
         return const SizedBox();
     }
@@ -1014,4 +1085,522 @@ class _TeacherModePageState extends State<TeacherModePage> {
       ),
     );
   }
+<<<<<<< HEAD
+
+  // ── Tab 3: Live Pitch (CREPE) ─────────────────────────────────────────────────
+
+  Future<void> _startListening() async {
+    final ok = await _audioService.start();
+    if (!ok || !mounted) return;
+    setState(() => _isListening = true);
+    _audioSub = _audioService.results.listen((result) {
+      if (!mounted) return;
+      final hz = result?.frequency ?? 0.0;
+      setState(() {
+        _currentNote = result;
+        _pitchHistory.add(hz);
+        if (_pitchHistory.length > 200) _pitchHistory.removeAt(0);
+        if (hz > 0 && !_pitchWorking) _pitchWorking = true;
+      });
+    });
+  }
+
+  Future<void> _stopListening() async {
+    await _audioSub?.cancel();
+    _audioSub = null;
+    await _audioService.stop();
+    if (mounted) {
+      setState(() {
+        _isListening = false;
+        _pitchWorking = false;
+        _currentNote = null;
+        _pitchHistory.clear();
+      });
+    }
+  }
+
+  Widget _buildLivePitchTab() {
+    final note = _currentNote;
+    final hz = note?.frequency ?? 0.0;
+    final feedback = note?.feedback ?? PitchFeedback.noSignal;
+    final cents = note?.cents ?? 0.0;
+
+    String feedbackLabel;
+    Color feedbackColor;
+    switch (feedback) {
+      case PitchFeedback.correct:
+        feedbackLabel = 'In Tune ✓';
+        feedbackColor = const Color(0xFF4CAF50);
+        break;
+      case PitchFeedback.tooHigh:
+        feedbackLabel = 'Sharp ↑';
+        feedbackColor = const Color(0xFFF44336);
+        break;
+      case PitchFeedback.tooLow:
+        feedbackLabel = 'Flat ↓';
+        feedbackColor = const Color(0xFFFFA726);
+        break;
+      case PitchFeedback.noSignal:
+        feedbackLabel = _isListening ? 'No Signal' : 'Tap Start';
+        feedbackColor = AppColors.grey;
+        break;
+    }
+
+    final lineColor = switch (feedback) {
+      PitchFeedback.correct => const Color(0xFF4CAF50),
+      PitchFeedback.tooHigh => const Color(0xFFF44336),
+      PitchFeedback.tooLow => const Color(0xFFFFA726),
+      PitchFeedback.noSignal => AppColors.primaryCyan,
+    };
+
+    final showNoSignal = !_pitchWorking;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // ── Connection status ────────────────────────────────────────────────
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _audioService.isUsingServer
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFFFFA726),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _audioService.isUsingServer
+                        ? 'CREPE Server Connected'
+                        : 'On-Device Pitch (YIN Fallback)',
+                    style: TextStyle(
+                      color: _audioService.isUsingServer
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFFFA726),
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (_isListening && _pitchWorking) ...[
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                        color: AppColors.primaryCyan,
+                        shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text('Live',
+                      style: TextStyle(
+                          color: AppColors.primaryCyan,
+                          fontSize: 11,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w600)),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── Current pitch display ────────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: hz > 0
+                    ? feedbackColor.withValues(alpha: 0.3)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      note != null && hz > 0 ? note.fullName : '—',
+                      style: TextStyle(
+                        color:
+                            hz > 0 ? feedbackColor : AppColors.grey,
+                        fontSize: 72,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        hz > 0 ? '${hz.toStringAsFixed(1)} Hz' : '',
+                        style: const TextStyle(
+                            color: AppColors.grey,
+                            fontSize: 13,
+                            fontFamily: 'Roboto'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  feedbackLabel,
+                  style: TextStyle(
+                    color: feedbackColor,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+                if (hz > 0) ...[
+                  const SizedBox(height: 12),
+                  _buildCentsBar(cents),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── Pitch graph ──────────────────────────────────────────────────────
+          Container(
+            height: 190,
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _TeacherPitchGraphPainter(
+                        pitchHistory:
+                            List.unmodifiable(_pitchHistory),
+                        lineColor: lineColor,
+                      ),
+                    ),
+                  ),
+                  if (showNoSignal)
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.mic_off,
+                              color: AppColors.grey
+                                  .withValues(alpha: 0.4),
+                              size: 32),
+                          const SizedBox(height: 6),
+                          Text(
+                            _isListening
+                                ? 'Sing or speak loudly'
+                                : 'Press Start to begin',
+                            style: TextStyle(
+                                color: AppColors.grey
+                                    .withValues(alpha: 0.5),
+                                fontSize: 13,
+                                fontFamily: 'Roboto'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Positioned(
+                    top: 8,
+                    left: 12,
+                    child: Text('Pitch Graph',
+                        style: TextStyle(
+                            color:
+                                AppColors.grey.withValues(alpha: 0.5),
+                            fontSize: 10,
+                            fontFamily: 'Roboto')),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── Start / Stop button ──────────────────────────────────────────────
+          GestureDetector(
+            onTap: _isListening ? _stopListening : _startListening,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: _isListening
+                    ? const Color(0xFFF44336).withValues(alpha: 0.1)
+                    : AppColors.primaryCyan.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _isListening
+                      ? const Color(0xFFF44336)
+                      : AppColors.primaryCyan,
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _isListening ? Icons.stop_rounded : Icons.mic,
+                    color: _isListening
+                        ? const Color(0xFFF44336)
+                        : AppColors.primaryCyan,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isListening ? 'Stop Listening' : 'Start Listening',
+                    style: TextStyle(
+                      color: _isListening
+                          ? const Color(0xFFF44336)
+                          : AppColors.primaryCyan,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── Server info ──────────────────────────────────────────────────────
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline,
+                    color: AppColors.grey, size: 14),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'CREPE server: ${PitchServerConfig.wsUrl}\n'
+                    'Run crepe_server.py on your PC for highest accuracy.',
+                    style: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.5),
+                        fontSize: 10,
+                        fontFamily: 'Roboto',
+                        height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCentsBar(double cents) {
+    final clamped = cents.clamp(-50.0, 50.0);
+    final fraction = (clamped + 50.0) / 100.0;
+    final barColor = cents.abs() < 35
+        ? const Color(0xFF4CAF50)
+        : cents > 0
+            ? const Color(0xFFF44336)
+            : const Color(0xFFFFA726);
+
+    return Column(
+      children: [
+        LayoutBuilder(builder: (_, constraints) {
+          final w = constraints.maxWidth;
+          return Stack(
+            children: [
+              Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  color: AppColors.inputBg,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Positioned(
+                left: (w * fraction - 5).clamp(0.0, w - 10),
+                top: 0,
+                child: Container(
+                  width: 10,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: barColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Flat ↓',
+                style: TextStyle(
+                    color: AppColors.grey.withValues(alpha: 0.4),
+                    fontSize: 9,
+                    fontFamily: 'Roboto')),
+            Text('${cents.toStringAsFixed(0)} cents',
+                style: const TextStyle(
+                    color: AppColors.grey,
+                    fontSize: 10,
+                    fontFamily: 'Roboto')),
+            Text('Sharp ↑',
+                style: TextStyle(
+                    color: AppColors.grey.withValues(alpha: 0.4),
+                    fontSize: 9,
+                    fontFamily: 'Roboto')),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ── Pitch graph painter ───────────────────────────────────────────────────────
+
+class _TeacherPitchGraphPainter extends CustomPainter {
+  final List<double> pitchHistory;
+  final Color lineColor;
+
+  const _TeacherPitchGraphPainter({
+    required this.pitchHistory,
+    required this.lineColor,
+  });
+
+  static const double _minHz = 100.0;
+  static const double _maxHz = 900.0;
+  static const int _windowSize = 80;
+
+  static const _gridNotes = <String, double>{
+    'C3': 130.81, 'E3': 164.81, 'G3': 196.00,
+    'C4': 261.63, 'E4': 329.63, 'G4': 392.00, 'A4': 440.00,
+    'C5': 523.25, 'E5': 659.25, 'G5': 783.99,
+  };
+
+  double _hzToY(double hz, double height) {
+    final logMin = math.log(_minHz);
+    final logMax = math.log(_maxHz);
+    final logHz = math.log(hz.clamp(_minHz, _maxHz));
+    return height - ((logHz - logMin) / (logMax - logMin)) * height;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Background
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w, h),
+      Paint()..color = const Color(0xFF1A1A1A),
+    );
+
+    // Grid lines
+    final gridPaint = Paint()
+      ..color = const Color(0xFF2A2A2A)
+      ..strokeWidth = 1;
+    final labelStyle = const TextStyle(
+      color: Color(0xFF444444),
+      fontSize: 9,
+      fontFamily: 'Roboto',
+    );
+
+    for (final entry in _gridNotes.entries) {
+      final y = _hzToY(entry.value, h);
+      canvas.drawLine(Offset(0, y), Offset(w, y), gridPaint);
+      final span = TextSpan(text: entry.key, style: labelStyle);
+      final tp = TextPainter(
+          text: span, textDirection: TextDirection.ltr)
+        ..layout();
+      tp.paint(canvas, Offset(4, y - 9));
+    }
+
+    // Pitch line — show last _windowSize samples
+    final window = pitchHistory.length > _windowSize
+        ? pitchHistory.sublist(pitchHistory.length - _windowSize)
+        : pitchHistory;
+
+    if (window.isEmpty) return;
+
+    final xStep = w / _windowSize;
+    final linePaint = Paint()
+      ..color = lineColor.withValues(alpha: 0.85)
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    Offset? prev;
+    for (int i = 0; i < window.length; i++) {
+      final hz = window[i];
+      if (hz <= 0) {
+        prev = null;
+        continue;
+      }
+      final x = i * xStep;
+      final y = _hzToY(hz, h);
+      final pt = Offset(x, y);
+      if (prev != null) {
+        canvas.drawLine(prev, pt, linePaint);
+      }
+      prev = pt;
+    }
+
+    // Current pitch dot (last non-zero)
+    double? lastHz;
+    for (final hz in window.reversed) {
+      if (hz > 0) { lastHz = hz; break; }
+    }
+    if (lastHz != null) {
+      final dotX = (window.length - 1) * xStep;
+      final dotY = _hzToY(lastHz, h);
+      canvas.drawCircle(
+          Offset(dotX, dotY), 5,
+          Paint()..color = lineColor.withValues(alpha: 0.9));
+      canvas.drawCircle(
+          Offset(dotX, dotY), 3,
+          Paint()..color = const Color(0xFFFFFFFF));
+    }
+
+    // Right-edge cursor line
+    canvas.drawLine(
+      Offset(w - 1, 0),
+      Offset(w - 1, h),
+      Paint()
+        ..color = const Color(0xFF333333)
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TeacherPitchGraphPainter old) =>
+      old.pitchHistory != pitchHistory || old.lineColor != lineColor;
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 }

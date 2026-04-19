@@ -1,5 +1,6 @@
 import 'package:final_thesis_ui/screens/solfagepitch_page.dart';
 import 'package:final_thesis_ui/screens/voice_classification_page.dart';
+import 'package:final_thesis_ui/screens/practice_drill_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -64,6 +65,18 @@ class EducationModePage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (_) => const SolfegePitchPage()),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    _EduButton(
+                      icon: Icons.fitness_center_outlined,
+                      title: 'Practice Drills',
+                      subtitle: 'Scale, sustain & phrase exercises',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PracticeDrillPage()),
                       ),
                     ),
 

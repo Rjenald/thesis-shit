@@ -5,7 +5,10 @@ import 'home_page.dart';
 import 'teacher_account_page.dart';
 import '../constants/app_colors.dart';
 import '../widgets/curve_painter.dart';
+<<<<<<< HEAD
+=======
 import '../services/api_service.dart';
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 import '../services/session_storage_service.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -82,16 +85,54 @@ class _RegisterPageState extends State<RegisterPage> {
       _wrongCode = false;
     });
 
-    // Validate teacher code before hitting the network
-    if (_isTeacher && teacherCodeCtrl.text.trim() != _teacherCode) {
+<<<<<<< HEAD
+    // Basic validation
+    if (username.text.trim().isEmpty) {
+      setState(() => showUsernameError = true);
+      return;
+    }
+    if (password.text.isEmpty) {
+      setState(() => showPasswordError = true);
+      return;
+    }
+    if (password.text != confirmPassword.text) {
+      setState(() => showPasswordError = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    // Teacher access code check
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
+    if (_isTeacher &&
+        teacherCodeCtrl.text.trim().toUpperCase() != _teacherCode) {
       setState(() => _wrongCode = true);
       return;
     }
 
     setState(() => _isLoading = true);
 
+<<<<<<< HEAD
+    // Save user info locally and navigate — no API needed
+    final name = username.text.trim();
+    await SessionStorageService.saveUsername(name);
+    await SessionStorageService.saveRole(_isTeacher ? 'teacher' : 'student');
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            _isTeacher ? const TeacherAccountPage() : const HomePage(),
+      ),
+      (route) => false,
+    );
+=======
     try {
-      // STEP 1: Register
       final registerData = await ApiService.register(
         username.text.trim(),
         password.text,
@@ -99,63 +140,37 @@ class _RegisterPageState extends State<RegisterPage> {
         email.text.trim(),
       );
 
-      if (registerData['success'] != true) {
+      if (!mounted) return;
+
+      if (registerData['success'] == true) {
+        final name =
+            username.text.trim().isEmpty ? 'User' : username.text.trim();
+        await SessionStorageService.saveUsername(name);
+        await SessionStorageService.saveRole(
+            _isTeacher ? 'teacher' : 'student');
         if (!mounted) return;
-
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                _isTeacher ? const TeacherAccountPage() : const HomePage(),
+          ),
+          (route) => false,
+        );
+      } else {
         final error = registerData['error'] ?? 'Registration failed.';
-
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
-        setState(() => _isLoading = false);
-        return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
       }
-
-      // STEP 2: Auto-login
-      final loginData = await ApiService.login(
-        username.text.trim(),
-        password.text,
-      );
-
-      if (!mounted) return;
-
-      if (loginData['success'] == true) {
-        await SessionStorageService.saveUsername(username.text.trim());
-        await SessionStorageService.saveRole(_isTeacher ? 'teacher' : 'student');
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => _isTeacher
-                ? const TeacherAccountPage()
-                : const HomePage(),
-          ),
-          (route) => false,
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registered! Please log in.')),
-        );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   }
 
   @override
@@ -502,11 +517,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         TextField(
                           controller: teacherCodeCtrl,
                           style: const TextStyle(color: Colors.white),
+                          textCapitalization: TextCapitalization.characters,
                           onChanged: (_) {
                             if (_wrongCode) setState(() => _wrongCode = false);
                           },
                           decoration: InputDecoration(
-                            hintText: 'Teacher Access Code',
+                            hintText: 'e.g. MAPEH2024',
                             hintStyle: TextStyle(
                               color: AppColors.grey.withValues(alpha: 0.6),
                               fontFamily: 'Roboto',

@@ -119,7 +119,7 @@ enum PitchFeedback { correct, tooHigh, tooLow, noSignal }
 /// [toleranceCents] defines the "in-tune" window.
 /// 25 cents = a quarter semitone — a reasonable tolerance for beginners.
 /// 15 cents = stricter, suitable for more advanced practice.
-PitchFeedback classifyPitch(double cents, {double toleranceCents = 25.0}) {
+PitchFeedback classifyPitch(double cents, {double toleranceCents = 35.0}) {
   if (cents.abs() <= toleranceCents) return PitchFeedback.correct;
   if (cents > 0) return PitchFeedback.tooHigh;
   return PitchFeedback.tooLow;

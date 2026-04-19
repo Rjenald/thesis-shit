@@ -5,7 +5,10 @@ import 'register_page.dart';
 import 'teacher_account_page.dart';
 import '../constants/app_colors.dart';
 import '../widgets/curve_painter.dart';
+<<<<<<< HEAD
+=======
 import '../services/api_service.dart';
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 import '../services/session_storage_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -76,57 +79,75 @@ class _LoginPageState extends State<LoginPage> {
       _wrongCode = false;
     });
 
-    // Validate teacher access code before hitting the network
-    if (_isTeacher && teacherCodeCtrl.text.trim() != _teacherCode) {
+<<<<<<< HEAD
+    // Basic validation — fields must not be empty
+    if (username.text.trim().isEmpty) {
+      setState(() => showUsernameError = true);
+      return;
+    }
+    if (password.text.isEmpty) {
+      setState(() => showPasswordError = true);
+      return;
+    }
+
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
+    // Teacher access code check
+    if (_isTeacher &&
+        teacherCodeCtrl.text.trim().toUpperCase() != _teacherCode) {
       setState(() => _wrongCode = true);
       return;
     }
 
     setState(() => _isLoading = true);
 
-    try {
-      final loginData = await ApiService.login(
-        username.text.trim(),
-        password.text,
-      );
+    // Save user info locally and navigate — no API needed
+    final name = username.text.trim();
+    await SessionStorageService.saveUsername(name);
+    await SessionStorageService.saveRole(_isTeacher ? 'teacher' : 'student');
 
-      if (!mounted) return;
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
+<<<<<<< HEAD
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            _isTeacher ? const TeacherAccountPage() : const HomePage(),
+      ),
+      (route) => false,
+    );
+=======
       if (loginData['success'] == true) {
-        await SessionStorageService.saveUsername(username.text.trim());
+        final name =
+            username.text.trim().isEmpty ? 'User' : username.text.trim();
+        await SessionStorageService.saveUsername(name);
         await SessionStorageService.saveRole(
             _isTeacher ? 'teacher' : 'student');
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => _isTeacher
-                ? const TeacherAccountPage()
-                : const HomePage(),
+            builder: (_) =>
+                _isTeacher ? const TeacherAccountPage() : const HomePage(),
           ),
           (route) => false,
         );
       } else {
         final error = loginData['error'] ?? 'Login failed.';
-
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   }
 
   @override
@@ -417,8 +438,12 @@ class _LoginPageState extends State<LoginPage> {
                           controller: teacherCodeCtrl,
                           style: const TextStyle(
                               color: Colors.white, fontFamily: 'Roboto'),
+                          textCapitalization: TextCapitalization.characters,
+                          onChanged: (_) {
+                            if (_wrongCode) setState(() => _wrongCode = false);
+                          },
                           decoration: InputDecoration(
-                            hintText: 'Teacher Access Code',
+                            hintText: 'e.g. MAPEH2024',
                             hintStyle: TextStyle(
                               color: AppColors.grey.withValues(alpha: 0.6),
                               fontFamily: 'Roboto',

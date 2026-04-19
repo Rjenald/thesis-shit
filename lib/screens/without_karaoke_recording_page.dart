@@ -50,6 +50,7 @@ class _WithoutKaraokeRecordingPageState
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
+    _audioService.initialize();
   }
 
   @override
@@ -71,6 +72,22 @@ class _WithoutKaraokeRecordingPageState
       await _audioService.stop();
       _timer?.cancel();
       _waveTimer?.cancel();
+
+      // Save WAV recording
+      final label = 'huni_free_${DateTime.now().millisecondsSinceEpoch}';
+      final path = await _audioService.saveRecording(label);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(path != null
+                ? '✅ Recording saved!'
+                : '⚠️ Could not save recording'),
+            backgroundColor: path != null ? Colors.green[700] : Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
       setState(() {
         _isRecording = false;
         _seconds = 0;
@@ -83,7 +100,8 @@ class _WithoutKaraokeRecordingPageState
         }
       });
     } else {
-      // Start
+      // Start (enable WAV saving before start)
+      _audioService.enableSaving();
       final started = await _audioService.start();
       if (!started) {
         if (mounted) {

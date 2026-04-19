@@ -1,4 +1,8 @@
 import 'dart:async';
+<<<<<<< HEAD
+import 'dart:math';
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../core/audio_service.dart';
@@ -126,6 +130,11 @@ class _ScaleDrillState extends State<_ScaleDrill> {
   PitchFeedback _feedback = PitchFeedback.noSignal;
   int _holdMs = 0; // ms spent in-tune on current step
   Timer? _holdTimer;
+<<<<<<< HEAD
+  Timer? _decayTimer; // drains bar slowly when off-pitch
+  int _missFrames = 0; // consecutive off-pitch frames before decay starts
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 
   static const _required = 1200; // ms in-tune to advance
 
@@ -133,24 +142,93 @@ class _ScaleDrillState extends State<_ScaleDrill> {
   static final _scale = kDoReMiSequence;
 
   @override
+  void initState() {
+    super.initState();
+    _audio.initialize(); // pre-load CREPE model
+  }
+
+  @override
   void dispose() {
     _sub?.cancel();
     _holdTimer?.cancel();
+<<<<<<< HEAD
+    _decayTimer?.cancel();
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
     _audio.dispose();
     super.dispose();
   }
 
+<<<<<<< HEAD
+  void _startListening(double targetFreq) {
+    _sub?.cancel();
+    _sub = _audio.results.listen((result) {
+      if (!mounted) return;
+      setState(() {
+        _feedback = result?.feedback ?? PitchFeedback.noSignal;
+        _liveCents = result?.cents ?? 0;
+      });
+
+      if (_feedback == PitchFeedback.correct) {
+        _missFrames = 0;
+        _decayTimer?.cancel();
+        _decayTimer = null;
+        // Fill bar
+        _holdTimer ??= Timer.periodic(
+            const Duration(milliseconds: 100), (_) {
+          if (!mounted) return;
+          setState(() => _holdMs = min(_holdMs + 100, _required));
+          if (_holdMs >= _required) {
+            _holdTimer?.cancel();
+            _holdTimer = null;
+            _advance();
+          }
+        });
+      } else {
+        _holdTimer?.cancel();
+        _holdTimer = null;
+        _missFrames++;
+        // Allow 4 miss-frames grace before slowly decaying
+        if (_missFrames >= 4) {
+          _decayTimer ??= Timer.periodic(
+              const Duration(milliseconds: 80), (_) {
+            if (!mounted) return;
+            setState(() => _holdMs = max(0, _holdMs - 60));
+            if (_holdMs == 0) {
+              _decayTimer?.cancel();
+              _decayTimer = null;
+            }
+          });
+        }
+      }
+    });
+  }
+
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   Future<void> _toggle() async {
     if (_running) {
       await _sub?.cancel();
       _holdTimer?.cancel();
+<<<<<<< HEAD
+      _decayTimer?.cancel();
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       await _audio.stop();
+      _audio.saveRecording(
+          'huni_scale_${DateTime.now().millisecondsSinceEpoch}');
       setState(() {
         _running = false;
         _feedback = PitchFeedback.noSignal;
         _liveCents = 0;
+<<<<<<< HEAD
+        _holdMs = 0;
+        _missFrames = 0;
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       });
     } else {
+      _audio.enableSaving();
       final ok = await _audio.start(
           targetFreq: _scale[_step].frequency);
       if (!ok) {
@@ -162,6 +240,9 @@ class _ScaleDrillState extends State<_ScaleDrill> {
         return;
       }
       setState(() => _running = true);
+<<<<<<< HEAD
+      _startListening(_scale[_step].frequency);
+=======
 
       _sub = _audio.results.listen((result) {
         if (!mounted) return;
@@ -187,6 +268,7 @@ class _ScaleDrillState extends State<_ScaleDrill> {
           if (mounted) setState(() => _holdMs = 0);
         }
       });
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
     }
   }
 
@@ -197,10 +279,17 @@ class _ScaleDrillState extends State<_ScaleDrill> {
         setState(() {
           _step++;
           _holdMs = 0;
+<<<<<<< HEAD
+          _missFrames = 0;
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
         });
         final ok = await _audio.start(
             targetFreq: _scale[_step].frequency);
         if (!ok || !mounted) return;
+<<<<<<< HEAD
+        _startListening(_scale[_step].frequency);
+=======
         _sub?.cancel();
         _sub = _audio.results.listen((result) {
           if (!mounted) return;
@@ -225,6 +314,7 @@ class _ScaleDrillState extends State<_ScaleDrill> {
             if (mounted) setState(() => _holdMs = 0);
           }
         });
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       });
     } else {
       // Completed all steps
@@ -425,6 +515,11 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
 
   int _holdMs = 0;
   Timer? _holdTimer;
+<<<<<<< HEAD
+  Timer? _decayTimer;
+  int _missFrames = 0;
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   int _passCount = 0;
 
   // Target: A4 = 440 Hz (La). User can change.
@@ -432,9 +527,19 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
   static const _requiredMs = 3000;
 
   @override
+  void initState() {
+    super.initState();
+    _audio.initialize(); // pre-load CREPE model
+  }
+
+  @override
   void dispose() {
     _sub?.cancel();
     _holdTimer?.cancel();
+<<<<<<< HEAD
+    _decayTimer?.cancel();
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
     _audio.dispose();
     super.dispose();
   }
@@ -443,13 +548,24 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
     if (_running) {
       await _sub?.cancel();
       _holdTimer?.cancel();
+<<<<<<< HEAD
+      _decayTimer?.cancel();
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       await _audio.stop();
+      _audio.saveRecording(
+          'huni_sustain_${DateTime.now().millisecondsSinceEpoch}');
       setState(() {
         _running = false;
         _feedback = PitchFeedback.noSignal;
         _holdMs = 0;
+<<<<<<< HEAD
+        _missFrames = 0;
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       });
     } else {
+      _audio.enableSaving();
       final target = kDoReMiSequence[_targetIndex];
       final ok = await _audio.start(targetFreq: target.frequency);
       if (!ok) {
@@ -463,6 +579,10 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
       setState(() {
         _running = true;
         _holdMs = 0;
+<<<<<<< HEAD
+        _missFrames = 0;
+=======
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
       });
 
       _sub = _audio.results.listen((result) {
@@ -474,10 +594,20 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
         });
 
         if (_feedback == PitchFeedback.correct) {
+<<<<<<< HEAD
+          _missFrames = 0;
+          _decayTimer?.cancel();
+          _decayTimer = null;
+          _holdTimer ??= Timer.periodic(
+              const Duration(milliseconds: 100), (_) {
+            if (!mounted) return;
+            setState(() => _holdMs = min(_holdMs + 100, _requiredMs));
+=======
           _holdTimer ??= Timer.periodic(
               const Duration(milliseconds: 100), (_) {
             if (!mounted) return;
             setState(() => _holdMs += 100);
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
             if (_holdMs >= _requiredMs) {
               _holdTimer?.cancel();
               _holdTimer = null;
@@ -500,7 +630,22 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
         } else {
           _holdTimer?.cancel();
           _holdTimer = null;
+<<<<<<< HEAD
+          _missFrames++;
+          if (_missFrames >= 4) {
+            _decayTimer ??= Timer.periodic(
+                const Duration(milliseconds: 80), (_) {
+              if (!mounted) return;
+              setState(() => _holdMs = max(0, _holdMs - 60));
+              if (_holdMs == 0) {
+                _decayTimer?.cancel();
+                _decayTimer = null;
+              }
+            });
+          }
+=======
           if (mounted) setState(() => _holdMs = 0);
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
         }
       });
     }
@@ -700,6 +845,12 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
   PitchFeedback _feedback = PitchFeedback.noSignal;
   String _liveNote = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _audio.initialize(); // pre-load CREPE model
+  }
+
   // Accumulate readings for this rep
   final List<double> _repCents = [];
   int _repCount = 0;
@@ -738,6 +889,7 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
 
   Future<void> _startRep() async {
     _repCents.clear();
+    _audio.enableSaving();
     final ok = await _audio.start();
     if (!ok) {
       if (mounted) {
@@ -763,6 +915,8 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
     await _sub?.cancel();
     _sub = null;
     await _audio.stop();
+    _audio.saveRecording(
+        'huni_phrase_${DateTime.now().millisecondsSinceEpoch}');
 
     // Compute result
     String result = 'No signal';
