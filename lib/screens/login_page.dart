@@ -76,9 +76,8 @@ class _LoginPageState extends State<LoginPage> {
       _wrongCode = false;
     });
 
-    // Teacher access code check
-    if (_isTeacher &&
-        teacherCodeCtrl.text.trim().toUpperCase() != _teacherCode) {
+    // Validate teacher access code before hitting the network
+    if (_isTeacher && teacherCodeCtrl.text.trim() != _teacherCode) {
       setState(() => _wrongCode = true);
       return;
     }
@@ -94,30 +93,37 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (loginData['success'] == true) {
-        final name =
-            username.text.trim().isEmpty ? 'User' : username.text.trim();
-        await SessionStorageService.saveUsername(name);
+        await SessionStorageService.saveUsername(username.text.trim());
         await SessionStorageService.saveRole(
             _isTeacher ? 'teacher' : 'student');
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                _isTeacher ? const TeacherAccountPage() : const HomePage(),
+            builder: (_) => _isTeacher
+                ? const TeacherAccountPage()
+                : const HomePage(),
           ),
           (route) => false,
         );
       } else {
         final error = loginData['error'] ?? 'Login failed.';
+
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error)));
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -411,12 +417,8 @@ class _LoginPageState extends State<LoginPage> {
                           controller: teacherCodeCtrl,
                           style: const TextStyle(
                               color: Colors.white, fontFamily: 'Roboto'),
-                          textCapitalization: TextCapitalization.characters,
-                          onChanged: (_) {
-                            if (_wrongCode) setState(() => _wrongCode = false);
-                          },
                           decoration: InputDecoration(
-                            hintText: 'e.g. MAPEH2024',
+                            hintText: 'Teacher Access Code',
                             hintStyle: TextStyle(
                               color: AppColors.grey.withValues(alpha: 0.6),
                               fontFamily: 'Roboto',

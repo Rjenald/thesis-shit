@@ -185,12 +185,6 @@ class _PianoModePageState extends State<PianoModePage> {
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   @override
-  void initState() {
-    super.initState();
-    _audioService.initialize(); // pre-load CREPE model
-  }
-
-  @override
   void dispose() {
     _player.dispose();
     _audioSub?.cancel();

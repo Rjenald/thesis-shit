@@ -82,8 +82,8 @@ class _RegisterPageState extends State<RegisterPage> {
       _wrongCode = false;
     });
 
-    if (_isTeacher &&
-        teacherCodeCtrl.text.trim().toUpperCase() != _teacherCode) {
+    // Validate teacher code before hitting the network
+    if (_isTeacher && teacherCodeCtrl.text.trim() != _teacherCode) {
       setState(() => _wrongCode = true);
       return;
     }
@@ -91,6 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     try {
+      // STEP 1: Register
       final registerData = await ApiService.register(
         username.text.trim(),
         password.text,
@@ -98,33 +99,60 @@ class _RegisterPageState extends State<RegisterPage> {
         email.text.trim(),
       );
 
-      if (!mounted) return;
-
-      if (registerData['success'] == true) {
-        final name =
-            username.text.trim().isEmpty ? 'User' : username.text.trim();
-        await SessionStorageService.saveUsername(name);
-        await SessionStorageService.saveRole(
-            _isTeacher ? 'teacher' : 'student');
+      if (registerData['success'] != true) {
         if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                _isTeacher ? const TeacherAccountPage() : const HomePage(),
-          ),
-          (route) => false,
-        );
-      } else {
+
         final error = registerData['error'] ?? 'Registration failed.';
+
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error)));
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
+        setState(() => _isLoading = false);
+        return;
       }
+
+      // STEP 2: Auto-login
+      final loginData = await ApiService.login(
+        username.text.trim(),
+        password.text,
+      );
+
+      if (!mounted) return;
+
+      if (loginData['success'] == true) {
+        await SessionStorageService.saveUsername(username.text.trim());
+        await SessionStorageService.saveRole(_isTeacher ? 'teacher' : 'student');
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => _isTeacher
+                ? const TeacherAccountPage()
+                : const HomePage(),
+          ),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registered! Please log in.')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -474,12 +502,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         TextField(
                           controller: teacherCodeCtrl,
                           style: const TextStyle(color: Colors.white),
-                          textCapitalization: TextCapitalization.characters,
                           onChanged: (_) {
                             if (_wrongCode) setState(() => _wrongCode = false);
                           },
                           decoration: InputDecoration(
-                            hintText: 'e.g. MAPEH2024',
+                            hintText: 'Teacher Access Code',
                             hintStyle: TextStyle(
                               color: AppColors.grey.withValues(alpha: 0.6),
                               fontFamily: 'Roboto',

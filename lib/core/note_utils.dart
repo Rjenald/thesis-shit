@@ -119,14 +119,21 @@ enum PitchFeedback { correct, tooHigh, tooLow, noSignal }
 /// [toleranceCents] defines the "in-tune" window.
 /// 25 cents = a quarter semitone — a reasonable tolerance for beginners.
 /// 15 cents = stricter, suitable for more advanced practice.
-PitchFeedback classifyPitch(double cents, {double toleranceCents = 25.0}) {
+PitchFeedback classifyPitch(double cents, {double toleranceCents = 35.0}) {
   if (cents.abs() <= toleranceCents) return PitchFeedback.correct;
   if (cents > 0) return PitchFeedback.tooHigh;
   return PitchFeedback.tooLow;
 }
 
 /// Full analysis of a detected frequency against an optional target.
-NoteResult analyzeFrequency(double freq, {double? targetFreq}) {
+///
+/// [confidence] is the CREPE model confidence (0.0 – 1.0).
+/// Pass 1.0 when no confidence is available.
+NoteResult analyzeFrequency(
+  double freq, {
+  double? targetFreq,
+  double confidence = 1.0,
+}) {
   final midi = freqToMidi(freq);
   final nearestMidi = midiToNearestNote(midi);
   final noteIndex = nearestMidi % 12;
@@ -146,6 +153,7 @@ NoteResult analyzeFrequency(double freq, {double? targetFreq}) {
     solfege: solfege,
     cents: cents,
     feedback: feedback,
+    confidence: confidence.clamp(0.0, 1.0),
   );
 }
 
@@ -160,6 +168,9 @@ class NoteResult {
   final double cents;
   final PitchFeedback feedback;
 
+  /// CREPE model confidence: 0.0 (noise) → 1.0 (crystal-clear pitch).
+  final double confidence;
+
   const NoteResult({
     required this.frequency,
     required this.midiNote,
@@ -168,6 +179,7 @@ class NoteResult {
     required this.solfege,
     required this.cents,
     required this.feedback,
+    this.confidence = 1.0,
   });
 
   /// Human-readable note with octave, e.g. "A4" or "C#3".
@@ -176,8 +188,11 @@ class NoteResult {
   /// Display name: solfège if available, else note name.
   String get displayName => solfege ?? noteName;
 
+  /// Voice clarity as percentage (0–100), derived from CREPE confidence.
+  int get clarityPercent => (confidence * 100).round();
+
   @override
   String toString() =>
       'NoteResult($fullName, ${frequency.toStringAsFixed(1)} Hz, '
-      '${cents.toStringAsFixed(1)} cents, $feedback)';
+      '${cents.toStringAsFixed(1)} cents, $clarityPercent% clarity, $feedback)';
 }

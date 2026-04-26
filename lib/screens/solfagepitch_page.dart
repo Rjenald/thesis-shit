@@ -37,12 +37,6 @@ class _SolfegePitchPageState extends State<SolfegePitchPage> {
   int? _maxMidi;
 
   @override
-  void initState() {
-    super.initState();
-    _audioService.initialize(); // pre-load CREPE model
-  }
-
-  @override
   void dispose() {
     _sub?.cancel();
     _audioService.dispose();
@@ -54,18 +48,6 @@ class _SolfegePitchPageState extends State<SolfegePitchPage> {
       await _sub?.cancel();
       _sub = null;
       await _audioService.stop();
-
-      final path = await _audioService.saveRecording(
-          'huni_solfege_${DateTime.now().millisecondsSinceEpoch}');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              path != null ? '✅ Recording saved!' : '⚠️ Could not save recording'),
-          backgroundColor: path != null ? Colors.green[700] : Colors.orange,
-          duration: const Duration(seconds: 3),
-        ));
-      }
-
       setState(() {
         _isListening = false;
         _solfegeDisplay = '--';
@@ -80,7 +62,6 @@ class _SolfegePitchPageState extends State<SolfegePitchPage> {
         _detectedMidi = null;
       });
     } else {
-      _audioService.enableSaving();
       final started = await _audioService.start();
       if (!started) {
         if (mounted) {

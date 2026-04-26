@@ -30,7 +30,55 @@
       "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" start-server:*)",
       "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5554 wait-for-device shell getprop sys.boot_completed)",
       "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5556 wait-for-device shell getprop sys.boot_completed)",
+<<<<<<< HEAD
+<<<<<<< HEAD
+      "WebFetch(domain:www.stingray.com)",
+      "Bash(pip show *)",
+      "Bash(python3 -m pip show tensorflow)",
+      "Bash(python3 -m pip show torch)",
+      "Bash(wmic cpu *)",
+      "Bash(wmic computersystem *)",
+      "Bash(wmic path *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:colab.research.google.com)",
+      "WebFetch(domain:www.youtube.com)",
+      "Bash(powershell -command \"Get-Content 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\lib\\\\screens\\\\karaoke_home_page.dart' | Measure-Object -Line\")",
+      "Bash(Select-String -Path \"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\lib\\\\screens\\\\teacher_mode_page.dart\" -Pattern \"^\\\\}\")",
+      "Bash(Select-Object -Last 3)",
+      "Bash(copy \"C:\\\\Users\\\\acer\\\\Downloads\\\\Lifetime \\(Reimagined\\) - Ben&Ben.mp4\" \"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\lifetime_benben.mp4\")",
+      "Bash(cmd.exe /c \"mkdir \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\\" 2>nul & copy \\\\\"C:\\\\Users\\\\acer\\\\Downloads\\\\Lifetime \\(Reimagined\\) - Ben&Ben.mp4\\\\\" \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\lifetime_benben.mp4\\\\\"\")",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\\"\")",
+      "Bash(cmd.exe /c \"xcopy /Y \\\\\"C:\\\\Users\\\\acer\\\\Downloads\\\\Lifetime \\(Reimagined\\) - Ben&Ben.mp4\\\\\" \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\lifetime_benben.mp4*\\\\\"\")",
+      "Bash(powershell.exe -Command \"New-Item -ItemType Directory -Force -Path 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos'; Copy-Item 'C:\\\\Users\\\\acer\\\\Downloads\\\\Lifetime \\(Reimagined\\) - Ben&Ben.mp4' 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\lifetime_benben.mp4' -Force; Get-Item 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\assets\\\\videos\\\\lifetime_benben.mp4' | Select-Object Name, Length\")",
+      "Bash(powershell.exe -Command \"\\(Get-Content 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\lib\\\\screens\\\\home_page.dart' | Measure-Object -Line\\).Lines\")",
+      "Bash(n\\\\\"\")",
+      "Bash(powershell.exe -Command \"\\(Get-Content 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\lib\\\\screens\\\\home_page.dart'\\)[-5..-1] -join \\\\\"`n\\\\\"\")",
+      "Bash(powershell.exe -Command \"\\(Get-Content 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\lib\\\\data\\\\songs_data.dart' | Measure-Object -Line\\).Lines\")",
+      "Bash(powershell.exe -Command \"& 'C:\\\\Program Files\\\\Java\\\\jdk-17\\\\bin\\\\java.exe' -version 2>&1; & 'C:\\\\Program Files\\\\Eclipse Adoptium\\\\jdk-17*\\\\bin\\\\java.exe' -version 2>&1\")",
+      "Bash(powershell.exe -Command \"[System.Environment]::GetEnvironmentVariable\\('JAVA_HOME','Machine'\\)\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files\\\\Java' -ErrorAction SilentlyContinue | Select Name; Get-ChildItem 'C:\\\\Program Files\\\\Eclipse Adoptium' -ErrorAction SilentlyContinue | Select Name; where.exe java 2>nul\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files\\\\Java' -ErrorAction SilentlyContinue | Select-Object Name\")",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Program Files\\\\Java\\\\\" 2>nul & dir \\\\\"C:\\\\Program Files\\\\Eclipse Adoptium\\\\\" 2>nul & java -version 2>&1\")",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Program Files\\\\Java\\\\\"\")",
+      "Bash(cmd.exe /c \"cd / && dir \\\\\"Program Files\\\\\" | findstr /i java & dir \\\\\"Program Files\\\\\" | findstr /i jdk & dir \\\\\"Program Files\\\\\" | findstr /i android\")",
+      "Bash(cmd.exe /c \"flutter doctor -v 2>&1\")",
+      "Bash(flutter doctor *)",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\\" 2>&1 | head -5\")",
+      "Bash(cmd.exe /c \"\\\\\"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\bin\\\\java.exe\\\\\" -version 2>&1\")",
+      "Bash(powershell.exe -Command \"Test-Path 'C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\bin\\\\java.exe'\")",
+      "Bash(powershell.exe -Command \"[System.Environment]::SetEnvironmentVariable\\('JAVA_HOME', 'C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr', 'Machine'\\)\")",
+      "Bash(powershell.exe -Command \"[System.Environment]::SetEnvironmentVariable\\('JAVA_HOME', 'C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr', 'User'\\)\")",
+      "Bash(powershell.exe -Command \"[System.Environment]::GetEnvironmentVariable\\('JAVA_HOME','User'\\)\")",
+      "Bash(flutter config *)",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\.vscode\\\\\" 2>&1\")",
+      "Bash(cmd.exe /c \"mkdir \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\.vscode\\\\\" 2>&1\")",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\pubspec.yaml'\")"
+=======
       "WebFetch(domain:www.stingray.com)"
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
+=======
+      "WebFetch(domain:www.stingray.com)"
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
     ]
   }
 }

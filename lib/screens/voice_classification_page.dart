@@ -31,12 +31,6 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
   StreamSubscription<NoteResult?>? _sub;
 
   @override
-  void initState() {
-    super.initState();
-    _audioService.initialize(); // pre-load CREPE model
-  }
-
-  @override
   void dispose() {
     _sub?.cancel();
     _audioService.dispose();
@@ -48,18 +42,6 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
       await _sub?.cancel();
       _sub = null;
       await _audioService.stop();
-
-      final path = await _audioService.saveRecording(
-          'huni_voice_${DateTime.now().millisecondsSinceEpoch}');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              path != null ? '✅ Recording saved!' : '⚠️ Could not save recording'),
-          backgroundColor: path != null ? Colors.green[700] : Colors.orange,
-          duration: const Duration(seconds: 3),
-        ));
-      }
-
       setState(() {
         _isListening = false;
         _noteDisplay = '--';
@@ -72,7 +54,6 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
         _detectedMidi = null;
       });
     } else {
-      _audioService.enableSaving();
       final started = await _audioService.start();
       if (!started) {
         if (mounted) {

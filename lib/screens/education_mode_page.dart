@@ -1,9 +1,9 @@
 import 'package:final_thesis_ui/screens/solfagepitch_page.dart';
 import 'package:final_thesis_ui/screens/voice_classification_page.dart';
-import 'package:final_thesis_ui/screens/practice_drill_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'practice_drill_page.dart';
 
 class EducationModePage extends StatelessWidget {
   const EducationModePage({super.key});
@@ -45,6 +45,18 @@ class EducationModePage extends StatelessWidget {
                     const SizedBox(height: 40),
 
                     _EduButton(
+                      icon: Icons.fitness_center_outlined,
+                      title: 'Practice Drills',
+                      subtitle: 'Scale exercises & phrase loop drills',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PracticeDrillPage()),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    _EduButton(
                       icon: Icons.record_voice_over_outlined,
                       title: 'Voice Classification',
                       subtitle: 'Identify your voice type',
@@ -65,18 +77,6 @@ class EducationModePage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (_) => const SolfegePitchPage()),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    _EduButton(
-                      icon: Icons.fitness_center_outlined,
-                      title: 'Practice Drills',
-                      subtitle: 'Scale, sustain & phrase exercises',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const PracticeDrillPage()),
                       ),
                     ),
 

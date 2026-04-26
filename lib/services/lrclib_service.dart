@@ -3,18 +3,38 @@ import 'package:http/http.dart' as http;
 import '../data/lyrics.dart';
 
 /// Fetches real synced lyrics from LRCLIB (https://lrclib.net)
-/// Free, no API key, supports OPM/Filipino songs.
+/// Falls back to lyrics.ovh for songs not in LRCLIB.
+/// Free, no API key, supports OPM/Filipino/Bisaya songs.
 class LrcLibService {
-  static const _base = 'https://lrclib.net/api';
+  static const _lrcBase = 'https://lrclib.net/api';
+  static const _ovhBase = 'https://api.lyrics.ovh/v1';
   static const _timeout = Duration(seconds: 8);
 
-  /// Fetch synced lyrics for a song. Returns null on failure.
+  /// Fetch lyrics for a song.
+  /// Priority: LRCLIB synced → LRCLIB plain → lyrics.ovh → null
   static Future<List<LyricLine>?> fetchLyrics({
     required String title,
     required String artist,
   }) async {
+    // 1. Try LRCLIB (has synced timestamps)
+    final lrcLib = await _fetchFromLrcLib(title: title, artist: artist);
+    if (lrcLib != null) return lrcLib;
+
+    // 2. Fallback: lyrics.ovh (plain text, broad coverage including OPM/Bisaya)
+    final ovh = await _fetchFromLyricsOvh(title: title, artist: artist);
+    if (ovh != null) return ovh;
+
+    return null;
+  }
+
+  // ── LRCLIB ─────────────────────────────────────────────────────────────────
+
+  static Future<List<LyricLine>?> _fetchFromLrcLib({
+    required String title,
+    required String artist,
+  }) async {
     try {
-      final uri = Uri.parse('$_base/search').replace(queryParameters: {
+      final uri = Uri.parse('$_lrcBase/search').replace(queryParameters: {
         'track_name': title,
         'artist_name': artist,
       });
@@ -53,6 +73,32 @@ class LrcLibService {
     }
   }
 
+  // ── lyrics.ovh ─────────────────────────────────────────────────────────────
+
+  static Future<List<LyricLine>?> _fetchFromLyricsOvh({
+    required String title,
+    required String artist,
+  }) async {
+    try {
+      final artistEnc = Uri.encodeComponent(artist);
+      final titleEnc = Uri.encodeComponent(title);
+      final url = Uri.parse('$_ovhBase/$artistEnc/$titleEnc');
+
+      final res = await http.get(url).timeout(_timeout);
+      if (res.statusCode != 200) return null;
+
+      final data = json.decode(res.body) as Map<String, dynamic>;
+      final lyrics = data['lyrics'] as String?;
+      if (lyrics == null || lyrics.trim().isEmpty) return null;
+
+      return _parsePlain(lyrics);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Parsers ─────────────────────────────────────────────────────────────────
+
   /// Parse LRC-format synced lyrics into LyricLine list with durations.
   /// Format: [MM:SS.xx] Lyric text
   static List<LyricLine> _parseSynced(String lrc) {
@@ -78,6 +124,15 @@ class LrcLibService {
 
     // Convert timestamps to per-line durations
     final result = <LyricLine>[];
+
+    // ── Intro padding ──────────────────────────────────────────────────────
+    // If the first lyric starts after 3 s (e.g. [00:15.00]) add a silent
+    // placeholder so the timer waits for the music intro before lyrics appear.
+    final firstLineStart = parsed.first.time.inMilliseconds / 1000.0;
+    if (firstLineStart > 3) {
+      result.add(LyricLine('', firstLineStart.round().clamp(1, 120)));
+    }
+
     for (int i = 0; i < parsed.length; i++) {
       final current = parsed[i];
       final next = i + 1 < parsed.length ? parsed[i + 1] : null;

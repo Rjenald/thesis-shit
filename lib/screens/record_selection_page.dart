@@ -1,5 +1,4 @@
 import 'package:final_thesis_ui/screens/education_mode_page.dart';
-import 'package:final_thesis_ui/screens/karaoke_home_page.dart'; // Add this import
 import 'package:final_thesis_ui/screens/without_karaoke_recording_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
@@ -63,7 +62,7 @@ class RecordSelectionPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 40),
 
-                      // With Karaoke Button - Now goes to Karaoke Home Page
+                      // With Karaoke Button — full 558-song catalog
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -72,7 +71,7 @@ class RecordSelectionPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
-                                    KaraokeHomePage(), // Changed to KaraokeHomePage
+                                    const HomePage(showBackButton: true),
                               ),
                             );
                           },

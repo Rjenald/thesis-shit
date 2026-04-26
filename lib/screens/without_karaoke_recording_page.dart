@@ -35,6 +35,7 @@ class _WithoutKaraokeRecordingPageState
   String _noteDisplay = '--';
   String _freqDisplay = '';
   double _cents = 0.0;
+  double _clarity = 0.0; // CREPE confidence 0.0–1.0
   PitchFeedback _feedback = PitchFeedback.noSignal;
 
   // ── Waveform bars ──────────────────────────────────────────────────────────
@@ -50,7 +51,6 @@ class _WithoutKaraokeRecordingPageState
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
-    _audioService.initialize();
   }
 
   @override
@@ -72,36 +72,20 @@ class _WithoutKaraokeRecordingPageState
       await _audioService.stop();
       _timer?.cancel();
       _waveTimer?.cancel();
-
-      // Save WAV recording
-      final label = 'huni_free_${DateTime.now().millisecondsSinceEpoch}';
-      final path = await _audioService.saveRecording(label);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(path != null
-                ? '✅ Recording saved!'
-                : '⚠️ Could not save recording'),
-            backgroundColor: path != null ? Colors.green[700] : Colors.orange,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-
       setState(() {
         _isRecording = false;
         _seconds = 0;
         _noteDisplay = '--';
         _freqDisplay = '';
         _cents = 0.0;
+        _clarity = 0.0;
         _feedback = PitchFeedback.noSignal;
         for (int i = 0; i < _barCount; i++) {
           _bars[i] = 0.05;
         }
       });
     } else {
-      // Start (enable WAV saving before start)
-      _audioService.enableSaving();
+      // Start
       final started = await _audioService.start();
       if (!started) {
         if (mounted) {
@@ -143,6 +127,7 @@ class _WithoutKaraokeRecordingPageState
             _noteDisplay = '--';
             _freqDisplay = '';
             _feedback = PitchFeedback.noSignal;
+            _clarity = 0.0;
           });
           return;
         }
@@ -150,6 +135,7 @@ class _WithoutKaraokeRecordingPageState
           _noteDisplay = result.fullName;
           _freqDisplay = '${result.frequency.toStringAsFixed(1)} Hz';
           _cents = result.cents;
+          _clarity = result.confidence;
           _feedback = result.feedback;
         });
       });
@@ -157,6 +143,14 @@ class _WithoutKaraokeRecordingPageState
   }
 
   // ── Feedback helpers ───────────────────────────────────────────────────────
+
+  /// Colour for CREPE confidence bar: green ≥80%, yellow ≥55%, red below.
+  Color get _clarityColor {
+    if (_clarity >= 0.80) return const Color(0xFF4CAF50); // green
+    if (_clarity >= 0.55) return Colors.orangeAccent;     // yellow
+    return const Color(0xFFF44336);                        // red
+  }
+
   Color get _feedbackColor {
     switch (_feedback) {
       case PitchFeedback.correct:
@@ -395,7 +389,62 @@ class _WithoutKaraokeRecordingPageState
                       ),
                     ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+
+                  // ── Voice Clarity (CREPE confidence) ──────────────────────
+                  if (_isRecording)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.graphic_eq,
+                                      size: 12,
+                                      color: AppColors.primaryCyan),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Voice Clarity',
+                                    style: TextStyle(
+                                      color: AppColors.grey
+                                          .withValues(alpha: 0.7),
+                                      fontSize: 11,
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                '${(_clarity * 100).round()}%',
+                                style: TextStyle(
+                                  color: _clarityColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: _clarity,
+                              minHeight: 7,
+                              backgroundColor: AppColors.inputBg,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                _clarityColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
 
                   // ── Timer ──────────────────────────────────────────────────
                   Text(

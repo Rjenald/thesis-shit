@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Android emulator  → 10.0.2.2 (your PC's localhost)
-  // Real device on same WiFi → your PC's local IP e.g. 192.168.1.10
+  // ── Base URL ───────────────────────────────────────────────────────────────
+  // Android emulator  → 10.0.2.2  (maps to your PC's localhost)
+  // Real device (WiFi) → change to your PC's local IP, e.g. 192.168.1.10
   static const String baseUrl = "http://10.0.2.2/huni_api";
-  static const _timeout = Duration(seconds: 5);
+  static const _timeout = Duration(seconds: 10);
 
-  // ── register ──────────────────────────────────────────────────────────────
+  // ── register ───────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> register(
     String username,
@@ -19,6 +22,7 @@ class ApiService {
       final response = await http
           .post(
             Uri.parse("$baseUrl/register.php"),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: {
               "username": username,
               "password": password,
@@ -27,14 +31,33 @@ class ApiService {
             },
           )
           .timeout(_timeout);
-      return json.decode(response.body);
-    } catch (_) {
-      // Server unreachable → allow anyway
-      return {'success': true};
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return data;
+    } on SocketException {
+      return {
+        'success': false,
+        'error': 'Cannot connect to server. Please check your network.',
+      };
+    } on TimeoutException {
+      return {
+        'success': false,
+        'error': 'Connection timed out. Server may be offline.',
+      };
+    } on FormatException {
+      return {
+        'success': false,
+        'error': 'Unexpected server response. Please try again.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'An error occurred: $e',
+      };
     }
   }
 
-  // ── login ─────────────────────────────────────────────────────────────────
+  // ── login ──────────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> login(
     String username,
@@ -44,13 +67,36 @@ class ApiService {
       final response = await http
           .post(
             Uri.parse("$baseUrl/login.php"),
-            body: {"username": username, "password": password},
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: {
+              "username": username,
+              "password": password,
+            },
           )
           .timeout(_timeout);
-      return json.decode(response.body);
-    } catch (_) {
-      // Server unreachable → auto-login
-      return {'success': true};
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return data;
+    } on SocketException {
+      return {
+        'success': false,
+        'error': 'Cannot connect to server. Please check your network.',
+      };
+    } on TimeoutException {
+      return {
+        'success': false,
+        'error': 'Connection timed out. Server may be offline.',
+      };
+    } on FormatException {
+      return {
+        'success': false,
+        'error': 'Unexpected server response. Please try again.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'An error occurred: $e',
+      };
     }
   }
 }

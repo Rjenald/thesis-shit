@@ -133,12 +133,6 @@ class _ScaleDrillState extends State<_ScaleDrill> {
   static final _scale = kDoReMiSequence;
 
   @override
-  void initState() {
-    super.initState();
-    _audio.initialize(); // pre-load CREPE model
-  }
-
-  @override
   void dispose() {
     _sub?.cancel();
     _holdTimer?.cancel();
@@ -151,15 +145,12 @@ class _ScaleDrillState extends State<_ScaleDrill> {
       await _sub?.cancel();
       _holdTimer?.cancel();
       await _audio.stop();
-      _audio.saveRecording(
-          'huni_scale_${DateTime.now().millisecondsSinceEpoch}');
       setState(() {
         _running = false;
         _feedback = PitchFeedback.noSignal;
         _liveCents = 0;
       });
     } else {
-      _audio.enableSaving();
       final ok = await _audio.start(
           targetFreq: _scale[_step].frequency);
       if (!ok) {
@@ -441,12 +432,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
   static const _requiredMs = 3000;
 
   @override
-  void initState() {
-    super.initState();
-    _audio.initialize(); // pre-load CREPE model
-  }
-
-  @override
   void dispose() {
     _sub?.cancel();
     _holdTimer?.cancel();
@@ -459,15 +444,12 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
       await _sub?.cancel();
       _holdTimer?.cancel();
       await _audio.stop();
-      _audio.saveRecording(
-          'huni_sustain_${DateTime.now().millisecondsSinceEpoch}');
       setState(() {
         _running = false;
         _feedback = PitchFeedback.noSignal;
         _holdMs = 0;
       });
     } else {
-      _audio.enableSaving();
       final target = kDoReMiSequence[_targetIndex];
       final ok = await _audio.start(targetFreq: target.frequency);
       if (!ok) {
@@ -718,12 +700,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
   PitchFeedback _feedback = PitchFeedback.noSignal;
   String _liveNote = '';
 
-  @override
-  void initState() {
-    super.initState();
-    _audio.initialize(); // pre-load CREPE model
-  }
-
   // Accumulate readings for this rep
   final List<double> _repCents = [];
   int _repCount = 0;
@@ -762,7 +738,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
 
   Future<void> _startRep() async {
     _repCents.clear();
-    _audio.enableSaving();
     final ok = await _audio.start();
     if (!ok) {
       if (mounted) {
@@ -788,8 +763,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
     await _sub?.cancel();
     _sub = null;
     await _audio.stop();
-    _audio.saveRecording(
-        'huni_phrase_${DateTime.now().millisecondsSinceEpoch}');
 
     // Compute result
     String result = 'No signal';
