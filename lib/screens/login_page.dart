@@ -4,9 +4,29 @@ import 'home_page.dart';
 import 'register_page.dart';
 import 'teacher_account_page.dart';
 import '../constants/app_colors.dart';
-import '../widgets/curve_painter.dart';
 import '../services/api_service.dart';
 import '../services/session_storage_service.dart';
+
+class CurvedBottomPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(0, 50);
+    path.cubicTo(size.width / 4, 0, (size.width * 3) / 4, 0, size.width, 50);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CurvedBottomPainter oldDelegate) => false;
+}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,24 +40,19 @@ class _LoginPageState extends State<LoginPage> {
   bool showUsernameError = false;
   bool showPasswordError = false;
   bool _isLoading = false;
-  bool _isTeacher = false;
-  bool _wrongCode = false;
-
-  static const _teacherCode = 'MAPEH2024';
 
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
-  final TextEditingController teacherCodeCtrl = TextEditingController();
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _timer;
 
   final List<String> _backgroundImages = [
-    'https://plus.unsplash.com/premium_photo-1682920140924-d8b5db318d97?q=80&w=692&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1556848798-ee649b672584?q=80&w=627&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1600119692901-94e8b7d2eacd?q=80&w=1469&auto=format&fit=crop',
     'https://images.unsplash.com/flagged/photo-1564434369363-696a2e6d96f9?q=80&w=687&auto=format&fit=crop',
+    'https://plus.unsplash.com/premium_photo-1682920140924-d8b5db318d97?q=80&w=692&auto=format&fit=crop',
   ];
 
   @override
@@ -65,7 +80,6 @@ class _LoginPageState extends State<LoginPage> {
     _pageController.dispose();
     username.dispose();
     password.dispose();
-    teacherCodeCtrl.dispose();
     super.dispose();
   }
 
@@ -73,14 +87,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       showUsernameError = false;
       showPasswordError = false;
-      _wrongCode = false;
     });
-
-    // Validate teacher access code before hitting the network
-    if (_isTeacher && teacherCodeCtrl.text.trim() != _teacherCode) {
-      setState(() => _wrongCode = true);
-      return;
-    }
 
     setState(() => _isLoading = true);
 
@@ -94,16 +101,11 @@ class _LoginPageState extends State<LoginPage> {
 
       if (loginData['success'] == true) {
         await SessionStorageService.saveUsername(username.text.trim());
-        await SessionStorageService.saveRole(
-            _isTeacher ? 'teacher' : 'student');
+        await SessionStorageService.saveRole('student');
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (_) => _isTeacher
-                ? const TeacherAccountPage()
-                : const HomePage(),
-          ),
+          MaterialPageRoute(builder: (_) => const HomePage()),
           (route) => false,
         );
       } else {
@@ -132,405 +134,256 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background carousel
-          PageView.builder(
-            controller: _pageController,
-            itemCount: _backgroundImages.length,
-            onPageChanged: (index) {
-              setState(() => _currentPage = index);
-            },
-            itemBuilder: (context, index) {
-              return Image.network(
-                _backgroundImages[index],
-                fit: BoxFit.cover,
-                color: Colors.black.withValues(alpha: 0.3),
-                colorBlendMode: BlendMode.darken,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: Colors.black,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryCyan,
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-
-          // Page indicator dots
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 20,
-            right: 20,
-            child: Row(
-              children: List.generate(
-                _backgroundImages.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: _currentPage == index ? 24 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index
-                        ? AppColors.primaryCyan
-                        : Colors.white.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(4),
+      backgroundColor: Colors.black,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Stack(
+              children: [
+                SizedBox(
+                  height: 350,
+                  width: double.infinity,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _backgroundImages.length,
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        _backgroundImages[index],
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.black,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryCyan,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
-              ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: CustomPaint(
+                    painter: CurvedBottomPainter(),
+                    size: const Size(double.infinity, 80),
+                  ),
+                ),
+              ],
             ),
-          ),
-
-          // Back button
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: Colors.white,
-                        size: 20,
+                  const Text(
+                    'Login',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryCyan,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: 'Singing',
+                          style: TextStyle(
+                            color: AppColors.primaryCyan,
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' brings joy to the heart',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  if (showUsernameError)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 4.0),
+                      child: Text(
+                        'Invalid username',
+                        style: TextStyle(
+                          color: AppColors.errorRed,
+                          fontSize: 12,
+                          fontFamily: 'Roboto',
+                        ),
                       ),
                     ),
+                  TextField(
+                    controller: username,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Username',
+                      hintStyle: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.6),
+                        fontFamily: 'Roboto',
+                      ),
+                      filled: true,
+                      fillColor: AppColors.inputBg,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (showPasswordError)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 4.0),
+                      child: Text(
+                        'Invalid password',
+                        style: TextStyle(
+                          color: AppColors.errorRed,
+                          fontSize: 12,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ),
+                  TextField(
+                    controller: password,
+                    obscureText: obscurePassword,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                      hintStyle: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.6),
+                        fontFamily: 'Roboto',
+                      ),
+                      filled: true,
+                      fillColor: AppColors.inputBg,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: AppColors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() => obscurePassword = !obscurePassword);
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryCyan,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                    },
+                    child: Text.rich(
+                      TextSpan(
+                        text: "Don't have an account? ",
+                        style: TextStyle(
+                          color: AppColors.grey.withValues(alpha: 0.8),
+                          fontSize: 14,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: 'Register',
+                            style: TextStyle(
+                              color: AppColors.primaryCyan,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text.rich(
+                    TextSpan(
+                      text: 'By continuing, you agree to Huni\'s ',
+                      style: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.6),
+                        fontSize: 12,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Terms of Use',
+                          style: TextStyle(
+                            color: AppColors.grey.withValues(alpha: 0.8),
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' and ',
+                          style: TextStyle(
+                            color: AppColors.grey.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Privacy Policy',
+                          style: TextStyle(
+                            color: AppColors.grey.withValues(alpha: 0.8),
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-          ),
-
-          // Bottom form sheet
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: CustomPaint(
-              size: Size(MediaQuery.of(context).size.width, 550),
-              painter: CurvePainter(),
-              child: Container(
-                height: 550,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 40,
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 40),
-
-                      const Center(
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primaryCyan,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Center(
-                        child: Text(
-                          'Singing brings joy to the heart',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.white.withValues(alpha: 0.7),
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      // Username field
-                      if (showUsernameError)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 4.0),
-                          child: Text(
-                            'Invalid username',
-                            style: TextStyle(
-                              color: AppColors.errorRed,
-                              fontSize: 12,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
-                        ),
-                      TextField(
-                        controller: username,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Username',
-                          hintStyle: TextStyle(
-                            color: AppColors.grey.withValues(alpha: 0.6),
-                            fontFamily: 'Roboto',
-                          ),
-                          filled: true,
-                          fillColor: AppColors.inputBg,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Password field
-                      if (showPasswordError)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 4.0),
-                          child: Text(
-                            'Invalid password format',
-                            style: TextStyle(
-                              color: AppColors.errorRed,
-                              fontSize: 12,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
-                        ),
-                      TextField(
-                        controller: password,
-                        obscureText: obscurePassword,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          hintStyle: TextStyle(
-                            color: AppColors.grey.withValues(alpha: 0.6),
-                            fontFamily: 'Roboto',
-                          ),
-                          filled: true,
-                          fillColor: AppColors.inputBg,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.grey,
-                            ),
-                            onPressed: () {
-                              setState(
-                                () => obscurePassword = !obscurePassword,
-                              );
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Teacher login toggle
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          _isTeacher = !_isTeacher;
-                          _wrongCode = false;
-                          teacherCodeCtrl.clear();
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: _isTeacher
-                                ? AppColors.primaryCyan.withValues(alpha: 0.12)
-                                : AppColors.inputBg,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _isTeacher
-                                  ? AppColors.primaryCyan.withValues(alpha: 0.5)
-                                  : Colors.transparent,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.school_outlined,
-                                size: 18,
-                                color: _isTeacher
-                                    ? AppColors.primaryCyan
-                                    : AppColors.grey,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Login as Teacher',
-                                style: TextStyle(
-                                  color: _isTeacher
-                                      ? AppColors.primaryCyan
-                                      : AppColors.grey,
-                                  fontSize: 13,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: _isTeacher
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                              const Spacer(),
-                              Icon(
-                                _isTeacher
-                                    ? Icons.check_circle
-                                    : Icons.circle_outlined,
-                                size: 16,
-                                color: _isTeacher
-                                    ? AppColors.primaryCyan
-                                    : AppColors.grey.withValues(alpha: 0.4),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Teacher access code field
-                      if (_isTeacher) ...[
-                        const SizedBox(height: 10),
-                        if (_wrongCode)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              'Invalid teacher access code',
-                              style: TextStyle(
-                                color: AppColors.errorRed,
-                                fontSize: 12,
-                                fontFamily: 'Roboto',
-                              ),
-                            ),
-                          ),
-                        TextField(
-                          controller: teacherCodeCtrl,
-                          style: const TextStyle(
-                              color: Colors.white, fontFamily: 'Roboto'),
-                          decoration: InputDecoration(
-                            hintText: 'Teacher Access Code',
-                            hintStyle: TextStyle(
-                              color: AppColors.grey.withValues(alpha: 0.6),
-                              fontFamily: 'Roboto',
-                            ),
-                            filled: true,
-                            fillColor: AppColors.inputBg,
-                            prefixIcon: const Icon(Icons.lock_outline,
-                                color: AppColors.grey, size: 18),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                      ],
-
-                      const SizedBox(height: 4),
-
-                      // Forgot password
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              color: AppColors.primaryCyan,
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Login button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryCyan,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.black,
-                                  ),
-                                )
-                              : const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Register link
-                      Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RegisterPage(),
-                              ),
-                            );
-                          },
-                          child: Text.rich(
-                            TextSpan(
-                              text: 'Don\'t have an account? ',
-                              style: TextStyle(
-                                color: AppColors.grey.withValues(alpha: 0.8),
-                                fontSize: 14,
-                                fontFamily: 'Roboto',
-                              ),
-                              children: const [
-                                TextSpan(
-                                  text: 'Register',
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

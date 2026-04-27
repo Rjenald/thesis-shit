@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flutter",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "windows"],
+      "port": 5037
+    }
+  ]
+}
