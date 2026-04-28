@@ -12,7 +12,6 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartPageState extends State<StartPage> {
-  final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _timer;
 
@@ -26,26 +25,23 @@ class _StartPageState extends State<StartPage> {
   @override
   void initState() {
     super.initState();
+    // Pre-cache all images for smooth transitions
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final url in _backgroundImages) {
+        precacheImage(NetworkImage(url), context);
+      }
+    });
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_currentPage < _backgroundImages.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-      if (_pageController.hasClients) {
-        _pageController.animateToPage(
-          _currentPage,
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeInOut,
-        );
-      }
+      if (!mounted) return;
+      setState(() {
+        _currentPage = (_currentPage + 1) % _backgroundImages.length;
+      });
     });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _pageController.dispose();
     super.dispose();
   }
 
@@ -61,29 +57,25 @@ class _StartPageState extends State<StartPage> {
                 SizedBox(
                   height: 420,
                   width: double.infinity,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _backgroundImages.length,
-                    onPageChanged: (index) {
-                      setState(() => _currentPage = index);
-                    },
-                    itemBuilder: (context, index) {
-                      return Image.network(
-                        _backgroundImages[index],
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: Colors.black,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.primaryCyan,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 1000),
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    ),
+                    child: Image.network(
+                      _backgroundImages[_currentPage],
+                      key: ValueKey(_currentPage),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 420,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(color: Colors.black);
+                      },
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: Colors.black),
+                    ),
                   ),
                 ),
                 Positioned(

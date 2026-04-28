@@ -63,7 +63,7 @@ class BottomNavBar extends StatelessWidget {
           destination = const EducationModePage();
         }
 
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           PageRouteBuilder(
             pageBuilder: (ctx, anim, sec) => destination,
@@ -76,6 +76,7 @@ class BottomNavBar extends StatelessWidget {
               child: child,
             ),
           ),
+          (route) => route.isFirst, // keep only the very first route (login/start)
         );
       },
       child: Column(

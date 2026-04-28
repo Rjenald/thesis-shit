@@ -9,8 +9,8 @@ import 'library_page.dart';
 import 'record_selection_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
-import 'welcome_screen.dart';
-import 'karaoke_recording_page.dart';
+import 'start_page.dart';
+import 'karaoke_song_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   final bool showBackButton;
@@ -428,10 +428,11 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => KaraokeRecordingPage(
+              builder: (_) => KaraokeSongDetailPage(
                 songTitle: song['title']!,
                 songArtist: song['artist']!,
                 songImage: song['image'] ?? '',
+                youtubeId: song['youtubeId'] ?? '',
               ),
             ),
           );
@@ -532,12 +533,16 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       dense: true,
-      onTap: () {
+      onTap: () async {
         setState(() => _isMenuOpen = false);
         if (isLogout) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+          await SessionStorageService.saveUsername('');
+          await SessionStorageService.saveRole('');
+          if (!context.mounted) return;
+          // ignore: use_build_context_synchronously
+          final nav = Navigator.of(context);
+          nav.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const StartPage()),
             (route) => false,
           );
         } else if (label == 'Favorites') {

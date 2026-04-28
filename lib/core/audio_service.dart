@@ -25,7 +25,7 @@ class AudioService {
   static const int _sampleRate = 44100;
 
   // How long to wait for the first WebSocket message before giving up
-  static const Duration _wsFallbackDelay = Duration(seconds: 3);
+  static const Duration _wsFallbackDelay = Duration(milliseconds: 800);
 
   final _recorder = AudioRecorder();
   WebSocketChannel? _ws;
@@ -98,9 +98,18 @@ class AudioService {
           _activateLocalFallback();
         },
         onDone: () {
-          if (!_wsReceived) _activateLocalFallback();
+          // Server closed → switch to local
+          _activateLocalFallback();
         },
+        cancelOnError: true,
       );
+
+      // Ping the sink to detect immediate connection refusal
+      try {
+        _ws!.sink.add('ping');
+      } catch (_) {
+        _activateLocalFallback();
+      }
     } catch (_) {
       // Could not even create the WebSocket → use local immediately
       _useLocal = true;

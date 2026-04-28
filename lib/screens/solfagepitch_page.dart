@@ -169,7 +169,14 @@ class _SolfegePitchPageState extends State<SolfegePitchPage> {
                       color: AppColors.white,
                       size: 26,
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () async {
+                      if (_isListening) {
+                        await _sub?.cancel();
+                        _sub = null;
+                        await _audioService.stop();
+                      }
+                      if (context.mounted) Navigator.pop(context);
+                    },
                   ),
                   const Text(
                     'Solfege Pitch',

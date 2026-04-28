@@ -17,10 +17,10 @@ class LocalPitchDetector {
   static const int _windowSize = 2048;
 
   // Minimum RMS to consider a signal non-silent
-  static const double _silenceRms = 0.008;
+  static const double _silenceRms = 0.004;
 
   // YIN threshold — lower = stricter (0.10–0.20 typical)
-  static const double _yinThreshold = 0.15;
+  static const double _yinThreshold = 0.18;
 
   // Voice frequency bounds
   static const double _minHz = 60.0; // ~B1  (below any singing bass)

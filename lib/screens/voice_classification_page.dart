@@ -160,7 +160,14 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
                       color: AppColors.white,
                       size: 26,
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () async {
+                      if (_isListening) {
+                        await _sub?.cancel();
+                        _sub = null;
+                        await _audioService.stop();
+                      }
+                      if (context.mounted) Navigator.pop(context);
+                    },
                   ),
                   const Text(
                     'Voice Classification',

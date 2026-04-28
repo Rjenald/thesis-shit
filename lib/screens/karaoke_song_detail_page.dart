@@ -5,12 +5,15 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../constants/app_colors.dart';
 import '../data/lyrics.dart';
 import '../services/lrclib_service.dart';
+import '../services/youtube_search_service.dart';
 import 'karaoke_recording_page.dart';
 
 class KaraokeSongDetailPage extends StatefulWidget {
   final String songTitle;
   final String songArtist;
   final String songImage;
+
+  /// Pre-resolved YouTube video ID. Pass empty string to auto-search.
   final String youtubeId;
 
   const KaraokeSongDetailPage({
@@ -18,7 +21,7 @@ class KaraokeSongDetailPage extends StatefulWidget {
     required this.songTitle,
     required this.songArtist,
     required this.songImage,
-    required this.youtubeId,
+    this.youtubeId = '',
   });
 
   @override
@@ -26,23 +29,56 @@ class KaraokeSongDetailPage extends StatefulWidget {
 }
 
 class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
+  // ── YouTube ────────────────────────────────────────────────────────────────
   late final YoutubePlayerController _ytController;
+  StreamSubscription<YoutubePlayerValue>? _ytSub;
 
-  // ── Lyrics ──────────────────────────────────────────────────────────────────
+  /// Ordered list of candidate video IDs to try when one is not embeddable.
+  final List<String> _videoQueue = [];
+  int _videoAttempt = 0; // index into _videoQueue currently being played
+  bool _tryingNextVideo = false; // guard: avoid multiple simultaneous retries
+
+  String? _resolvedVideoId; // currently cued ID (null = none yet)
+  bool _isSearching = false;
+  bool _searchFailed = false; // true when queue exhausted with no playable video
+
+  // ── Playback tracking ──────────────────────────────────────────────────────
+  bool _isPlaying = false;
+  int _elapsedMs = 0;
+  Timer? _playbackTimer;  // fires every 100 ms — increments _elapsedMs
+  Timer? _syncTimer;      // fires every 2 s — corrects position + play-state
+
+  // ── Lyrics ─────────────────────────────────────────────────────────────────
   List<LyricLine> _lyrics = [];
+  List<double> _startTimes = []; // cumulative start seconds per line
+  List<GlobalKey> _lyricKeys = [];
   bool _lyricsLoading = true;
   int _activeLine = 0;
-  Timer? _lyricTimer;
+  final ScrollController _lyricsScroll = ScrollController();
 
-  // ── Equalizer bars ───────────────────────────────────────────────────────────
-  static const int _barCount = 36;
+  // ── Equalizer bars ──────────────────────────────────────────────────────────
+  static const int _barCount = 32;
   final List<double> _bars = List.filled(_barCount, 0.15);
   final List<double> _targets = List.filled(_barCount, 0.15);
   Timer? _eqTimer;
   final _rng = math.Random();
 
-  // ── Scroll controller for lyrics ─────────────────────────────────────────────
-  final ScrollController _lyricsScroll = ScrollController();
+  // ── Computed helpers ───────────────────────────────────────────────────────
+
+  double get _totalDurationSecs =>
+      _lyrics.fold(0.0, (s, l) => s + l.durationSeconds);
+
+  double get _progressValue {
+    if (_totalDurationSecs <= 0) return 0;
+    return (_elapsedMs / 1000.0 / _totalDurationSecs).clamp(0.0, 1.0);
+  }
+
+  String _formatMs(int ms) {
+    final s = (ms / 1000).floor();
+    return '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+  }
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -50,50 +86,114 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
 
     _ytController = YoutubePlayerController(
       params: const YoutubePlayerParams(
-        showControls: true,
-        showFullscreenButton: true,
+        showControls: false,
+        showFullscreenButton: false,
         playsInline: true,
         mute: false,
       ),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _ytController.cueVideoById(videoId: widget.youtubeId);
-    });
-
     _loadLyrics();
     _startEqualizer();
+    _startSyncTimer();
+    _listenForPlayerErrors();
+
+    if (widget.youtubeId.isNotEmpty) {
+      // Pre-resolved ID: put it first in the queue, search for fallbacks too.
+      _videoQueue.add(widget.youtubeId);
+      _resolvedVideoId = widget.youtubeId;
+      _cueVideo(widget.youtubeId);
+      // Also fetch extra candidates in background for fallback.
+      _searchYouTube(prefillOnly: true);
+    } else {
+      _isSearching = true; // set before first build
+      _searchYouTube();
+    }
   }
 
   @override
   void dispose() {
     _eqTimer?.cancel();
-    _lyricTimer?.cancel();
+    _playbackTimer?.cancel();
+    _syncTimer?.cancel();
+    _ytSub?.cancel();
     _lyricsScroll.dispose();
     _ytController.close();
     super.dispose();
   }
 
-  // ── Equalizer animation ──────────────────────────────────────────────────────
+  // ── YouTube setup ──────────────────────────────────────────────────────────
 
-  void _startEqualizer() {
-    // Randomise targets every 120 ms, smoothly interpolate bars toward them
-    _eqTimer = Timer.periodic(const Duration(milliseconds: 120), (_) {
-      if (!mounted) return;
+  /// Fetches up to 8 candidate video IDs from YouTube.
+  /// [prefillOnly] = true → only fills [_videoQueue] without touching UI state
+  /// (used when a youtubeId was already provided).
+  Future<void> _searchYouTube({bool prefillOnly = false}) async {
+    final ids = await YoutubeSearchService.findVideoIds(
+      widget.songTitle,
+      widget.songArtist,
+    );
+    if (!mounted) return;
+
+    // Merge into queue (avoid duplicates)
+    for (final id in ids) {
+      if (!_videoQueue.contains(id)) _videoQueue.add(id);
+    }
+
+    if (prefillOnly) return; // caller already set the first video
+
+    if (_videoQueue.isEmpty) {
       setState(() {
-        for (int i = 0; i < _barCount; i++) {
-          // Randomly update ~40% of targets each tick for natural-looking motion
-          if (_rng.nextDouble() < 0.4) {
-            _targets[i] = 0.05 + _rng.nextDouble() * 0.95;
-          }
-          // Smoothly interpolate toward target
-          _bars[i] += (_targets[i] - _bars[i]) * 0.35;
-        }
+        _isSearching = false;
+        _searchFailed = true;
       });
+      return;
+    }
+
+    // Start with the first candidate
+    _videoAttempt = 0;
+    setState(() {
+      _resolvedVideoId = _videoQueue[0];
+      _isSearching = false;
+    });
+    _cueVideo(_videoQueue[0]);
+  }
+
+  void _cueVideo(String id) {
+    // Wait for the YoutubePlayer widget to be in the tree before calling cue.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _ytController.cueVideoById(videoId: id);
     });
   }
 
-  // ── Lyrics loader ─────────────────────────────────────────────────────────────
+  /// Listens to the YouTube player value stream.
+  /// When any error occurs (especially notEmbeddable / error 152), tries the
+  /// next candidate video in [_videoQueue] automatically.
+  void _listenForPlayerErrors() {
+    _ytSub = _ytController.listen((value) {
+      if (!mounted || !value.hasError || _tryingNextVideo) return;
+      _tryingNextVideo = true;
+      _tryNextVideo();
+    });
+  }
+
+  void _tryNextVideo() {
+    _videoAttempt++;
+    if (_videoAttempt < _videoQueue.length) {
+      final nextId = _videoQueue[_videoAttempt];
+      setState(() => _resolvedVideoId = nextId);
+      _ytController.cueVideoById(videoId: nextId);
+      // Allow next error to trigger another retry after 3 s
+      Future.delayed(const Duration(seconds: 3), () {
+        _tryingNextVideo = false;
+      });
+    } else {
+      // All candidates exhausted
+      if (mounted) setState(() => _searchFailed = true);
+      _ytSub?.cancel();
+    }
+  }
+
+  // ── Lyrics ─────────────────────────────────────────────────────────────────
 
   Future<void> _loadLyrics() async {
     List<LyricLine>? fetched;
@@ -105,69 +205,172 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
     } catch (_) {}
 
     final lines = fetched ?? SongLyrics.forSong(widget.songTitle);
+
+    // Build cumulative start times
+    final starts = <double>[];
+    double t = 0;
+    for (final l in lines) {
+      starts.add(t);
+      t += l.durationSeconds;
+    }
+
     if (mounted) {
       setState(() {
         _lyrics = lines;
+        _startTimes = starts;
+        _lyricKeys = List.generate(lines.length, (_) => GlobalKey());
         _lyricsLoading = false;
       });
-      _startLyricCycle();
     }
   }
 
-  /// Auto-cycles the active lyric line every few seconds for demo purposes.
-  void _startLyricCycle() {
-    if (_lyrics.isEmpty) return;
-    _lyricTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-      if (!mounted) return;
-      final nonEmpty = _lyrics
-          .asMap()
-          .entries
-          .where((e) => e.value.text.isNotEmpty)
-          .map((e) => e.key)
-          .toList();
-      if (nonEmpty.isEmpty) return;
-      final idx = nonEmpty[(nonEmpty.indexOf(_activeLine) + 1) % nonEmpty.length];
-      setState(() => _activeLine = idx);
-      // Scroll to active line
-      final itemH = 60.0;
-      final offset = (_activeLine * itemH)
-          .clamp(0.0, _lyricsScroll.position.maxScrollExtent);
-      _lyricsScroll.animateTo(
-        offset,
+  void _updateActiveLine(double positionSecs) {
+    if (_startTimes.isEmpty) return;
+    int newActive = 0;
+    for (int i = 0; i < _startTimes.length; i++) {
+      if (positionSecs >= _startTimes[i]) {
+        newActive = i;
+      } else {
+        break;
+      }
+    }
+    if (newActive != _activeLine) {
+      setState(() => _activeLine = newActive);
+      _scrollToLine(newActive);
+    }
+  }
+
+  void _scrollToLine(int index) {
+    if (index >= _lyricKeys.length) return;
+    final ctx = _lyricKeys[index].currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
+        alignment: 0.3,
       );
+    }
+  }
+
+  // ── Playback control ───────────────────────────────────────────────────────
+
+  void _play() {
+    _ytController.playVideo();
+    setState(() => _isPlaying = true);
+    _startPlaybackTimer();
+  }
+
+  void _pause() {
+    _ytController.pauseVideo();
+    setState(() => _isPlaying = false);
+    _playbackTimer?.cancel();
+    _playbackTimer = null;
+  }
+
+  void _startPlaybackTimer() {
+    _playbackTimer?.cancel();
+    _playbackTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      if (!mounted) return;
+      setState(() {
+        _elapsedMs += 100;
+        _updateActiveLine(_elapsedMs / 1000.0);
+      });
     });
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────────
+  /// Every 2 s: fetch real position from YouTube (JS bridge) to correct our
+  /// internal counter, and detect if the user tapped the video directly.
+  void _startSyncTimer() {
+    _syncTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+      if (!mounted) return;
+      try {
+        // Correct position from the actual player
+        final pos = await _ytController.currentTime;
+        if (mounted) {
+          setState(() {
+            _elapsedMs = (pos * 1000).round();
+            _updateActiveLine(pos);
+          });
+        }
+
+        // Sync play/pause state (handles user tapping the video directly)
+        final state = await _ytController.playerState;
+        if (!mounted) return;
+        final ytPlaying = state == PlayerState.playing;
+        if (ytPlaying && !_isPlaying) {
+          setState(() => _isPlaying = true);
+          _startPlaybackTimer();
+        } else if (!ytPlaying && _isPlaying) {
+          setState(() => _isPlaying = false);
+          _playbackTimer?.cancel();
+          _playbackTimer = null;
+        }
+      } catch (_) {}
+    });
+  }
+
+  void _restart() {
+    _playbackTimer?.cancel();
+    _playbackTimer = null;
+    _ytController.seekTo(seconds: 0, allowSeekAhead: true);
+    setState(() {
+      _elapsedMs = 0;
+      _activeLine = 0;
+      _isPlaying = false;
+    });
+    _lyricsScroll.animateTo(0,
+        duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+  }
+
+  void _seekForward() {
+    final newMs = _elapsedMs + 10000;
+    _ytController.seekTo(seconds: newMs / 1000.0, allowSeekAhead: true);
+    setState(() {
+      _elapsedMs = newMs;
+      _updateActiveLine(newMs / 1000.0);
+    });
+  }
+
+  // ── Equalizer animation ────────────────────────────────────────────────────
+
+  void _startEqualizer() {
+    _eqTimer = Timer.periodic(const Duration(milliseconds: 120), (_) {
+      if (!mounted) return;
+      setState(() {
+        for (int i = 0; i < _barCount; i++) {
+          if (_rng.nextDouble() < 0.4) {
+            _targets[i] = 0.05 + _rng.nextDouble() * 0.95;
+          }
+          _bars[i] += (_targets[i] - _bars[i]) * 0.35;
+        }
+      });
+    });
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1 ── Frequency equalizer
                     _buildFrequencySection(),
-                    // 2 ── YouTube video
                     _buildVideoSection(),
-                    // 3 ── Lyrics
                     _buildLyricsSection(),
-                    const SizedBox(height: 8),
                   ],
                 ),
               ),
             ),
-            // 4 ── Transport controls
             _buildControls(),
           ],
         ),
@@ -175,7 +378,7 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
     );
   }
 
-  // ── Header ────────────────────────────────────────────────────────────────────
+  // ── Header ─────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Padding(
@@ -209,18 +412,20 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                 Text(
                   widget.songTitle,
                   style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto'),
+                    color: AppColors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto',
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   widget.songArtist,
                   style: const TextStyle(
-                      color: AppColors.grey,
-                      fontSize: 12,
-                      fontFamily: 'Roboto'),
+                    color: AppColors.grey,
+                    fontSize: 12,
+                    fontFamily: 'Roboto',
+                  ),
                 ),
               ],
             ),
@@ -234,15 +439,14 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
         width: 36,
         height: 36,
         color: AppColors.inputBg,
-        child:
-            const Icon(Icons.music_note, color: AppColors.grey, size: 18),
+        child: const Icon(Icons.music_note, color: AppColors.grey, size: 18),
       );
 
-  // ── 1. Frequency equalizer ────────────────────────────────────────────────────
+  // ── 1. Frequency / Equalizer ───────────────────────────────────────────────
 
   Widget _buildFrequencySection() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -255,12 +459,12 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
               fontFamily: 'Roboto',
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           SizedBox(
-            height: 80,
+            height: 72,
+            width: double.infinity,
             child: CustomPaint(
               painter: _EqualizerPainter(_bars),
-              size: const Size(double.infinity, 80),
             ),
           ),
         ],
@@ -268,9 +472,66 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
     );
   }
 
-  // ── 2. YouTube video ──────────────────────────────────────────────────────────
+  // ── 2. YouTube video ───────────────────────────────────────────────────────
 
   Widget _buildVideoSection() {
+    // Still searching
+    if (_isSearching) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        height: 196,
+        decoration: BoxDecoration(
+          color: AppColors.inputBg,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                  color: AppColors.primaryCyan, strokeWidth: 2),
+              SizedBox(height: 12),
+              Text('Finding video…',
+                  style: TextStyle(
+                      color: AppColors.grey,
+                      fontSize: 13,
+                      fontFamily: 'Roboto')),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Search failed or no ID
+    if (_searchFailed || _resolvedVideoId == null) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        height: 160,
+        decoration: BoxDecoration(
+          color: AppColors.inputBg,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.video_library_outlined,
+                  color: AppColors.grey.withValues(alpha: 0.5), size: 40),
+              const SizedBox(height: 8),
+              Text(
+                'Video not available',
+                style: TextStyle(
+                    color: AppColors.grey.withValues(alpha: 0.7),
+                    fontFamily: 'Roboto',
+                    fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Show player
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ClipRRect(
@@ -283,11 +544,11 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
     );
   }
 
-  // ── 3. Lyrics section ─────────────────────────────────────────────────────────
+  // ── 3. Lyrics ──────────────────────────────────────────────────────────────
 
   Widget _buildLyricsSection() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -314,7 +575,7 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.cardBg,
+                color: const Color(0xFF1C1C24),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
@@ -328,17 +589,50 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
             )
           else
             SizedBox(
-              height: 280,
+              height: 270,
               child: ListView.builder(
                 controller: _lyricsScroll,
+                padding: EdgeInsets.zero,
                 itemCount: _lyrics.length,
                 itemBuilder: (ctx, i) {
                   final line = _lyrics[i];
-                  if (line.text.isEmpty) {
-                    return const SizedBox(height: 10);
-                  }
+                  final key = _lyricKeys.length > i ? _lyricKeys[i] : null;
                   final isActive = i == _activeLine;
-                  return _buildLyricCard(line.text, isActive);
+
+                  if (line.text.isEmpty) {
+                    return SizedBox(key: key, height: 10);
+                  }
+
+                  return AnimatedContainer(
+                    key: key,
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? const Color(0xFF2B1D3E)
+                          : const Color(0xFF1C1C24),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isActive
+                            ? const Color(0xFF9C27B0)
+                            : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Text(
+                      line.text,
+                      style: TextStyle(
+                        color: isActive ? AppColors.white : AppColors.grey,
+                        fontSize: 14,
+                        fontFamily: 'Roboto',
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
@@ -347,54 +641,27 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
     );
   }
 
-  Widget _buildLyricCard(String text, bool isActive) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      decoration: BoxDecoration(
-        color: isActive
-            ? const Color(0xFF2B1D3E) // dark purple tint
-            : const Color(0xFF1C1C24),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isActive
-              ? const Color(0xFF9C27B0) // purple border
-              : Colors.transparent,
-          width: 1.5,
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isActive ? AppColors.white : AppColors.grey,
-          fontSize: 14,
-          fontFamily: 'Roboto',
-          fontWeight:
-              isActive ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  // ── 4. Transport controls ─────────────────────────────────────────────────────
+  // ── 4. Controls ────────────────────────────────────────────────────────────
 
   Widget _buildControls() {
+    final elapsedStr = _formatMs(_elapsedMs);
+    final totalStr = _formatMs((_totalDurationSecs * 1000).round());
+    final canPlay = !_isSearching && _resolvedVideoId != null;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
       decoration: const BoxDecoration(
         color: Color(0xFF0D0D0D),
-        border: Border(
-            top: BorderSide(color: Colors.white10, width: 1)),
+        border: Border(top: BorderSide(color: Colors.white10, width: 1)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Time bar
+          // ── Progress bar ──────────────────────────────────────────────────
           Row(
             children: [
-              const Text('0:00',
-                  style: TextStyle(
+              Text(elapsedStr,
+                  style: const TextStyle(
                       color: AppColors.grey,
                       fontSize: 11,
                       fontFamily: 'Roboto')),
@@ -402,79 +669,102 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 2,
-                    thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 5),
-                    overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 10),
+                    thumbShape:
+                        const RoundSliderThumbShape(enabledThumbRadius: 5),
+                    overlayShape:
+                        const RoundSliderOverlayShape(overlayRadius: 10),
                     activeTrackColor: const Color(0xFFE040FB),
                     inactiveTrackColor: AppColors.inputBg,
                     thumbColor: const Color(0xFFE040FB),
                     overlayColor:
                         const Color(0xFFE040FB).withValues(alpha: 0.2),
                   ),
-                  child: Slider(value: 0, onChanged: null),
+                  child: Slider(
+                    value: _progressValue,
+                    onChanged: canPlay && !_lyricsLoading
+                        ? (v) {
+                            final newMs =
+                                (v * _totalDurationSecs * 1000).round();
+                            _ytController.seekTo(
+                                seconds: newMs / 1000.0, allowSeekAhead: true);
+                            setState(() {
+                              _elapsedMs = newMs;
+                              _updateActiveLine(newMs / 1000.0);
+                            });
+                          }
+                        : null,
+                  ),
                 ),
               ),
-              const Text('3:24',
-                  style: TextStyle(
+              Text(totalStr,
+                  style: const TextStyle(
                       color: AppColors.grey,
                       fontSize: 11,
                       fontFamily: 'Roboto')),
             ],
           ),
-          const SizedBox(height: 4),
-          // Buttons row
+          const SizedBox(height: 2),
+          // ── Buttons ───────────────────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Skip back
+              // Restart
               IconButton(
-                icon: const Icon(Icons.skip_previous_rounded,
-                    color: AppColors.white, size: 30),
-                onPressed: () =>
-                    _ytController.seekTo(seconds: 0, allowSeekAhead: true),
+                icon: Icon(Icons.skip_previous_rounded,
+                    color: AppColors.white.withValues(alpha: 0.85), size: 30),
+                onPressed: canPlay ? _restart : null,
               ),
-              // Play/Pause — pink circle
+
+              // Play / Pause
               GestureDetector(
-                onTap: () async {
-                  final state =
-                      await _ytController.playerState;
-                  if (state == PlayerState.playing) {
-                    _ytController.pauseVideo();
-                  } else {
-                    _ytController.playVideo();
-                  }
-                },
+                onTap: !canPlay
+                    ? null
+                    : () {
+                        if (_isPlaying) {
+                          _pause();
+                        } else {
+                          _play();
+                        }
+                      },
                 child: Container(
                   width: 56,
                   height: 56,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFFE040FB),
+                    color: !canPlay
+                        ? AppColors.grey.withValues(alpha: 0.25)
+                        : const Color(0xFFE040FB),
                   ),
-                  child: const Icon(Icons.play_arrow_rounded,
-                      color: Colors.white, size: 32),
+                  child: _isSearching
+                      ? const Center(
+                          child: SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2),
+                          ),
+                        )
+                      : Icon(
+                          _isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                 ),
               ),
-              // Skip forward
+
+              // Forward 10 s
               IconButton(
-                icon: const Icon(Icons.skip_next_rounded,
-                    color: AppColors.white, size: 30),
-                onPressed: () =>
-                    _ytController.seekTo(seconds: 10, allowSeekAhead: true),
+                icon: Icon(Icons.forward_10_rounded,
+                    color: AppColors.white.withValues(alpha: 0.85), size: 28),
+                onPressed: canPlay ? _seekForward : null,
               ),
-              // Volume
-              IconButton(
-                icon: const Icon(Icons.volume_up_rounded,
-                    color: AppColors.white, size: 26),
-                onPressed: () {},
-              ),
-              // Start Karaoke
+
+              // ─ Sing button ────────────────────────────────────────────────
               GestureDetector(
                 onTap: () {
-                  _ytController.pauseVideo();
-                  _eqTimer?.cancel();
-                  _lyricTimer?.cancel();
+                  if (_isPlaying) _pause();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -487,11 +777,10 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                   decoration: BoxDecoration(
-                    color:
-                        AppColors.primaryCyan.withValues(alpha: 0.15),
+                    color: AppColors.primaryCyan.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                         color: AppColors.primaryCyan.withValues(alpha: 0.5)),
@@ -501,12 +790,12 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                     children: [
                       Icon(Icons.mic_rounded,
                           color: AppColors.primaryCyan, size: 16),
-                      SizedBox(width: 4),
+                      SizedBox(width: 5),
                       Text(
                         'Sing',
                         style: TextStyle(
                           color: AppColors.primaryCyan,
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Roboto',
                         ),
@@ -523,7 +812,7 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
   }
 }
 
-// ── Equalizer bar chart painter ───────────────────────────────────────────────
+// ── Equalizer bar painter ─────────────────────────────────────────────────────
 
 class _EqualizerPainter extends CustomPainter {
   final List<double> bars;
@@ -532,35 +821,32 @@ class _EqualizerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final count = bars.length;
-    final barW = (size.width / count) * 0.65;
-    final gap = (size.width / count) * 0.35;
+    if (count == 0) return;
+    final barW = (size.width / count) * 0.6;
+    final gap = (size.width / count) * 0.4;
     final h = size.height;
 
     for (int i = 0; i < count; i++) {
-      final barH = bars[i] * h;
+      final barH = (bars[i] * h).clamp(2.0, h);
       final x = i * (barW + gap);
       final top = h - barH;
-
-      // Gradient: green (bottom) → yellow (mid) → red (top)
       final rect = Rect.fromLTWH(x, top, barW, barH);
-      final gradient = LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: const [
-          Color(0xFF00E676), // green
-          Color(0xFFFFEB3B), // yellow
-          Color(0xFFFF5722), // orange-red
-        ],
-        stops: const [0.0, 0.6, 1.0],
-      );
 
       final paint = Paint()
-        ..shader = gradient.createShader(rect)
+        ..shader = const LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Color(0xFF00E676), // green
+            Color(0xFFFFEB3B), // yellow
+            Color(0xFFFF5722), // orange-red
+          ],
+          stops: [0.0, 0.6, 1.0],
+        ).createShader(rect)
         ..style = PaintingStyle.fill;
 
-      final rRect =
-          RRect.fromRectAndRadius(rect, const Radius.circular(2));
-      canvas.drawRRect(rRect, paint);
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(rect, const Radius.circular(2)), paint);
     }
   }
 
