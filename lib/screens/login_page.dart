@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 import 'teacher_account_page.dart';
-import 'student_dashboard_page.dart';
 import '../constants/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/session_storage_service.dart';
@@ -106,8 +105,6 @@ class _LoginPageState extends State<LoginPage> {
         Widget destination;
         if (role == 'teacher') {
           destination = const TeacherAccountPage();
-        } else if (role == 'student') {
-          destination = const StudentDashboardPage();
         } else {
           destination = const HomePage();
         }
