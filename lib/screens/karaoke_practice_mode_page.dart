@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import 'solfege_drill_mode_page.dart';
+import 'karaoke_recording_page.dart';
 
-/// Practice Solfege page — student view with instruction and assignment.
-class PracticeSolfegePage extends StatelessWidget {
+/// Karaoke Practice Mode — student intro view with instruction and assignment.
+/// Matches Figma design for Lesson 2: Karaoke Practice
+class KaraokePracticeModePage extends StatelessWidget {
   final Map<String, dynamic> classData;
-  final String lessonTitle;
+  final String songTitle;
+  final String songArtist;
+  final String songImage;
+  final DateTime? dueDate;
+  final int maxScore;
 
-  const PracticeSolfegePage({
+  const KaraokePracticeModePage({
     super.key,
     required this.classData,
-    required this.lessonTitle,
+    required this.songTitle,
+    required this.songArtist,
+    required this.songImage,
+    this.dueDate,
+    this.maxScore = 100,
   });
 
   @override
@@ -21,7 +30,7 @@ class PracticeSolfegePage extends StatelessWidget {
       backgroundColor: AppColors.bgDark,
       body: Column(
         children: [
-          // ── Cyan header ────────────────────────────────────────────────
+          // ── Cyan header ──────────────────────────────────────────────
           Container(
             width: double.infinity,
             color: AppColors.primaryCyan,
@@ -62,7 +71,7 @@ class PracticeSolfegePage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 36),
                   child: Text(
-                    '$lessonTitle / Practice Solfege',
+                    'Lesson 2: Karaoke Practice',
                     style: const TextStyle(
                       color: Colors.black87,
                       fontSize: 12,
@@ -100,29 +109,23 @@ class PracticeSolfegePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Practice button
+                  // Song button
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => SolfegeDrillModePage(
-                            sequence: const [
-                              'Do',
-                              'Re',
-                              'Mi',
-                              'Fa',
-                              'So',
-                              'La',
-                            ],
-                            className: className,
-                            startInActivityMode: false,
+                          builder: (_) => KaraokeRecordingPage(
+                            songTitle: songTitle,
+                            songArtist: songArtist,
+                            songImage: songImage,
                           ),
                         ),
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
                       decoration: BoxDecoration(
                         color: AppColors.primaryCyan,
                         borderRadius: BorderRadius.circular(8),
@@ -130,20 +133,32 @@ class PracticeSolfegePage extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 16),
-                            child: Text(
-                              'Solfege Drill',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Roboto',
+                          // Song title + artist
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Song: $songTitle',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Roboto',
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'by $songArtist',
+                                style: TextStyle(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  fontSize: 11,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                            ],
                           ),
+                          // Sing badge
                           Container(
-                            margin: const EdgeInsets.only(right: 12),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 4,
@@ -153,7 +168,7 @@ class PracticeSolfegePage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text(
-                              'Proceed',
+                              'Sing',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 11,
@@ -200,7 +215,7 @@ class PracticeSolfegePage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '100',
+                              '$maxScore',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 13,
@@ -248,29 +263,37 @@ class PracticeSolfegePage extends StatelessWidget {
 
   Widget _buildBottomNav(BuildContext context) {
     return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-          _navIcon(Icons.person_outline),
-        ],
+      color: const Color(0xFF2A2A2A),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(Icons.notifications_outlined, 'Notification'),
+              _navItem(Icons.mic_none, 'Karaoke Mode'),
+              _navItem(Icons.home_outlined, 'Home',
+                  onTap: () => Navigator.pop(context)),
+              _navItem(Icons.calendar_today_outlined, 'Calendar'),
+              _navItem(Icons.person_outline, 'Profile'),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
+  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: AppColors.grey.withValues(alpha: 0.5),
-          size: 26,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 24),
+          const SizedBox(height: 4),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+        ],
       ),
     );
   }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../data/tagalog_bisaya_songs.dart';
+import '../screens/karaoke_recording_page.dart';
 import 'home_page.dart';
 import 'library_page.dart';
 import 'education_mode_page.dart';
-import 'karaoke_song_detail_page.dart';
 
 class KaraokeHomePage extends StatefulWidget {
   const KaraokeHomePage({super.key});
@@ -16,109 +17,25 @@ class KaraokeHomePage extends StatefulWidget {
 class _KaraokeHomePageState extends State<KaraokeHomePage> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
+  String _selectedLanguage = 'All';
 
-  static const List<Map<String, String>> _songs = [
-    {
-      'title': 'Dadalhin',
-      'artist': 'Regine Velasquez',
-      'image': 'https://media.philstar.com/photos/2022/04/19/regine-1_2022-04-19_17-19-51.jpg',
-      'youtubeId': '_MoKs-VTBrE',
-    },
-    {
-      'title': 'Ikaw',
-      'artist': 'Yeng Constantino',
-      'image': 'https://upload.wikimedia.org/wikipedia/en/b/b4/Yeng_Constantino_-_Ikaw_%28Yeng_Version%29.jpg',
-      'youtubeId': 'HX1RHRQfYvo',
-    },
-    {
-      'title': 'Kahit Maputi Na Ang Buhok Ko',
-      'artist': 'Rey Valera',
-      'image': 'https://i.ytimg.com/vi/UxAX0RjxBeM/maxresdefault.jpg',
-      'youtubeId': 'UxAX0RjxBeM',
-    },
-    {
-      'title': 'Narda',
-      'artist': 'Kamikazee',
-      'image': 'https://i.ytimg.com/vi/L8MzUHxAimI/maxresdefault.jpg',
-      'youtubeId': 'L8MzUHxAimI',
-    },
-    {
-      'title': 'Hawak Kamay',
-      'artist': 'Yeng Constantino',
-      'image': 'https://i.ytimg.com/vi/K4z7JFfW9b4/maxresdefault.jpg',
-      'youtubeId': 'K4z7JFfW9b4',
-    },
-    {
-      'title': 'Pare Ko',
-      'artist': 'Eraserheads',
-      'image': 'https://i.ytimg.com/vi/ZeO4kW4j3tI/maxresdefault.jpg',
-      'youtubeId': 'ZeO4kW4j3tI',
-    },
-    {
-      'title': 'Pag-ibig',
-      'artist': 'Kyla',
-      'image': 'https://i.ytimg.com/vi/JFsHZ24CQZM/maxresdefault.jpg',
-      'youtubeId': 'JFsHZ24CQZM',
-    },
-    {
-      'title': 'Magmahal Muli',
-      'artist': 'Martin Nievera',
-      'image': 'https://i.ytimg.com/vi/4K6X8b0v-5A/maxresdefault.jpg',
-      'youtubeId': '4K6X8b0v-5A',
-    },
-    {
-      'title': 'Paalam Muna Sandali',
-      'artist': 'Darren Espanto',
-      'image': 'https://tse4.mm.bing.net/th/id/OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
-      'youtubeId': '9D_a8PUFwAo',
-    },
-    {
-      'title': 'Nasa Iyo Na Ang Lahat',
-      'artist': 'Daniel Padilla',
-      'image': 'https://images.genius.com/e817d67292e5c1ac1e72b0c8573161e5.900x900x1.jpg',
-      'youtubeId': 'vXg_JzLSgTk',
-    },
-    {
-      'title': 'Ulap',
-      'artist': 'Rob Daniel',
-      'image': 'https://i.ytimg.com/vi/xNbRkbMFW08/maxresdefault.jpg',
-      'youtubeId': 'xNbRkbMFW08',
-    },
-    {
-      'title': 'Fallen',
-      'artist': 'Lola Amour',
-      'image': 'https://images.genius.com/b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
-      'youtubeId': 'JB4pWkCHEhM',
-    },
-    {
-      'title': 'Binibini',
-      'artist': 'Arthur Nery',
-      'image': 'https://i.pinimg.com/736x/c4/51/fd/c451fd1b67b8e80830aaca56188e46d8.jpg',
-      'youtubeId': 'l6rZoNzxXdg',
-    },
-    {
-      'title': 'Kumpas',
-      'artist': 'Moira Dela Torre',
-      'image': 'https://i.ytimg.com/vi/QJqpVLHQFM8/maxresdefault.jpg',
-      'youtubeId': 'QJqpVLHQFM8',
-    },
-    {
-      'title': 'Randomantic',
-      'artist': 'James Reid',
-      'image': 'https://images.genius.com/f428806fd40d83f4a6f934680bdbd7e8.1000x1000x1.jpg',
-      'youtubeId': 't2EMVo9RVR0',
-    },
-  ];
+  List<KaraokeSong> get _filtered {
+    final allSongs = TagalogBisayaSongs.songs;
 
-  List<Map<String, String>> get _filtered {
-    if (_query.trim().isEmpty) return _songs;
+    if (_query.trim().isEmpty && _selectedLanguage == 'All') {
+      return allSongs.toList();
+    }
+
     final q = _query.toLowerCase();
-    return _songs
-        .where(
-          (s) =>
-              s['title']!.toLowerCase().contains(q) ||
-              s['artist']!.toLowerCase().contains(q),
-        )
+    return allSongs
+        .where((s) {
+          final matchesQuery = q.isEmpty ||
+              s.title.toLowerCase().contains(q) ||
+              s.artist.toLowerCase().contains(q);
+          final matchesLanguage = _selectedLanguage == 'All' ||
+              s.language == _selectedLanguage;
+          return matchesQuery && matchesLanguage;
+        })
         .toList();
   }
 
@@ -134,6 +51,114 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _launchKaraoke(KaraokeSong song) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => KaraokeRecordingPage(
+          songTitle: song.title,
+          songArtist: song.artist,
+          songImage: '',
+        ),
+      ),
+    );
+  }
+
+  void _showSongOptions(KaraokeSong song) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.inputBg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    song.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    song.artist,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryCyan.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      song.language,
+                      style: const TextStyle(
+                        color: AppColors.primaryCyan,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _launchKaraoke(song);
+                },
+                icon: const Icon(Icons.mic, size: 20),
+                label: const Text('Start Karaoke'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryCyan,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -167,6 +192,25 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                       fontFamily: 'Roboto',
                     ),
                   ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryCyan.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${results.length}/${TagalogBisayaSongs.getTotalSongs()}',
+                      style: const TextStyle(
+                        color: AppColors.primaryCyan,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -186,7 +230,7 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                     fontFamily: 'Roboto',
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Search for songs, artist',
+                    hintText: 'Search songs or artist...',
                     hintStyle: TextStyle(
                       color: AppColors.grey.withValues(alpha: 0.6),
                       fontFamily: 'Roboto',
@@ -195,6 +239,15 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                       Icons.search,
                       color: AppColors.grey.withValues(alpha: 0.6),
                     ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _query = '');
+                            },
+                          )
+                        : null,
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -205,66 +258,76 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            // Language Filter Chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  _buildLanguageChip('All', _selectedLanguage == 'All'),
+                  const SizedBox(width: 8),
+                  _buildLanguageChip('Tagalog', _selectedLanguage == 'Tagalog'),
+                  const SizedBox(width: 8),
+                  _buildLanguageChip('Bisaya', _selectedLanguage == 'Bisaya'),
+                ],
+              ),
+            ),
 
             // Song List
             Expanded(
               child: results.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         'No songs found',
                         style: TextStyle(
-                          color: AppColors.grey,
+                          color: AppColors.grey.withValues(alpha: 0.6),
                           fontFamily: 'Roboto',
+                          fontSize: 14,
                         ),
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
                       itemCount: results.length,
                       itemBuilder: (context, index) {
                         final song = results[index];
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => KaraokeSongDetailPage(
-                                  songTitle: song['title']!,
-                                  songArtist: song['artist']!,
-                                  songImage: song['image']!,
-                                  youtubeId: song['youtubeId']!,
-                                ),
-                              ),
-                            );
-                          },
+                          onTap: () => _showSongOptions(song),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: AppColors.inputBg,
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                width: 0.5,
+                              ),
                             ),
                             child: Row(
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    song['image']!,
-                                    width: 52,
-                                    height: 52,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (ctx, err, st) => Container(
-                                      width: 52,
-                                      height: 52,
-                                      color: AppColors.grey.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      child: const Icon(
-                                        Icons.music_note,
-                                        color: AppColors.white,
-                                      ),
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.inputBg,
+                                    borderRadius: BorderRadius.circular(8),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppColors.primaryCyan
+                                            .withValues(alpha: 0.3),
+                                        AppColors.primaryCyan
+                                            .withValues(alpha: 0.1),
+                                      ],
                                     ),
+                                  ),
+                                  child: Icon(
+                                    Icons.music_note,
+                                    color: AppColors.primaryCyan,
+                                    size: 24,
                                   ),
                                 ),
                                 const SizedBox(width: 14),
@@ -274,33 +337,61 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        song['title']!,
+                                        song.title,
                                         style: const TextStyle(
                                           color: AppColors.white,
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           fontFamily: 'Roboto',
                                         ),
+                                        maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 3),
                                       Text(
-                                        song['artist']!,
+                                        song.artist,
                                         style: TextStyle(
                                           color: AppColors.grey.withValues(
                                             alpha: 0.8,
                                           ),
-                                          fontSize: 13,
+                                          fontSize: 12,
                                           fontFamily: 'Roboto',
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.mic_none_rounded,
-                                  color: AppColors.primaryCyan,
-                                  size: 24,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: song.language == 'Tagalog'
+                                        ? Colors.blue.withValues(alpha: 0.2)
+                                        : Colors.purple.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    song.language == 'Tagalog' ? 'TGL' : 'BIS',
+                                    style: TextStyle(
+                                      color: song.language == 'Tagalog'
+                                          ? Colors.blue[300]
+                                          : Colors.purple[300],
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: AppColors.grey.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  size: 14,
                                 ),
                               ],
                             ),
@@ -333,6 +424,36 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
             );
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildLanguageChip(String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _selectedLanguage = label);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryCyan : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primaryCyan
+                : Colors.grey.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : AppColors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
+          ),
+        ),
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'package:final_thesis_ui/screens/education_mode_page.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../services/session_storage_service.dart';
 import '../services/songs_service.dart';
+import '../services/class_notifications_service.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'favorites_page.dart';
 import 'library_page.dart';
@@ -11,6 +13,7 @@ import 'settings_page.dart';
 import 'recently_deleted_page.dart';
 import 'start_page.dart';
 import 'karaoke_song_detail_page.dart';
+import 'notifications_page.dart';
 
 class HomePage extends StatefulWidget {
   final bool showBackButton;
@@ -25,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   bool _isMenuOpen = false;
   String _username = 'User';
   String _searchQuery = '';
+  bool _isStudent = true;
 
   // ── Songs (loaded async from backend, falls back to local) ─────────────────
   List<Map<String, String>> _songs = const [];
@@ -47,7 +51,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUsername();
+    _loadRole();
     _loadSongs();
+    _initializeNotifications();
   }
 
   Future<void> _loadUsername() async {
@@ -55,6 +61,18 @@ class _HomePageState extends State<HomePage> {
     if (mounted && name != null && name.isNotEmpty) {
       setState(() => _username = name);
     }
+  }
+
+  Future<void> _loadRole() async {
+    final role = await SessionStorageService.loadRole();
+    if (mounted) {
+      setState(() => _isStudent = role == 'student');
+    }
+  }
+
+  Future<void> _initializeNotifications() async {
+    final service = ClassNotificationsService();
+    await service.initialize();
   }
 
   Future<void> _loadSongs() async {
@@ -150,22 +168,86 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () => setState(() => _isMenuOpen = !_isMenuOpen),
-                        child: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: AppColors.inputBg,
-                          child: Text(
-                            _username.isNotEmpty
-                                ? _username[0].toUpperCase()
-                                : 'U',
-                            style: const TextStyle(
-                              color: AppColors.primaryCyan,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Roboto',
+                      Row(
+                        children: [
+                          if (_isStudent)
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const NotificationsPage(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                child: Stack(
+                                  children: [
+                                    Icon(
+                                      Icons.notifications_outlined,
+                                      color: AppColors.grey,
+                                      size: 24,
+                                    ),
+                                    Consumer<ClassNotificationsService>(
+                                      builder: (context, service, child) {
+                                        final unread = service.unreadCount;
+                                        if (unread > 0) {
+                                          return Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: Container(
+                                              width: 18,
+                                              height: 18,
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  unread > 9
+                                                      ? '9+'
+                                                      : unread.toString(),
+                                                  style:
+                                                      const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.bold,
+                                                    fontFamily: 'Roboto',
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        return const SizedBox.shrink();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () =>
+                                setState(() => _isMenuOpen = !_isMenuOpen),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: AppColors.inputBg,
+                              child: Text(
+                                _username.isNotEmpty
+                                    ? _username[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  color: AppColors.primaryCyan,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -416,6 +498,7 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        isStudent: _isStudent,
       ),
     );
   }

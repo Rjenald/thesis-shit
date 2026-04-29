@@ -23,8 +23,7 @@ class PianoVoiceMatchingPage extends StatefulWidget {
   });
 
   @override
-  State<PianoVoiceMatchingPage> createState() =>
-      _PianoVoiceMatchingPageState();
+  State<PianoVoiceMatchingPage> createState() => _PianoVoiceMatchingPageState();
 }
 
 class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
@@ -33,9 +32,9 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
   StreamSubscription<NoteResult?>? _audioSub;
 
   // ── State ─────────────────────────────────────────────────────────────────
-  PianoKey? _targetKey;      // last key pressed on the piano
+  PianoKey? _targetKey; // last key pressed on the piano
   bool _isListening = false;
-  double _currentCents = 0;  // deviation from target
+  double _currentCents = 0; // deviation from target
   double _detectedHz = 0;
   int _correctFrames = 0;
   String _feedback = '';
@@ -98,8 +97,7 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
         return;
       }
 
-      final cents =
-          1200 * log(result.frequency / _targetKey!.freq) / log(2);
+      final cents = 1200 * log(result.frequency / _targetKey!.freq) / log(2);
 
       setState(() {
         _detectedHz = result.frequency;
@@ -108,8 +106,7 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
 
       if (cents.abs() <= 60) {
         _correctFrames++;
-        setState(() =>
-            _feedback = '✓  ${_targetKey!.solfege}  •  in tune!');
+        setState(() => _feedback = '✓  ${_targetKey!.solfege}  •  in tune!');
         if (_correctFrames >= _framesNeeded) {
           _correctFrames = 0;
           setState(() {
@@ -121,9 +118,9 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
       } else {
         _correctFrames = 0;
         final dir = cents > 0 ? '↑ Too high' : '↓ Too low';
-        setState(() =>
-            _feedback =
-                '$dir  (${cents.abs().toStringAsFixed(0)}¢ off)');
+        setState(
+          () => _feedback = '$dir  (${cents.abs().toStringAsFixed(0)}¢ off)',
+        );
       }
     });
   }
@@ -173,34 +170,40 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios_new,
-                        color: Colors.black, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      className.toUpperCase(),
-                      style: const TextStyle(
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
                         color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
+                        size: 20,
                       ),
                     ),
-                  ),
-                ]),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        className.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.only(left: 36),
                   child: Text(
                     '${widget.lessonTitle}  /  Piano-Voice Matching',
                     style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 12,
-                        fontFamily: 'Roboto'),
+                      color: Colors.black87,
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
                   ),
                 ),
               ],
@@ -210,8 +213,7 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
           // ── Body ────────────────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -222,14 +224,17 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
                       color: AppColors.primaryCyan.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                          color:
-                              AppColors.primaryCyan.withValues(alpha: 0.25)),
+                        color: AppColors.primaryCyan.withValues(alpha: 0.25),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info_outline,
-                            color: AppColors.primaryCyan, size: 16),
+                        const Icon(
+                          Icons.info_outline,
+                          color: AppColors.primaryCyan,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -318,15 +323,15 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
         color: _matchAchieved
             ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
             : hasTarget
-                ? AppColors.primaryCyan.withValues(alpha: 0.10)
-                : AppColors.cardBg,
+            ? AppColors.primaryCyan.withValues(alpha: 0.10)
+            : AppColors.cardBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _matchAchieved
               ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
               : hasTarget
-                  ? AppColors.primaryCyan.withValues(alpha: 0.4)
-                  : AppColors.inputBg,
+              ? AppColors.primaryCyan.withValues(alpha: 0.4)
+              : AppColors.inputBg,
         ),
       ),
       child: Column(
@@ -385,9 +390,10 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
               boxShadow: _isListening
                   ? [
                       BoxShadow(
-                          color: Colors.red.withValues(alpha: 0.35),
-                          blurRadius: 16,
-                          spreadRadius: 4)
+                        color: Colors.red.withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        spreadRadius: 4,
+                      ),
                     ]
                   : [],
             ),
@@ -416,19 +422,17 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
               Text(
                 _isListening
                     ? _feedback.isNotEmpty
-                        ? _feedback
-                        : 'Detecting pitch…'
+                          ? _feedback
+                          : 'Detecting pitch…'
                     : _targetKey == null
-                        ? 'Tap a piano key first'
-                        : 'Then sing ${_targetKey!.solfege} (${_targetKey!.name})',
+                    ? 'Tap a piano key first'
+                    : 'Then sing ${_targetKey!.solfege} (${_targetKey!.name})',
                 style: TextStyle(
-                  color: _feedback.startsWith('✓') ||
-                          _feedback.startsWith('🎉')
+                  color: _feedback.startsWith('✓') || _feedback.startsWith('🎉')
                       ? const Color(0xFF4CAF50)
-                      : _feedback.startsWith('↑') ||
-                              _feedback.startsWith('↓')
-                          ? AppColors.errorRed
-                          : AppColors.grey.withValues(alpha: 0.6),
+                      : _feedback.startsWith('↑') || _feedback.startsWith('↓')
+                      ? AppColors.errorRed
+                      : AppColors.grey.withValues(alpha: 0.6),
                   fontSize: 12,
                   fontFamily: 'Roboto',
                 ),
@@ -450,10 +454,10 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
     final needleColor = !hasSignal
         ? AppColors.grey
         : inTune
-            ? const Color(0xFF4CAF50)
-            : close
-                ? const Color(0xFFFFA726)
-                : AppColors.errorRed;
+        ? const Color(0xFF4CAF50)
+        : close
+        ? const Color(0xFFFFA726)
+        : AppColors.errorRed;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -462,26 +466,31 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('↓ Lower',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.5),
-                    fontSize: 10,
-                    fontFamily: 'Roboto')),
             Text(
-              hasSignal
-                  ? '${_detectedHz.toStringAsFixed(1)} Hz'
-                  : '— Hz',
+              '↓ Lower',
               style: TextStyle(
-                  color: needleColor,
-                  fontSize: 11,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600),
+                color: AppColors.grey.withValues(alpha: 0.5),
+                fontSize: 10,
+                fontFamily: 'Roboto',
+              ),
             ),
-            Text('↑ Higher',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.5),
-                    fontSize: 10,
-                    fontFamily: 'Roboto')),
+            Text(
+              hasSignal ? '${_detectedHz.toStringAsFixed(1)} Hz' : '— Hz',
+              style: TextStyle(
+                color: needleColor,
+                fontSize: 11,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              '↑ Higher',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.5),
+                fontSize: 10,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -498,33 +507,46 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
                 bottom: 10,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: Row(children: [
-                    Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
                         flex: 2,
                         child: Container(
-                            color: AppColors.errorRed
-                                .withValues(alpha: 0.2))),
-                    Expanded(
+                          color: AppColors.errorRed.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      Expanded(
                         flex: 1,
                         child: Container(
-                            color: const Color(0xFFFFA726)
-                                .withValues(alpha: 0.22))),
-                    Expanded(
+                          color: const Color(
+                            0xFFFFA726,
+                          ).withValues(alpha: 0.22),
+                        ),
+                      ),
+                      Expanded(
                         flex: 1,
                         child: Container(
-                            color: const Color(0xFF4CAF50)
-                                .withValues(alpha: 0.28))),
-                    Expanded(
+                          color: const Color(
+                            0xFF4CAF50,
+                          ).withValues(alpha: 0.28),
+                        ),
+                      ),
+                      Expanded(
                         flex: 1,
                         child: Container(
-                            color: const Color(0xFFFFA726)
-                                .withValues(alpha: 0.22))),
-                    Expanded(
+                          color: const Color(
+                            0xFFFFA726,
+                          ).withValues(alpha: 0.22),
+                        ),
+                      ),
+                      Expanded(
                         flex: 2,
                         child: Container(
-                            color: AppColors.errorRed
-                                .withValues(alpha: 0.2))),
-                  ]),
+                          color: AppColors.errorRed.withValues(alpha: 0.2),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -547,11 +569,12 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
                 child: Text(
                   'TARGET',
                   style: TextStyle(
-                      color: const Color(0xFF4CAF50).withValues(alpha: 0.7),
-                      fontSize: 7,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5),
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.7),
+                    fontSize: 7,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
 
@@ -589,15 +612,16 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
           child: Text(
             hasSignal
                 ? inTune
-                    ? '${_currentCents.toStringAsFixed(0)}¢  —  in tune!'
-                    : '${_currentCents > 0 ? '+' : ''}${_currentCents.toStringAsFixed(0)}¢  '
-                        '${_currentCents > 0 ? '(sing lower)' : '(sing higher)'}'
+                      ? '${_currentCents.toStringAsFixed(0)}¢  —  in tune!'
+                      : '${_currentCents > 0 ? '+' : ''}${_currentCents.toStringAsFixed(0)}¢  '
+                            '${_currentCents > 0 ? '(sing lower)' : '(sing higher)'}'
                 : 'Waiting for signal…',
             style: TextStyle(
-                color: needleColor,
-                fontSize: 12,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600),
+              color: needleColor,
+              fontSize: 12,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -609,8 +633,7 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
             value: (_correctFrames / _framesNeeded).clamp(0.0, 1.0),
             minHeight: 5,
             backgroundColor: AppColors.inputBg,
-            valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF4CAF50)),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
           ),
         ),
         const SizedBox(height: 4),
@@ -618,9 +641,10 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
           child: Text(
             'Hold in tune to register a match',
             style: TextStyle(
-                color: AppColors.grey.withValues(alpha: 0.45),
-                fontSize: 10,
-                fontFamily: 'Roboto'),
+              color: AppColors.grey.withValues(alpha: 0.45),
+              fontSize: 10,
+              fontFamily: 'Roboto',
+            ),
           ),
         ),
       ],
@@ -635,12 +659,16 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
         color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: const Color(0xFF4CAF50).withValues(alpha: 0.5)),
+          color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_rounded,
-              color: Color(0xFF4CAF50), size: 28),
+          const Icon(
+            Icons.check_circle_rounded,
+            color: Color(0xFF4CAF50),
+            size: 28,
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -676,14 +704,13 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
               });
             },
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color:
-                        const Color(0xFF4CAF50).withValues(alpha: 0.4)),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                ),
               ),
               child: const Text(
                 'Again',
@@ -711,8 +738,7 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined,
-              onTap: () => Navigator.pop(context)),
+          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
           _navIcon(Icons.person_outline),
         ],
       ),
@@ -720,13 +746,12 @@ class _PianoVoiceMatchingPageState extends State<PianoVoiceMatchingPage> {
   }
 
   Widget _navIcon(IconData icon, {VoidCallback? onTap}) => GestureDetector(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Icon(icon,
-              color: AppColors.grey.withValues(alpha: 0.5), size: 26),
-        ),
-      );
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Icon(icon, color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+    ),
+  );
 }
 
 // ── Triangle needle painter ───────────────────────────────────────────────────

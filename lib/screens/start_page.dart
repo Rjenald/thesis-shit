@@ -59,10 +59,8 @@ class _StartPageState extends State<StartPage> {
                   width: double.infinity,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 1000),
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    ),
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
                     child: Image.network(
                       _backgroundImages[_currentPage],
                       key: ValueKey(_currentPage),
@@ -163,7 +161,9 @@ class _StartPageState extends State<StartPage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const RegisterPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterPage(),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -208,7 +208,9 @@ class _StartPageState extends State<StartPage> {
                         ),
                         TextSpan(
                           text: ' and ',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
                         ),
                         TextSpan(
                           text: 'Privacy Policy',

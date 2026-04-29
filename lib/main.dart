@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart'; // or start_page.dart
+import 'package:provider/provider.dart';
+import 'screens/splash_screen.dart';
+import 'services/class_notifications_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,16 +12,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Karaoke App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.black,
-        fontFamily: 'Roboto',
+    return ChangeNotifierProvider(
+      create: (_) => ClassNotificationsService(),
+      child: MaterialApp(
+        title: 'Karaoke App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: Colors.black,
+          fontFamily: 'Roboto',
+        ),
+        home: const SplashScreen(),
       ),
-      home:
-          const SplashScreen(), // or const StartPage() if you fixed the constructor
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import 'karaoke_assign_page.dart';
-import 'piano_voice_matching_page.dart';
+import 'karaoke_practice_mode_page.dart';
 import 'practice_solfege_page.dart';
 import 'solfege_activity_page.dart';
 
@@ -29,13 +28,7 @@ class LessonDetailPage extends StatelessWidget {
           _SubLesson('1.2', 'Solfege Activity'),
         ];
       case 2:
-        return [
-          _SubLesson('2.1', 'Practice Karaoke'),
-        ];
-      case 3:
-        return [
-          _SubLesson('3.1', 'Piano-Voice Activity'),
-        ];
+        return [_SubLesson('2.1', 'Practice Karaoke')];
       default:
         return [];
     }
@@ -57,16 +50,13 @@ class LessonDetailPage extends StatelessWidget {
         );
         break;
       case 'Practice Karaoke':
-        page = KaraokeAssignPage(
+        page = KaraokePracticeModePage(
           classData: classData,
-          lessonTitle: lessonTitle,
-          subLessonTitle: sub.title,
-        );
-        break;
-      case 'Piano-Voice Activity':
-        page = PianoVoiceMatchingPage(
-          classData: classData,
-          lessonTitle: lessonTitle,
+          songTitle: 'Dadalhin',
+          songArtist: 'Regine Velasquez',
+          songImage: '',
+          dueDate: DateTime.now().add(const Duration(days: 7)),
+          maxScore: 100,
         );
         break;
       default:
@@ -100,8 +90,11 @@ class LessonDetailPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.black, size: 20),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -138,9 +131,7 @@ class LessonDetailPage extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(24),
-              children: _subLessons
-                  .map((s) => _buildCard(context, s))
-                  .toList(),
+              children: _subLessons.map((s) => _buildCard(context, s)).toList(),
             ),
           ),
         ],
@@ -156,34 +147,17 @@ class LessonDetailPage extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF4A4A4A),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            Text(
-              sub.number,
-              style: const TextStyle(
-                color: AppColors.primaryCyan,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                sub.title,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.grey, size: 20),
-          ],
+        child: Text(
+          '${sub.number}  ${sub.title}',
+          style: const TextStyle(
+            color: AppColors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Roboto',
+          ),
         ),
       ),
     );
@@ -197,8 +171,7 @@ class LessonDetailPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined,
-              onTap: () => Navigator.pop(context)),
+          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
           _navIcon(Icons.person_outline),
         ],
       ),
@@ -210,8 +183,11 @@ class LessonDetailPage extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Icon(icon,
-            color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+        child: Icon(
+          icon,
+          color: AppColors.grey.withValues(alpha: 0.5),
+          size: 26,
+        ),
       ),
     );
   }

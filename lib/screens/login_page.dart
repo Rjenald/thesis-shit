@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 import 'teacher_account_page.dart';
+import 'student_account_page.dart';
 import '../constants/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/session_storage_service.dart';
@@ -96,11 +97,24 @@ class _LoginPageState extends State<LoginPage> {
 
       if (loginData['success'] == true) {
         await SessionStorageService.saveUsername(username.text.trim());
-        await SessionStorageService.saveRole('student');
+
+        // Check role from API response or default to student
+        final role = loginData['role'] ?? 'student';
+        await SessionStorageService.saveRole(role);
         if (!mounted) return;
+
+        Widget destination;
+        if (role == 'teacher') {
+          destination = const TeacherAccountPage();
+        } else if (role == 'student') {
+          destination = const StudentAccountPage();
+        } else {
+          destination = const HomePage();
+        }
+
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(builder: (_) => destination),
           (route) => false,
         );
       } else {
@@ -140,10 +154,8 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 1000),
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    ),
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
                     child: Image.network(
                       _backgroundImages[_currentPage],
                       key: ValueKey(_currentPage),

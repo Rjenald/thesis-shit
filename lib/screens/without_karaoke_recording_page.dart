@@ -147,8 +147,8 @@ class _WithoutKaraokeRecordingPageState
   /// Colour for CREPE confidence bar: green ≥80%, yellow ≥55%, red below.
   Color get _clarityColor {
     if (_clarity >= 0.80) return const Color(0xFF4CAF50); // green
-    if (_clarity >= 0.55) return Colors.orangeAccent;     // yellow
-    return const Color(0xFFF44336);                        // red
+    if (_clarity >= 0.55) return Colors.orangeAccent; // yellow
+    return const Color(0xFFF44336); // red
   }
 
   Color get _feedbackColor {
@@ -402,15 +402,18 @@ class _WithoutKaraokeRecordingPageState
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.graphic_eq,
-                                      size: 12,
-                                      color: AppColors.primaryCyan),
+                                  const Icon(
+                                    Icons.graphic_eq,
+                                    size: 12,
+                                    color: AppColors.primaryCyan,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Voice Clarity',
                                     style: TextStyle(
-                                      color: AppColors.grey
-                                          .withValues(alpha: 0.7),
+                                      color: AppColors.grey.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       fontSize: 11,
                                       fontFamily: 'Roboto',
                                     ),

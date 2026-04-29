@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'home_page.dart';
 import 'teacher_account_page.dart';
+import 'student_account_page.dart';
 import '../constants/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/session_storage_service.dart';
@@ -139,13 +140,19 @@ class _RegisterPageState extends State<RegisterPage> {
         await SessionStorageService.saveUsername(username.text.trim());
         await SessionStorageService.saveRole(_selectedRole);
         if (!mounted) return;
+
+        Widget destination;
+        if (_selectedRole == 'teacher') {
+          destination = const TeacherAccountPage();
+        } else if (_selectedRole == 'student') {
+          destination = const StudentAccountPage();
+        } else {
+          destination = const HomePage();
+        }
+
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (_) => _selectedRole == 'teacher'
-                ? const TeacherAccountPage()
-                : const HomePage(),
-          ),
+          MaterialPageRoute(builder: (_) => destination),
           (route) => false,
         );
       } else {
@@ -182,10 +189,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   width: double.infinity,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 1000),
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    ),
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
                     child: Image.network(
                       _backgroundImages[_currentPage],
                       key: ValueKey(_currentPage),
@@ -232,8 +237,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       _selectedRole == 'student'
                           ? 'as Student'
                           : _selectedRole == 'teacher'
-                              ? 'as Teacher'
-                              : 'as Normal User',
+                          ? 'as Teacher'
+                          : 'as Normal User',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -365,7 +370,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           TextSpan(
                             text: ' and ',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
                           ),
                           TextSpan(
                             text: 'Privacy Policy',
@@ -488,7 +495,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                    if (_selectedRole == 'student' || _selectedRole == 'teacher')
+                    if (_selectedRole == 'student' ||
+                        _selectedRole == 'teacher')
                       const SizedBox(height: 12),
                     Text(
                       'Login Information',
@@ -552,7 +560,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         fillColor: AppColors.inputBg,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: AppColors.grey,
                           ),
                           onPressed: () {
@@ -579,11 +589,15 @@ class _RegisterPageState extends State<RegisterPage> {
                         fillColor: AppColors.inputBg,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscureRePassword ? Icons.visibility_off : Icons.visibility,
+                            obscureRePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: AppColors.grey,
                           ),
                           onPressed: () {
-                            setState(() => obscureRePassword = !obscureRePassword);
+                            setState(
+                              () => obscureRePassword = !obscureRePassword,
+                            );
                           },
                         ),
                         border: OutlineInputBorder(
