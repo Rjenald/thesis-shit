@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+const _cyan = Color(0xFF00ACC1);
+const _dark = Colors.black;
+const _cardBg = Color(0xFF3A3A3A);
+const _navBg = Color(0xFF2A2A2A);
+
+// ==================== MAIN NAV ====================
+
 class StudentAccountPage extends StatefulWidget {
   const StudentAccountPage({super.key});
 
@@ -10,27 +17,34 @@ class StudentAccountPage extends StatefulWidget {
 class _StudentAccountPageState extends State<StudentAccountPage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const NotificationScreen(),
-    const KaraokeModeScreen(),
-    const HomeScreen(),
-    const CalendarScreen(),
-    const ProfileScreen(),
-  ];
-
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
+  }
+
+  Widget _getScreen() {
+    switch (_selectedIndex) {
+      case 0:
+        return const NotificationScreen();
+      case 1:
+        return const KaraokeModeScreen();
+      case 2:
+        return const ClassroomScreen();
+      case 3:
+        return const CalendarScreen();
+      case 4:
+        return const ProfileScreen();
+      default:
+        return const ClassroomScreen();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: _getScreen(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
+          color: _navBg,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -65,16 +79,12 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isSelected ? const Color(0xFF00ACC1) : Colors.white70,
-            size: 24,
-          ),
+          Icon(icon, color: isSelected ? _cyan : Colors.white70, size: 24),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? const Color(0xFF00ACC1) : Colors.white70,
+              color: isSelected ? _cyan : Colors.white70,
               fontSize: 10,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
@@ -98,90 +108,62 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final List<Map<String, dynamic>> _notifications = [
     {
       'name': 'Bags, Kian Francis',
-      'action': 'Added Activity | Solfage',
+      'action': 'Added Activity | Solfege',
       'deadline': '01.01.21',
       'type': 'activity',
     },
     {
       'name': 'Bags, Kian Francis',
-      'action': 'Add to Grade 11 - Sampaguita',
+      'action': 'Add to Grade 11 – Sampaguita',
       'type': 'enrollment',
     },
   ];
 
   void _confirmNotification(int index) {
-    setState(() {
-      _notifications.removeAt(index);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notification confirmed'),
-        backgroundColor: Color(0xFF00ACC1),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    setState(() => _notifications.removeAt(index));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Notification confirmed'),
+      backgroundColor: _cyan,
+      duration: Duration(seconds: 2),
+    ));
   }
 
   void _deleteNotification(int index) {
-    setState(() {
-      _notifications.removeAt(index);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notification deleted'),
-        backgroundColor: Colors.redAccent,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    setState(() => _notifications.removeAt(index));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Notification deleted'),
+      backgroundColor: Colors.redAccent,
+      duration: Duration(seconds: 2),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: _dark,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: _dark,
         elevation: 0,
         title: const Text(
           'Notification',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Row(
-              children: [
-                Icon(Icons.signal_cellular_alt, color: Colors.white, size: 16),
-                const SizedBox(width: 4),
-                Icon(Icons.wifi, color: Colors.white, size: 16),
-                const SizedBox(width: 4),
-                Icon(Icons.battery_full, color: Colors.white, size: 16),
-              ],
-            ),
-          ),
-        ],
       ),
       body: _notifications.isEmpty
           ? const Center(
-              child: Text(
-                'No new notifications',
-                style: TextStyle(color: Colors.white54, fontSize: 16),
-              ),
+              child: Text('No new notifications',
+                  style: TextStyle(color: Colors.white54, fontSize: 16)),
             )
           : ListView.builder(
               itemCount: _notifications.length,
-              padding: const EdgeInsets.symmetric(horizontal: 0),
+              padding: EdgeInsets.zero,
               itemBuilder: (context, index) {
-                final notif = _notifications[index];
-                return NotificationCard(
-                  name: notif['name'],
-                  action: notif['action'],
-                  deadline: notif['deadline'],
-                  type: notif['type'],
+                final n = _notifications[index];
+                return _NotificationCard(
+                  name: n['name'],
+                  action: n['action'],
+                  deadline: n['deadline'],
+                  type: n['type'],
                   onConfirm: () => _confirmNotification(index),
                   onDelete: () => _deleteNotification(index),
                 );
@@ -191,7 +173,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 }
 
-class NotificationCard extends StatelessWidget {
+class _NotificationCard extends StatelessWidget {
   final String name;
   final String action;
   final String? deadline;
@@ -199,8 +181,7 @@ class NotificationCard extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback onDelete;
 
-  const NotificationCard({
-    super.key,
+  const _NotificationCard({
     required this.name,
     required this.action,
     this.deadline,
@@ -213,86 +194,58 @@ class NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 1),
-      color: const Color(0xFF2A2A2A),
+      color: _navBg,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          // Avatar
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.grey[700],
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 20,
-            ),
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.grey[700],
+            child: const Icon(Icons.person, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 12),
-          // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(name,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
-                Text(
-                  action,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(action,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
-          // Actions
-          if (type == 'activity' && deadline != null) ...[
-            Text(
-              'Deadline: $deadline',
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 11,
-              ),
-            ),
-          ] else if (type == 'enrollment') ...[
+          if (type == 'activity' && deadline != null)
+            Text('Deadline: $deadline',
+                style: const TextStyle(color: Colors.white54, fontSize: 11))
+          else if (type == 'enrollment') ...[
             TextButton(
               onPressed: onConfirm,
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF00ACC1),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                foregroundColor: _cyan,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'Confirm',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-              ),
+              child: const Text('Confirm',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             ),
             TextButton(
               onPressed: onDelete,
               style: TextButton.styleFrom(
                 foregroundColor: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'Delete',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-              ),
+              child: const Text('Delete',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             ),
           ],
         ],
@@ -311,108 +264,105 @@ class ClassroomScreen extends StatefulWidget {
 }
 
 class _ClassroomScreenState extends State<ClassroomScreen> {
-  bool _isEnrolled = true;
+  final bool _isEnrolled = true;
+  final String _className = 'Grade 11 – Sampaguita';
 
   final List<Map<String, dynamic>> _lessons = [
-    {'title': 'Lesson 1: Solfege Drill', 'completed': false},
-    {'title': 'Lesson 2: Karaoke Practice', 'completed': false},
+    {
+      'number': 1,
+      'title': 'Lesson 1: Solfege Drill',
+      'subLessons': [
+        {'number': '1.1', 'title': 'Practice Solfege'},
+        {'number': '1.2', 'title': 'Solfege Activity'},
+      ],
+    },
+    {
+      'number': 2,
+      'title': 'Lesson 2: Karaoke Practice',
+      'subLessons': [
+        {'number': '2.1', 'title': 'Practice Karaoke'},
+      ],
+    },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: _dark,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: _dark,
         elevation: 0,
         title: const Text(
           'Classroom',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+              color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Row(
-              children: [
-                Icon(Icons.signal_cellular_alt, color: Colors.white, size: 16),
-                const SizedBox(width: 4),
-                Icon(Icons.wifi, color: Colors.white, size: 16),
-                const SizedBox(width: 4),
-                Icon(Icons.battery_full, color: Colors.white, size: 16),
-              ],
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
-          // Class Header / Enrollment Status
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _isEnrolled = !_isEnrolled;
-              });
-            },
-            child: Container(
-              width: double.infinity,
-              color: const Color(0xFF00ACC1),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Center(
-                child: Text(
-                  _isEnrolled ? 'Grade 11 - Sampaguita' : 'Not Enrolled yet',
-                  style: const TextStyle(
+          // Cyan class banner
+          Container(
+            width: double.infinity,
+            color: _cyan,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Center(
+              child: Text(
+                _isEnrolled ? _className : 'Not Enrolled yet',
+                style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600),
               ),
             ),
           ),
-          // Lessons List (only show if enrolled)
+
+          // Lessons list
           if (_isEnrolled)
             Expanded(
               child: ListView.builder(
+                padding: EdgeInsets.zero,
                 itemCount: _lessons.length,
-                padding: const EdgeInsets.all(0),
                 itemBuilder: (context, index) {
                   final lesson = _lessons[index];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3A3A3A),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            lesson['title'],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => StudentLessonDetailPage(
+                            className: _className,
+                            lessonTitle: lesson['title'],
+                            subLessons: List<Map<String, dynamic>>.from(
+                                lesson['subLessons']),
                           ),
                         ),
-                        Icon(
-                          Icons.chevron_right,
-                          color: Colors.white54,
-                          size: 20,
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: _cardBg,
+                        border: Border(
+                          bottom: BorderSide(
+                              color: Colors.black.withOpacity(0.3), width: 1),
                         ),
-                      ],
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              lesson['title'],
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right,
+                              color: Colors.white54, size: 20),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -421,13 +371,135 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
           else
             const Expanded(
               child: Center(
-                child: Text(
-                  'Enroll in a class to see lessons',
-                  style: TextStyle(color: Colors.white54, fontSize: 14),
-                ),
+                child: Text('Enroll in a class to see lessons',
+                    style: TextStyle(color: Colors.white54, fontSize: 14)),
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+// ==================== LESSON DETAIL PAGE ====================
+
+class StudentLessonDetailPage extends StatelessWidget {
+  final String className;
+  final String lessonTitle;
+  final List<Map<String, dynamic>> subLessons;
+
+  const StudentLessonDetailPage({
+    super.key,
+    required this.className,
+    required this.lessonTitle,
+    required this.subLessons,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _dark,
+      body: Column(
+        children: [
+          // Cyan header
+          Container(
+            width: double.infinity,
+            color: _cyan,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              bottom: 18,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.black, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        className.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 36),
+                  child: Text(
+                    lessonTitle,
+                    style: const TextStyle(color: Colors.black87, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Sub-lesson list
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: subLessons.length,
+              itemBuilder: (context, index) {
+                final sub = subLessons[index];
+                return Container(
+                  decoration: BoxDecoration(
+                    color: _cardBg,
+                    border: Border(
+                      bottom: BorderSide(
+                          color: Colors.black.withOpacity(0.3), width: 1),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 20),
+                  child: Text(
+                    '${sub['number']}    ${sub['title']}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        height: 70,
+        color: _navBg,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _navIcon(Icons.notifications_outlined),
+            _navIcon(Icons.mic_none),
+            _navIcon(Icons.home_outlined,
+                onTap: () => Navigator.pop(context)),
+            _navIcon(Icons.calendar_today_outlined),
+            _navIcon(Icons.person_outline),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Icon(icon, color: Colors.white54, size: 26),
       ),
     );
   }
@@ -441,29 +513,10 @@ class KaraokeModeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: _dark,
       body: Center(
-        child: Text(
-          'Karaoke Mode',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Text(
-          'Home',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
+        child: Text('Karaoke Mode',
+            style: TextStyle(color: Colors.white, fontSize: 24)),
       ),
     );
   }
@@ -475,12 +528,10 @@ class CalendarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: _dark,
       body: Center(
-        child: Text(
-          'Calendar',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
+        child: Text('Calendar',
+            style: TextStyle(color: Colors.white, fontSize: 24)),
       ),
     );
   }
@@ -492,12 +543,10 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: _dark,
       body: Center(
-        child: Text(
-          'Profile',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
+        child:
+            Text('Profile', style: TextStyle(color: Colors.white, fontSize: 24)),
       ),
     );
   }
