@@ -190,40 +190,6 @@ class _PracticeSolfegeViewState extends State<_PracticeSolfegeView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Instruction section
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.inputBg,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Instruction:',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Listen to each note and match it with your voice. Click record and sing the solfege syllable.',
-                  style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.8),
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
           // Big note display card
           Container(
             height: 300,
@@ -296,76 +262,6 @@ class _PracticeSolfegeViewState extends State<_PracticeSolfegeView> {
                 fontSize: 12,
                 fontFamily: 'Roboto',
               ),
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Assignment section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Assignment',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Max Score:',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    Text(
-                      '100',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Deadline:',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    Text(
-                      'March 21',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
           ),
         ],
@@ -785,76 +681,6 @@ class _SolfegeActivityViewState extends State<_SolfegeActivityView> {
                   fontFamily: 'Roboto',
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Assignment section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Assignment',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Max Score:',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    Text(
-                      '${_activeSequence.length}',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Deadline:',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    Text(
-                      'March 21',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
           ),
         ],

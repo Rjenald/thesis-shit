@@ -148,34 +148,17 @@ class LessonDetailPage extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF4A4A4A),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            Text(
-              sub.number,
-              style: const TextStyle(
-                color: AppColors.primaryCyan,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                sub.title,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.grey, size: 20),
-          ],
+        child: Text(
+          '${sub.number}  ${sub.title}',
+          style: const TextStyle(
+            color: AppColors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Roboto',
+          ),
         ),
       ),
     );
