@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'teacher_account_page.dart';
+import 'student_account_page.dart';
 import 'start_page.dart';
 import '../constants/app_colors.dart';
 import '../services/api_service.dart';
@@ -140,25 +141,18 @@ class _RegisterPageState extends State<RegisterPage> {
         await SessionStorageService.saveRole(_selectedRole);
         if (!mounted) return;
 
-        // Only teachers can access the app
+        Widget destination;
         if (_selectedRole == 'teacher') {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const TeacherAccountPage()),
-            (route) => false,
-          );
+          destination = const TeacherAccountPage();
         } else {
-          // Deny access for non-teachers
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Only teachers can register')),
-          );
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const StartPage()),
-            (route) => false,
-          );
+          destination = const StudentAccountPage();
         }
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => destination),
+          (route) => false,
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registered! Please log in.')),
