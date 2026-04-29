@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/tagalog_bisaya_songs.dart';
+import 'karaoke_recording_page.dart';
 import 'practice_solfege_page.dart';
 import 'solfege_activity_page.dart';
 import 'karaoke_practice_mode_page.dart';
@@ -20,24 +22,41 @@ class StudentAccountPage extends StatefulWidget {
 class _StudentAccountPageState extends State<StudentAccountPage> {
   int _selectedIndex = 0;
 
+  // Enrollment state — becomes true when student confirms the enrollment notif
+  bool _isEnrolled = false;
+  final String _enrolledClass = 'Grade 11 – Sampaguita';
+
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
+  }
+
+  void _onEnrollmentConfirmed() {
+    setState(() {
+      _isEnrolled = true;
+      _selectedIndex = 2; // Jump to Home (Classroom)
+    });
   }
 
   Widget _getScreen() {
     switch (_selectedIndex) {
       case 0:
-        return const NotificationScreen();
+        return NotificationScreen(onEnrollmentConfirmed: _onEnrollmentConfirmed);
       case 1:
-        return const KaraokeModeScreen();
+        return const StudentKaraokeModeScreen();
       case 2:
-        return const ClassroomScreen();
+        return ClassroomScreen(
+          isEnrolled: _isEnrolled,
+          className: _enrolledClass,
+        );
       case 3:
         return const CalendarScreen();
       case 4:
         return const ProfileScreen();
       default:
-        return const ClassroomScreen();
+        return ClassroomScreen(
+          isEnrolled: _isEnrolled,
+          className: _enrolledClass,
+        );
     }
   }
 
@@ -101,7 +120,8 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
 // ==================== NOTIFICATION SCREEN ====================
 
 class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+  final VoidCallback? onEnrollmentConfirmed;
+  const NotificationScreen({super.key, this.onEnrollmentConfirmed});
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
@@ -111,21 +131,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final List<Map<String, dynamic>> _notifications = [
     {
       'name': 'Bags, Kian Francis',
+      'action': 'Add to Grade 11 – Sampaguita',
+      'type': 'enrollment',
+    },
+    {
+      'name': 'Bags, Kian Francis',
       'action': 'Added Activity | Solfege',
       'deadline': '01.01.21',
       'type': 'activity',
     },
-    {
-      'name': 'Bags, Kian Francis',
-      'action': 'Add to Grade 11 – Sampaguita',
-      'type': 'enrollment',
-    },
   ];
 
   void _confirmNotification(int index) {
+    final type = _notifications[index]['type'];
     setState(() => _notifications.removeAt(index));
+    if (type == 'enrollment') {
+      widget.onEnrollmentConfirmed?.call();
+    }
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Notification confirmed'),
+      content: Text('Confirmed — you are now enrolled!'),
       backgroundColor: _cyan,
       duration: Duration(seconds: 2),
     ));
@@ -147,22 +171,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
       appBar: AppBar(
         backgroundColor: _dark,
         elevation: 0,
-        title: const Text(
-          'Notification',
-          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Notification',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold)),
       ),
       body: _notifications.isEmpty
           ? const Center(
               child: Text('No new notifications',
-                  style: TextStyle(color: Colors.white54, fontSize: 16)),
-            )
+                  style: TextStyle(color: Colors.white54, fontSize: 16)))
           : ListView.builder(
               itemCount: _notifications.length,
               padding: EdgeInsets.zero,
               itemBuilder: (context, index) {
                 final n = _notifications[index];
-                return _NotificationCard(
+                return _NotifCard(
                   name: n['name'],
                   action: n['action'],
                   deadline: n['deadline'],
@@ -176,7 +200,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 }
 
-class _NotificationCard extends StatelessWidget {
+class _NotifCard extends StatelessWidget {
   final String name;
   final String action;
   final String? deadline;
@@ -184,7 +208,7 @@ class _NotificationCard extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback onDelete;
 
-  const _NotificationCard({
+  const _NotifCard({
     required this.name,
     required this.action,
     this.deadline,
@@ -257,30 +281,277 @@ class _NotificationCard extends StatelessWidget {
   }
 }
 
-// ==================== CLASSROOM SCREEN ====================
+// ==================== KARAOKE MODE SCREEN (same as normal user, no profile) ====================
 
-class ClassroomScreen extends StatefulWidget {
-  const ClassroomScreen({super.key});
+class StudentKaraokeModeScreen extends StatefulWidget {
+  const StudentKaraokeModeScreen({super.key});
 
   @override
-  State<ClassroomScreen> createState() => _ClassroomScreenState();
+  State<StudentKaraokeModeScreen> createState() =>
+      _StudentKaraokeModeScreenState();
 }
 
-class _ClassroomScreenState extends State<ClassroomScreen> {
-  final bool _isEnrolled = true;
-  final String _className = 'Grade 11 – Sampaguita';
+class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+  String _selectedLanguage = 'All';
 
-  final List<Map<String, dynamic>> _lessons = [
+  List<KaraokeSong> get _filtered {
+    final allSongs = TagalogBisayaSongs.songs;
+    if (_query.trim().isEmpty && _selectedLanguage == 'All') return allSongs.toList();
+    final q = _query.toLowerCase();
+    return allSongs.where((s) {
+      final matchesQuery = q.isEmpty ||
+          s.title.toLowerCase().contains(q) ||
+          s.artist.toLowerCase().contains(q);
+      final matchesLang =
+          _selectedLanguage == 'All' || s.language == _selectedLanguage;
+      return matchesQuery && matchesLang;
+    }).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _query = _searchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final results = _filtered;
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header — NO profile icon
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Karaoke',
+                          style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'Roboto')),
+                      Text('Choose a song to sing',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white54,
+                              fontFamily: 'Roboto')),
+                    ],
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _cyan.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.music_note,
+                            color: _cyan, size: 14),
+                        const SizedBox(width: 4),
+                        Text('${results.length} songs',
+                            style: const TextStyle(
+                                color: _cyan,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2A),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: 'Search songs, artist...',
+                    hintStyle: TextStyle(color: Colors.white38),
+                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 20),
+                    border: InputBorder.none,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Language filter chips
+            SizedBox(
+              height: 36,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: ['All', 'Tagalog', 'Bisaya'].map((lang) {
+                  final selected = _selectedLanguage == lang;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedLanguage = lang),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? _cyan
+                            : const Color(0xFF2A2A2A),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(lang,
+                          style: TextStyle(
+                              color: selected ? Colors.black : Colors.white70,
+                              fontSize: 12,
+                              fontWeight: selected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Song list
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: results.length,
+                itemBuilder: (context, index) {
+                  final song = results[index];
+                  return GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => KaraokeRecordingPage(
+                          songTitle: song.title,
+                          songArtist: song.artist,
+                          songImage: '',
+                        ),
+                      ),
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2A2A2A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.music_note,
+                                color: Colors.white38, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(song.title,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Text(song.artist,
+                                        style: const TextStyle(
+                                            color: Colors.white54,
+                                            fontSize: 12),
+                                        overflow: TextOverflow.ellipsis),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: _cyan.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(song.language,
+                                          style: const TextStyle(
+                                              color: _cyan,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.play_circle_outline,
+                              color: Colors.white38, size: 28),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== CLASSROOM SCREEN ====================
+
+class ClassroomScreen extends StatelessWidget {
+  final bool isEnrolled;
+  final String className;
+
+  const ClassroomScreen({
+    super.key,
+    required this.isEnrolled,
+    required this.className,
+  });
+
+  final List<Map<String, dynamic>> _lessons = const [
     {
-      'number': 1,
       'title': 'Lesson 1: Solfege Drill',
       'subLessons': [
         {'number': '1.1', 'title': 'Practice Solfege'},
-        {'number': '1.2', 'title': 'Solfege Activity'},
+        {'number': '1.1', 'title': 'Solfege Activity'},
       ],
     },
     {
-      'number': 2,
       'title': 'Lesson 2: Karaoke Practice',
       'subLessons': [
         {'number': '2.1', 'title': 'Karaoke Practice'},
@@ -295,11 +566,11 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
       appBar: AppBar(
         backgroundColor: _dark,
         elevation: 0,
-        title: const Text(
-          'Classroom',
-          style: TextStyle(
-              color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Classroom',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold)),
       ),
       body: Column(
         children: [
@@ -310,7 +581,7 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Center(
               child: Text(
-                _isEnrolled ? _className : 'Not Enrolled yet',
+                isEnrolled ? className : 'Not Enrolled yet',
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
@@ -319,8 +590,7 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
             ),
           ),
 
-          // Lessons list
-          if (_isEnrolled)
+          if (isEnrolled)
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.zero,
@@ -328,25 +598,24 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
                 itemBuilder: (context, index) {
                   final lesson = _lessons[index];
                   return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => StudentLessonDetailPage(
-                            className: _className,
-                            lessonTitle: lesson['title'],
-                            subLessons: List<Map<String, dynamic>>.from(
-                                lesson['subLessons']),
-                          ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => StudentLessonDetailPage(
+                          className: className,
+                          lessonTitle: lesson['title'],
+                          subLessons: List<Map<String, dynamic>>.from(
+                              lesson['subLessons']),
                         ),
-                      );
-                    },
+                      ),
+                    ),
                     child: Container(
                       decoration: BoxDecoration(
                         color: _cardBg,
                         border: Border(
                           bottom: BorderSide(
-                              color: Colors.black.withValues(alpha: 0.3), width: 1),
+                              color: Colors.black.withValues(alpha: 0.3),
+                              width: 1),
                         ),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -354,13 +623,11 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              lesson['title'],
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500),
-                            ),
+                            child: Text(lesson['title'],
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500)),
                           ),
                           const Icon(Icons.chevron_right,
                               color: Colors.white54, size: 20),
@@ -474,10 +741,9 @@ class StudentLessonDetailPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.only(left: 36),
-                  child: Text(
-                    lessonTitle,
-                    style: const TextStyle(color: Colors.black87, fontSize: 12),
-                  ),
+                  child: Text(lessonTitle,
+                      style: const TextStyle(
+                          color: Colors.black87, fontSize: 12)),
                 ),
               ],
             ),
@@ -497,7 +763,8 @@ class StudentLessonDetailPage extends StatelessWidget {
                       color: _cardBg,
                       border: Border(
                         bottom: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.3), width: 1),
+                            color: Colors.black.withValues(alpha: 0.3),
+                            width: 1),
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(
@@ -524,8 +791,7 @@ class StudentLessonDetailPage extends StatelessWidget {
           children: [
             _navIcon(Icons.notifications_outlined),
             _navIcon(Icons.mic_none),
-            _navIcon(Icons.home_outlined,
-                onTap: () => Navigator.pop(context)),
+            _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
             _navIcon(Icons.calendar_today_outlined),
             _navIcon(Icons.person_outline),
           ],
@@ -547,24 +813,8 @@ class StudentLessonDetailPage extends StatelessWidget {
 
 // ==================== PLACEHOLDER SCREENS ====================
 
-class KaraokeModeScreen extends StatelessWidget {
-  const KaraokeModeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: _dark,
-      body: Center(
-        child: Text('Karaoke Mode',
-            style: TextStyle(color: Colors.white, fontSize: 24)),
-      ),
-    );
-  }
-}
-
 class CalendarScreen extends StatelessWidget {
   const CalendarScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
@@ -579,14 +829,13 @@ class CalendarScreen extends StatelessWidget {
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: _dark,
       body: Center(
-        child:
-            Text('Profile', style: TextStyle(color: Colors.white, fontSize: 24)),
+        child: Text('Profile',
+            style: TextStyle(color: Colors.white, fontSize: 24)),
       ),
     );
   }
