@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import 'karaoke_assign_page.dart';
 import 'karaoke_practice_mode_page.dart';
-import 'piano_voice_matching_page.dart';
 import 'practice_solfege_page.dart';
 import 'solfege_activity_page.dart';
 

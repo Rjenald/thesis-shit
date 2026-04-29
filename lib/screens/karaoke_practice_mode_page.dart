@@ -12,15 +12,15 @@ class KaraokePracticeModePage extends StatelessWidget {
   final DateTime? dueDate;
   final int maxScore;
 
-  const KaraokePracticeModePagestyle({
-    super.key,
+  const KaraokePracticeModePage({
+    Key? key,
     required this.classData,
     required this.songTitle,
     required this.songArtist,
     required this.songImage,
     this.dueDate,
     this.maxScore = 100,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
