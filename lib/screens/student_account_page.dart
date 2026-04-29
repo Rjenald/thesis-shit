@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'practice_solfege_page.dart';
+import 'solfege_activity_page.dart';
+import 'karaoke_practice_mode_page.dart';
 
 const _cyan = Color(0xFF00ACC1);
 const _dark = Colors.black;
@@ -47,7 +50,7 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
           color: _navBg,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -280,7 +283,7 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
       'number': 2,
       'title': 'Lesson 2: Karaoke Practice',
       'subLessons': [
-        {'number': '2.1', 'title': 'Practice Karaoke'},
+        {'number': '2.1', 'title': 'Karaoke Practice'},
       ],
     },
   ];
@@ -343,7 +346,7 @@ class _ClassroomScreenState extends State<ClassroomScreen> {
                         color: _cardBg,
                         border: Border(
                           bottom: BorderSide(
-                              color: Colors.black.withOpacity(0.3), width: 1),
+                              color: Colors.black.withValues(alpha: 0.3), width: 1),
                         ),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -394,6 +397,40 @@ class StudentLessonDetailPage extends StatelessWidget {
     required this.lessonTitle,
     required this.subLessons,
   });
+
+  void _navigateToSubLesson(BuildContext context, String title) {
+    final classData = {'name': className};
+    Widget? page;
+
+    switch (title) {
+      case 'Practice Solfege':
+        page = PracticeSolfegePage(
+          classData: classData,
+          lessonTitle: lessonTitle,
+        );
+        break;
+      case 'Solfege Activity':
+        page = SolfegeActivityPage(
+          classData: classData,
+          lessonTitle: lessonTitle,
+        );
+        break;
+      case 'Karaoke Practice':
+        page = KaraokePracticeModePage(
+          classData: classData,
+          songTitle: 'Dadalhin',
+          songArtist: 'Regine Velasquez',
+          songImage: '',
+          dueDate: DateTime(2024, 3, 21),
+          maxScore: 100,
+        );
+        break;
+    }
+
+    if (page != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => page!));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -453,22 +490,25 @@ class StudentLessonDetailPage extends StatelessWidget {
               itemCount: subLessons.length,
               itemBuilder: (context, index) {
                 final sub = subLessons[index];
-                return Container(
-                  decoration: BoxDecoration(
-                    color: _cardBg,
-                    border: Border(
-                      bottom: BorderSide(
-                          color: Colors.black.withOpacity(0.3), width: 1),
+                return GestureDetector(
+                  onTap: () => _navigateToSubLesson(context, sub['title']),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _cardBg,
+                      border: Border(
+                        bottom: BorderSide(
+                            color: Colors.black.withValues(alpha: 0.3), width: 1),
+                      ),
                     ),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 20),
-                  child: Text(
-                    '${sub['number']}    ${sub['title']}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 20),
+                    child: Text(
+                      '${sub['number']}    ${sub['title']}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
                   ),
                 );
               },
