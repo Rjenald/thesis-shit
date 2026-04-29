@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../data/tagalog_bisaya_songs.dart';
 import 'karaoke_recording_page.dart';
 import 'practice_solfege_page.dart';
-import 'solfege_activity_page.dart';
 import 'karaoke_practice_mode_page.dart';
 
 const _cyan = Color(0xFF00ACC1);
@@ -677,8 +676,8 @@ class StudentLessonDetailPage extends StatelessWidget {
         );
         break;
       case 'Solfege Activity':
-        page = SolfegeActivityPage(
-          classData: classData,
+        page = StudentSolfegeActivityPage(
+          className: className,
           lessonTitle: lessonTitle,
         );
         break;
@@ -783,29 +782,402 @@ class StudentLessonDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        height: 70,
-        color: _navBg,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navIcon(Icons.notifications_outlined),
-            _navIcon(Icons.mic_none),
-            _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-            _navIcon(Icons.calendar_today_outlined),
-            _navIcon(Icons.person_outline),
-          ],
+      bottomNavigationBar: _buildStudentNav(context),
+    );
+  }
+
+  Widget _buildStudentNav(BuildContext context) {
+    return Container(
+      color: _navBg,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(Icons.notifications_outlined, 'Notification'),
+              _navItem(Icons.mic_none, 'Karaoke Mode'),
+              _navItem(Icons.home_outlined, 'Home',
+                  onTap: () => Navigator.pop(context)),
+              _navItem(Icons.calendar_today_outlined, 'Calendar'),
+              _navItem(Icons.person_outline, 'Profile'),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
+  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(icon, color: Colors.white54, size: 26),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 24),
+          const SizedBox(height: 4),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== STUDENT SOLFEGE ACTIVITY PAGE ====================
+
+class StudentSolfegeActivityPage extends StatefulWidget {
+  final String className;
+  final String lessonTitle;
+
+  const StudentSolfegeActivityPage({
+    super.key,
+    required this.className,
+    required this.lessonTitle,
+  });
+
+  @override
+  State<StudentSolfegeActivityPage> createState() =>
+      _StudentSolfegeActivityPageState();
+}
+
+class _StudentSolfegeActivityPageState
+    extends State<StudentSolfegeActivityPage> {
+  // Note grid — two columns, 5 rows (matches Figma)
+  static const _noteRows = [
+    ['Do', 'Mi'],
+    ['Mi', 'Mi'],
+    ['Fa', 'Mi'],
+    ['So', 'La'],
+    ['La', 'Mi'],
+  ];
+
+  bool _isRecording = false;
+  final String _hitNote = 'Do';
+  final double _pitchOffset = 0.0; // -1 = too high, 0 = center, 1 = too low
+  final double _score = 90.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Column(
+        children: [
+          // ── Cyan header ──────────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            color: _cyan,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              bottom: 18,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.black, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      widget.className.toUpperCase(),
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 36),
+                  child: Text(
+                    '${widget.lessonTitle}  /  Solfege Activity',
+                    style:
+                        const TextStyle(color: Colors.black87, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Scrollable body ──────────────────────────────────────────
+          Expanded(
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Instruction box
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5A5A5A),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Instruction:',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Note grid (2 columns × 5 rows)
+                  ..._noteRows.map(
+                    (row) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        children: [
+                          Expanded(child: _noteCell(row[0])),
+                          const SizedBox(width: 8),
+                          Expanded(child: _noteCell(row[1])),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Hit Note + NO badge
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A2A2A),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Hit Note: ',
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 13)),
+                            Text(_hitNote,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text('NO',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Pitch indicator
+                  LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      final w = constraints.maxWidth;
+                      final thumbX =
+                          (w * (0.5 + _pitchOffset * 0.35)).clamp(1.0, w - 3);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Container(
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                  color: Colors.white12, width: 0.5),
+                            ),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  top: 21,
+                                  left: 12,
+                                  right: 12,
+                                  child: Container(
+                                      height: 1, color: Colors.white24),
+                                ),
+                                Positioned(
+                                  top: 10,
+                                  left: thumbX,
+                                  child: Container(
+                                      width: 2,
+                                      height: 24,
+                                      color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('TOO HIGH',
+                                  style: TextStyle(
+                                      color: Colors.white38, fontSize: 8)),
+                              Text('TOO LOW',
+                                  style: TextStyle(
+                                      color: Colors.white38, fontSize: 8)),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Score
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A2A2A),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Score  ',
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 13)),
+                          Text('${_score.round()}%',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // Record button
+                  Center(
+                    child: GestureDetector(
+                      onTap: () =>
+                          setState(() => _isRecording = !_isRecording),
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color:
+                              _isRecording ? Colors.red.shade700 : Colors.red,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withValues(alpha: 0.4),
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _isRecording ? Icons.stop : Icons.mic,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Submit button
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2A2A2A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Submit',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: _buildStudentNav(context),
+    );
+  }
+
+  Widget _noteCell(String note) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 11),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFCCCCCC)),
+      ),
+      alignment: Alignment.center,
+      child: Text(note,
+          style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w500)),
+    );
+  }
+
+  Widget _buildStudentNav(BuildContext context) {
+    return Container(
+      color: _navBg,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(Icons.notifications_outlined, 'Notification'),
+              _navItem(Icons.mic_none, 'Karaoke Mode'),
+              _navItem(Icons.home_outlined, 'Home',
+                  onTap: () => Navigator.pop(context)),
+              _navItem(Icons.calendar_today_outlined, 'Calendar'),
+              _navItem(Icons.person_outline, 'Profile'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 24),
+          const SizedBox(height: 4),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+        ],
       ),
     );
   }

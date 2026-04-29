@@ -13,14 +13,14 @@ class KaraokePracticeModePage extends StatelessWidget {
   final int maxScore;
 
   const KaraokePracticeModePage({
-    Key? key,
+    super.key,
     required this.classData,
     required this.songTitle,
     required this.songArtist,
     required this.songImage,
     this.dueDate,
     this.maxScore = 100,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +124,8 @@ class KaraokePracticeModePage extends StatelessWidget {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
                       decoration: BoxDecoration(
                         color: AppColors.primaryCyan,
                         borderRadius: BorderRadius.circular(8),
@@ -132,20 +133,32 @@ class KaraokePracticeModePage extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16),
-                            child: Text(
-                              'Song: $songTitle',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Roboto',
+                          // Song title + artist
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Song: $songTitle',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Roboto',
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'by $songArtist',
+                                style: TextStyle(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  fontSize: 11,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                            ],
                           ),
+                          // Sing badge
                           Container(
-                            margin: const EdgeInsets.only(right: 12),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 4,
@@ -250,29 +263,37 @@ class KaraokePracticeModePage extends StatelessWidget {
 
   Widget _buildBottomNav(BuildContext context) {
     return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-          _navIcon(Icons.person_outline),
-        ],
+      color: const Color(0xFF2A2A2A),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(Icons.notifications_outlined, 'Notification'),
+              _navItem(Icons.mic_none, 'Karaoke Mode'),
+              _navItem(Icons.home_outlined, 'Home',
+                  onTap: () => Navigator.pop(context)),
+              _navItem(Icons.calendar_today_outlined, 'Calendar'),
+              _navItem(Icons.person_outline, 'Profile'),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
+  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: AppColors.grey.withValues(alpha: 0.5),
-          size: 26,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 24),
+          const SizedBox(height: 4),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+        ],
       ),
     );
   }
