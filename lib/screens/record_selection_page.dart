@@ -2,6 +2,7 @@ import 'package:final_thesis_ui/screens/without_karaoke_recording_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'home_page.dart';
 
 class RecordSelectionPage extends StatelessWidget {
   const RecordSelectionPage({super.key});
@@ -64,7 +65,13 @@ class RecordSelectionPage extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            // TODO: Implement karaoke recording with songs
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const HomePage(showBackButton: true),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.inputBg,

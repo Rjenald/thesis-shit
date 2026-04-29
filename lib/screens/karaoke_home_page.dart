@@ -3,6 +3,7 @@ import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../data/tagalog_bisaya_songs.dart';
 import '../screens/karaoke_recording_page.dart';
+import 'home_page.dart';
 import 'library_page.dart';
 import 'education_mode_page.dart';
 
@@ -406,7 +407,11 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
         currentIndex: 2,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pop(context);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+            );
           } else if (index == 1) {
             Navigator.pushReplacement(
               context,

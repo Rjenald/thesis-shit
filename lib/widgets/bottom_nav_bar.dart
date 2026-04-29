@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../screens/home_page.dart';
 import '../screens/library_page.dart';
 import '../screens/record_selection_page.dart';
 import '../screens/education_mode_page.dart';
@@ -76,7 +77,7 @@ class BottomNavBar extends StatelessWidget {
         if (isStudent) {
           // Student navigation routing
           if (index == 0) {
-            destination = const PlaceholderPage(title: 'Home');
+            destination = const HomePage();
           } else if (index == 1) {
             destination = const StudentCalendarPage();
           } else if (index == 2) {
@@ -89,7 +90,7 @@ class BottomNavBar extends StatelessWidget {
         } else {
           // User account navigation routing (original)
           if (index == 0) {
-            destination = const PlaceholderPage(title: 'Home');
+            destination = const HomePage();
           } else if (index == 1) {
             destination = const LibraryPage();
           } else if (index == 2) {
@@ -186,46 +187,7 @@ class KaraokePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const PlaceholderPage(title: 'Karaoke Mode');
-  }
-}
-
-class PlaceholderPage extends StatelessWidget {
-  final String title;
-  const PlaceholderPage({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgDark,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgDark,
-        elevation: 0,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: AppColors.white,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: Text(
-              '$title feature coming soon',
-              style: TextStyle(
-                color: AppColors.grey.withValues(alpha: 0.6),
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    return const HomePage(showBackButton: true);
   }
 }
 
