@@ -1,11 +1,8 @@
-import 'package:final_thesis_ui/screens/education_mode_page.dart';
-import 'package:final_thesis_ui/screens/karaoke_home_page.dart'; // Add this import
 import 'package:final_thesis_ui/screens/without_karaoke_recording_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
-import 'library_page.dart';
 
 class RecordSelectionPage extends StatelessWidget {
   const RecordSelectionPage({super.key});
@@ -63,7 +60,7 @@ class RecordSelectionPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 40),
 
-                      // With Karaoke Button - Now goes to Karaoke Home Page
+                      // With Karaoke Button — full 558-song catalog
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -72,7 +69,7 @@ class RecordSelectionPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
-                                    KaraokeHomePage(), // Changed to KaraokeHomePage
+                                    const HomePage(showBackButton: true),
                               ),
                             );
                           },
@@ -140,30 +137,7 @@ class RecordSelectionPage extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: 2,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const HomePage()),
-              (route) => false,
-            );
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const LibraryPage()),
-            );
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const RecordSelectionPage()),
-            );
-          } else if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const EducationModePage()),
-            );
-          }
-        },
+        onTap: (_) {},
       ),
     );
   }

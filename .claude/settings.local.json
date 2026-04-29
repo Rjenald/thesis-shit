@@ -31,6 +31,7 @@
       "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5554 wait-for-device shell getprop sys.boot_completed)",
       "Bash(\"/c/Users/acer/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5556 wait-for-device shell getprop sys.boot_completed)",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "WebFetch(domain:www.stingray.com)",
       "Bash(pip show *)",
       "Bash(python3 -m pip show tensorflow)",
@@ -72,6 +73,9 @@
       "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\.vscode\\\\\" 2>&1\")",
       "Bash(cmd.exe /c \"mkdir \\\\\"C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\.vscode\\\\\" 2>&1\")",
       "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\acer\\\\OneDrive\\\\Desktop\\\\final thesis UI\\\\thesis-shit\\\\pubspec.yaml'\")"
+=======
+      "WebFetch(domain:www.stingray.com)"
+>>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 =======
       "WebFetch(domain:www.stingray.com)"
 >>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f

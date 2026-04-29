@@ -12,16 +12,20 @@ class PitchServerConfig {
   /// Change this to match your network.
   // Android emulator → 10.0.2.2 (your PC's localhost)
   // Real Android device → your PC's local IP e.g. 192.168.1.10
-<<<<<<< HEAD
   static const String serverIp = '192.168.1.8';
-=======
-  static const String serverIp = '10.0.2.2';
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   static const int serverPort = 8000;
+
+  static String get _base => 'http://$serverIp:$serverPort';
 
   /// WebSocket URL for real-time pitch streaming
   static String get wsUrl => 'ws://$serverIp:$serverPort/pitch';
 
   /// HTTP health check URL
-  static String get healthUrl => 'http://$serverIp:$serverPort/health';
+  static String get healthUrl => '$_base/health';
+
+  /// Song catalog endpoint — returns JSON: {songs: [...], count: N}
+  static String get songsUrl => '$_base/songs';
+
+  /// Lyrics proxy endpoint — ?title=...&artist=...
+  static String get lyricsUrl => '$_base/lyrics';
 }

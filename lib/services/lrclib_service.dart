@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../data/lyrics.dart';
 
 /// Fetches real synced lyrics from LRCLIB (https://lrclib.net)
-<<<<<<< HEAD
 /// Falls back to lyrics.ovh for songs not in LRCLIB.
 /// Free, no API key, supports OPM/Filipino/Bisaya songs.
 class LrcLibService {
@@ -13,19 +12,10 @@ class LrcLibService {
 
   /// Fetch lyrics for a song.
   /// Priority: LRCLIB synced → LRCLIB plain → lyrics.ovh → null
-=======
-/// Free, no API key, supports OPM/Filipino songs.
-class LrcLibService {
-  static const _base = 'https://lrclib.net/api';
-  static const _timeout = Duration(seconds: 8);
-
-  /// Fetch synced lyrics for a song. Returns null on failure.
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   static Future<List<LyricLine>?> fetchLyrics({
     required String title,
     required String artist,
   }) async {
-<<<<<<< HEAD
     // 1. Try LRCLIB (has synced timestamps)
     final lrcLib = await _fetchFromLrcLib(title: title, artist: artist);
     if (lrcLib != null) return lrcLib;
@@ -45,10 +35,6 @@ class LrcLibService {
   }) async {
     try {
       final uri = Uri.parse('$_lrcBase/search').replace(queryParameters: {
-=======
-    try {
-      final uri = Uri.parse('$_base/search').replace(queryParameters: {
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
         'track_name': title,
         'artist_name': artist,
       });
@@ -87,7 +73,6 @@ class LrcLibService {
     }
   }
 
-<<<<<<< HEAD
   // ── lyrics.ovh ─────────────────────────────────────────────────────────────
 
   static Future<List<LyricLine>?> _fetchFromLyricsOvh({
@@ -114,8 +99,6 @@ class LrcLibService {
 
   // ── Parsers ─────────────────────────────────────────────────────────────────
 
-=======
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
   /// Parse LRC-format synced lyrics into LyricLine list with durations.
   /// Format: [MM:SS.xx] Lyric text
   static List<LyricLine> _parseSynced(String lrc) {
@@ -141,7 +124,6 @@ class LrcLibService {
 
     // Convert timestamps to per-line durations
     final result = <LyricLine>[];
-<<<<<<< HEAD
 
     // ── Intro padding ──────────────────────────────────────────────────────
     // If the first lyric starts after 3 s (e.g. [00:15.00]) add a silent
@@ -151,8 +133,6 @@ class LrcLibService {
       result.add(LyricLine('', firstLineStart.round().clamp(1, 120)));
     }
 
-=======
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
     for (int i = 0; i < parsed.length; i++) {
       final current = parsed[i];
       final next = i + 1 < parsed.length ? parsed[i + 1] : null;

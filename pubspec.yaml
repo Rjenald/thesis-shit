@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-<<<<<<< HEAD
   path_provider: ^2.1.0
   cupertino_icons: ^1.0.8
   http: ^1.2.0
@@ -19,22 +18,9 @@ dependencies:
   just_audio: ^0.10.5
   shared_preferences: ^2.3.0
   web_socket_channel: ^3.0.1
-  youtube_player_iframe: ^5.0.0
+  share_plus: ^10.0.0
   video_player: ^2.9.2
-=======
-  dart_ytmusic_api: ^1.0.0
-  flutter_lyric: ^3.0.1
-  path_provider: ^2.1.0
-
-  cupertino_icons: ^1.0.8
-  http: ^1.2.0
-  record: ^6.0.0
-  permission_handler: ^11.3.0
-  just_audio: ^0.9.36
-  youtube_explode_dart: ^2.3.0
-  shared_preferences: ^2.3.0
-  web_socket_channel: ^3.0.1
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
+  provider: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +28,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.1
   flutter_launcher_icons: ^0.14.3
+  http: ^1.2.0
 
 flutter_native_splash:
   color: "#050505"
@@ -60,7 +47,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-<<<<<<< HEAD
     - assets/videos/lifetime_benben.mp4
-=======
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f

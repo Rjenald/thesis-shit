@@ -5,14 +5,11 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   permission_handler_windows
   record_windows
+  share_plus
   url_launcher_windows
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
-<<<<<<< HEAD
-  jni
-=======
->>>>>>> 3b3d57a9c30cc8f2bff286b136b9d9fdb0c5c49f
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)
