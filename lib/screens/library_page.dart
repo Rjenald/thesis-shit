@@ -4,7 +4,6 @@ import '../constants/app_colors.dart';
 import '../models/session_result.dart';
 import '../services/session_storage_service.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'home_page.dart';
 import 'record_selection_page.dart';
 import 'results_page.dart';
 
@@ -42,11 +41,7 @@ class _LibraryPageState extends State<LibraryPage> {
 
   void _onItemTapped(int index) {
     if (index == 0) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-        (route) => false,
-      );
+      Navigator.pop(context);
     } else if (index == 2) {
       Navigator.push(
         context,
