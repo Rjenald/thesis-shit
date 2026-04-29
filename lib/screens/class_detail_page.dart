@@ -52,8 +52,11 @@ class ClassDetailPage extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.arrow_back_ios_new,
-                      color: Colors.black, size: 20),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.black,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -134,8 +137,7 @@ class ClassDetailPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined,
-              onTap: () => Navigator.pop(context)),
+          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
           _navIcon(Icons.person_outline),
         ],
       ),
@@ -147,8 +149,11 @@ class ClassDetailPage extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Icon(icon,
-            color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+        child: Icon(
+          icon,
+          color: AppColors.grey.withValues(alpha: 0.5),
+          size: 26,
+        ),
       ),
     );
   }

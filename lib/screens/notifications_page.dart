@@ -191,7 +191,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     ClassNotification notification,
     ClassNotificationsService service,
   ) {
-    final isEnrollment = notification.type == NotificationType.enrollmentRequest;
+    final isEnrollment =
+        notification.type == NotificationType.enrollmentRequest;
     final isPending = !notification.isAccepted && !notification.isDeclined;
 
     return Container(
@@ -200,11 +201,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       child: Row(
         children: [
           // Person icon
-          Icon(
-            Icons.person_outline,
-            color: AppColors.white,
-            size: 28,
-          ),
+          Icon(Icons.person_outline, color: AppColors.white, size: 28),
           const SizedBox(width: 12),
 
           // Name

@@ -62,12 +62,11 @@ class _StudentDashboardPageState extends State<StudentDashboardPage> {
     await service.initialize();
   }
 
-  List<StudentClass> _deriveEnrolledClasses(
-    ClassNotificationsService service,
-  ) {
+  List<StudentClass> _deriveEnrolledClasses(ClassNotificationsService service) {
     final accepted = service.notifications
-        .where((n) =>
-            n.type == NotificationType.enrollmentRequest && n.isAccepted)
+        .where(
+          (n) => n.type == NotificationType.enrollmentRequest && n.isAccepted,
+        )
         .toList();
 
     return accepted.map((n) {
@@ -297,10 +296,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage> {
                                 ],
                               ),
                             ),
-                            const Divider(
-                              color: AppColors.inputBg,
-                              height: 1,
-                            ),
+                            const Divider(color: AppColors.inputBg, height: 1),
                             ListTile(
                               leading: const Icon(
                                 Icons.logout,
@@ -317,8 +313,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage> {
                               ),
                               dense: true,
                               onTap: () async {
-                                await SessionStorageService.saveUsername('');
-                                await SessionStorageService.saveRole('');
+                                await SessionStorageService.clearStudentAccount();
                                 if (!context.mounted) return;
                                 Navigator.of(context).pushNamedAndRemoveUntil(
                                   '/start',
@@ -332,7 +327,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage> {
                     ),
                   ),
                 ),
-            ),
+              ),
           ],
         ),
       ),

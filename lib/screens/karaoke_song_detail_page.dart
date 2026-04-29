@@ -152,14 +152,10 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                                   horizontal: 1,
                                 ),
                                 child: Container(
-                                  height:
-                                      _bars[i] * 80,
+                                  height: _bars[i] * 80,
                                   decoration: BoxDecoration(
-                                    color: AppColors
-                                        .primaryCyan,
-                                    borderRadius:
-                                        BorderRadius
-                                            .circular(3),
+                                    color: AppColors.primaryCyan,
+                                    borderRadius: BorderRadius.circular(3),
                                   ),
                                 ),
                               ),

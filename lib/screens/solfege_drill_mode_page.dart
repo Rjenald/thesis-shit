@@ -84,8 +84,9 @@ class _SolfegeDrillModePageState extends State<SolfegeDrillModePage> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () =>
-                              setState(() => _isActivityMode = !_isActivityMode),
+                          onTap: () => setState(
+                            () => _isActivityMode = !_isActivityMode,
+                          ),
                           child: Text(
                             _isActivityMode
                                 ? 'Solfege Activity'
@@ -487,8 +488,8 @@ class _SolfegeActivityViewState extends State<_SolfegeActivityView> {
                   color: isCurrent
                       ? AppColors.primaryCyan
                       : (isDone
-                          ? const Color(0xFF4CAF50).withValues(alpha: 0.3)
-                          : Colors.white),
+                            ? const Color(0xFF4CAF50).withValues(alpha: 0.3)
+                            : Colors.white),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
@@ -582,8 +583,8 @@ class _SolfegeActivityViewState extends State<_SolfegeActivityView> {
                           alignment: _feedback == PitchFeedback.correct
                               ? Alignment.center
                               : (_feedback == PitchFeedback.tooHigh
-                                  ? Alignment.centerLeft
-                                  : Alignment.centerRight),
+                                    ? Alignment.centerLeft
+                                    : Alignment.centerRight),
                           child: Container(
                             width: 2,
                             height: 12,
@@ -610,10 +611,7 @@ class _SolfegeActivityViewState extends State<_SolfegeActivityView> {
           // Score
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.primaryCyan,
                 borderRadius: BorderRadius.circular(6),

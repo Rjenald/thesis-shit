@@ -154,10 +154,8 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 1000),
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    ),
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
                     child: Image.network(
                       _backgroundImages[_currentPage],
                       key: ValueKey(_currentPage),

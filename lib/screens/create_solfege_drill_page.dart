@@ -13,7 +13,15 @@ class CreateSolfegeDrillPage extends StatefulWidget {
 class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
   final List<String> _selectedNotes = [];
   final TextEditingController _titleController = TextEditingController();
-  final List<String> _availableNotes = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Ti'];
+  final List<String> _availableNotes = [
+    'Do',
+    'Re',
+    'Mi',
+    'Fa',
+    'Sol',
+    'La',
+    'Ti',
+  ];
 
   @override
   void dispose() {
@@ -56,8 +64,9 @@ class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
     setState(() {
       _selectedNotes.clear();
       final random = List.generate(4, (index) {
-        return _availableNotes[
-            (DateTime.now().millisecondsSinceEpoch ~/ (index + 1)) % 7];
+        return _availableNotes[(DateTime.now().millisecondsSinceEpoch ~/
+                (index + 1)) %
+            7];
       });
       _selectedNotes.addAll(random);
     });
@@ -140,17 +149,17 @@ class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
                             controller: _titleController,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'e.g., Scale Practice, Grade 11 Lesson...',
+                              hintText:
+                                  'e.g., Scale Practice, Grade 11 Lesson...',
                               hintStyle: TextStyle(
                                 color: AppColors.grey.withValues(alpha: 0.6),
                                 fontFamily: 'Roboto',
                               ),
                               border: InputBorder.none,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
-                                  ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                             ),
                           ),
                         ),
@@ -214,16 +223,15 @@ class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
                                   border: Border.all(
                                     color: isSelected
                                         ? colorMap[note]!
-                                        : AppColors.grey.withValues(
-                                            alpha: 0.3,
-                                          ),
+                                        : AppColors.grey.withValues(alpha: 0.3),
                                     width: isSelected ? 2 : 1,
                                   ),
                                   boxShadow: isSelected
                                       ? [
                                           BoxShadow(
-                                            color: colorMap[note]!
-                                                .withValues(alpha: 0.4),
+                                            color: colorMap[note]!.withValues(
+                                              alpha: 0.4,
+                                            ),
                                             blurRadius: 10,
                                             spreadRadius: 2,
                                           ),
@@ -297,8 +305,7 @@ class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
                                               child: Icon(
                                                 Icons.arrow_downward,
                                                 size: 16,
-                                                color:
-                                                    AppColors.primaryCyan,
+                                                color: AppColors.primaryCyan,
                                               ),
                                             ),
                                         ],
@@ -341,9 +348,7 @@ class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
                       onPressed: _addRandomSequence,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primaryCyan,
-                        side: const BorderSide(
-                          color: AppColors.primaryCyan,
-                        ),
+                        side: const BorderSide(color: AppColors.primaryCyan),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

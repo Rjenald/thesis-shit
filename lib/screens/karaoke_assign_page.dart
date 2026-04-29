@@ -55,9 +55,11 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
       } else {
         final lower = q.toLowerCase();
         _filtered = _allSongs
-            .where((s) =>
-                (s['title'] ?? '').toLowerCase().contains(lower) ||
-                (s['artist'] ?? '').toLowerCase().contains(lower))
+            .where(
+              (s) =>
+                  (s['title'] ?? '').toLowerCase().contains(lower) ||
+                  (s['artist'] ?? '').toLowerCase().contains(lower),
+            )
             .toList();
       }
     });
@@ -100,23 +102,33 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.cardBg,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.check_circle_rounded,
-              color: Color(0xFF4CAF50), size: 22),
-          SizedBox(width: 8),
-          Text('Song Assigned',
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF4CAF50),
+              size: 22,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Song Assigned',
               style: TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto')),
-        ]),
+                color: AppColors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
         content: Text(
           '"$_selectedSongTitle" has been sent to all students in '
           '${widget.classData['name'] ?? 'the class'}.',
           style: const TextStyle(
-              color: AppColors.grey, fontFamily: 'Roboto', fontSize: 13),
+            color: AppColors.grey,
+            fontFamily: 'Roboto',
+            fontSize: 13,
+          ),
         ),
         actions: [
           ElevatedButton(
@@ -126,11 +138,16 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
               foregroundColor: Colors.black,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9)),
+                borderRadius: BorderRadius.circular(9),
+              ),
             ),
-            child: const Text('Done',
-                style: TextStyle(
-                    fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
+            child: const Text(
+              'Done',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ),
         ],
       ),
@@ -158,34 +175,40 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios_new,
-                        color: Colors.black, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      className.toUpperCase(),
-                      style: const TextStyle(
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
                         color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
+                        size: 20,
                       ),
                     ),
-                  ),
-                ]),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        className.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.only(left: 36),
                   child: Text(
                     '${widget.lessonTitle}  /  ${widget.subLessonTitle}',
                     style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 12,
-                        fontFamily: 'Roboto'),
+                      color: Colors.black87,
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
                   ),
                 ),
               ],
@@ -206,14 +229,17 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                 decoration: InputDecoration(
                   hintText: 'search karaoke to assign',
                   hintStyle: TextStyle(
-                      color: AppColors.grey.withValues(alpha: 0.5),
-                      fontFamily: 'Roboto'),
-                  prefixIcon:
-                      const Icon(Icons.search, color: AppColors.grey),
+                    color: AppColors.grey.withValues(alpha: 0.5),
+                    fontFamily: 'Roboto',
+                  ),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.grey),
                   suffixIcon: _search.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear,
-                              color: AppColors.grey, size: 18),
+                          icon: const Icon(
+                            Icons.clear,
+                            color: AppColors.grey,
+                            size: 18,
+                          ),
                           onPressed: () {
                             _onSearch('');
                           },
@@ -221,7 +247,9 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                       : null,
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ),
@@ -232,23 +260,27 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
             child: _loading
                 ? const Center(
                     child: CircularProgressIndicator(
-                        color: AppColors.primaryCyan, strokeWidth: 2))
+                      color: AppColors.primaryCyan,
+                      strokeWidth: 2,
+                    ),
+                  )
                 : _filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          _search.isNotEmpty
-                              ? 'No songs match "$_search"'
-                              : 'No songs available',
-                          style: TextStyle(
-                              color: AppColors.grey.withValues(alpha: 0.5),
-                              fontFamily: 'Roboto'),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-                        itemCount: _filtered.length,
-                        itemBuilder: (_, i) => _buildSongRow(_filtered[i]),
+                ? Center(
+                    child: Text(
+                      _search.isNotEmpty
+                          ? 'No songs match "$_search"'
+                          : 'No songs available',
+                      style: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.5),
+                        fontFamily: 'Roboto',
                       ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+                    itemCount: _filtered.length,
+                    itemBuilder: (_, i) => _buildSongRow(_filtered[i]),
+                  ),
           ),
 
           // ── Due date + Allow late ──────────────────────────────────────
@@ -261,37 +293,47 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                     onTap: _pickDate,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.inputBg,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Row(children: [
-                        const Icon(Icons.calendar_today_outlined,
-                            color: AppColors.grey, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          _dueDate == null
-                              ? 'Due Date'
-                              : '${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
-                          style: TextStyle(
-                            color: _dueDate == null
-                                ? AppColors.grey
-                                : AppColors.white,
-                            fontSize: 13,
-                            fontFamily: 'Roboto',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_today_outlined,
+                            color: AppColors.grey,
+                            size: 16,
                           ),
-                        ),
-                      ]),
+                          const SizedBox(width: 8),
+                          Text(
+                            _dueDate == null
+                                ? 'Due Date'
+                                : '${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
+                            style: TextStyle(
+                              color: _dueDate == null
+                                  ? AppColors.grey
+                                  : AppColors.white,
+                              fontSize: 13,
+                              fontFamily: 'Roboto',
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text('Allow Late:',
-                    style: TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 12,
-                        fontFamily: 'Roboto')),
+                const Text(
+                  'Allow Late:',
+                  style: TextStyle(
+                    color: AppColors.grey,
+                    fontSize: 12,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
                 const SizedBox(width: 4),
                 _radioBtn('Yes', true),
                 _radioBtn('No', false),
@@ -311,7 +353,8 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                   color: const Color(0xFF1C1C1C),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppColors.primaryCyan.withValues(alpha: 0.4)),
+                    color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: const Text(
@@ -338,8 +381,8 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
     final isSelected = _selectedSongTitle == title;
 
     return GestureDetector(
-      onTap: () => setState(() =>
-          _selectedSongTitle = isSelected ? null : title),
+      onTap: () =>
+          setState(() => _selectedSongTitle = isSelected ? null : title),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.only(bottom: 8),
@@ -375,24 +418,33 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Roboto')),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(artist,
-                      style: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.7),
-                          fontSize: 12,
-                          fontFamily: 'Roboto')),
+                  Text(
+                    artist,
+                    style: TextStyle(
+                      color: AppColors.grey.withValues(alpha: 0.7),
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded,
-                  color: AppColors.primaryCyan, size: 20),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.primaryCyan,
+                size: 20,
+              ),
           ],
         ),
       ),
@@ -400,52 +452,56 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
   }
 
   Widget _imgFallback() => Container(
-        width: 44,
-        height: 44,
-        color: AppColors.inputBg,
-        child: const Icon(Icons.music_note,
-            color: AppColors.grey, size: 20),
-      );
+    width: 44,
+    height: 44,
+    color: AppColors.inputBg,
+    child: const Icon(Icons.music_note, color: AppColors.grey, size: 20),
+  );
 
   Widget _radioBtn(String label, bool value) {
     final isSelected = _allowLate == value;
     return GestureDetector(
       onTap: () => setState(() => _allowLate = value),
-      child: Row(children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.primaryCyan
-                  : AppColors.grey.withValues(alpha: 0.5),
-              width: 2,
+      child: Row(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primaryCyan
+                    : AppColors.grey.withValues(alpha: 0.5),
+                width: 2,
+              ),
+            ),
+            child: isSelected
+                ? Center(
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryCyan,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.grey,
+              fontSize: 12,
+              fontFamily: 'Roboto',
             ),
           ),
-          child: isSelected
-              ? Center(
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryCyan,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                )
-              : null,
-        ),
-        const SizedBox(width: 4),
-        Text(label,
-            style: const TextStyle(
-                color: AppColors.grey,
-                fontSize: 12,
-                fontFamily: 'Roboto')),
-        const SizedBox(width: 6),
-      ]),
+          const SizedBox(width: 6),
+        ],
+      ),
     );
   }
 
@@ -457,8 +513,7 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined,
-              onTap: () => Navigator.pop(context)),
+          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
           _navIcon(Icons.person_outline),
         ],
       ),
@@ -466,11 +521,10 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
   }
 
   Widget _navIcon(IconData icon, {VoidCallback? onTap}) => GestureDetector(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Icon(icon,
-              color: AppColors.grey.withValues(alpha: 0.5), size: 26),
-        ),
-      );
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Icon(icon, color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+    ),
+  );
 }

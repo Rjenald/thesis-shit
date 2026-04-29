@@ -135,10 +135,7 @@ class RecordSelectionPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 2,
-        onTap: (_) {},
-      ),
+      bottomNavigationBar: BottomNavBar(currentIndex: 2, onTap: (_) {}),
     );
   }
 }

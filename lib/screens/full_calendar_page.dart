@@ -93,9 +93,7 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
       decoration: BoxDecoration(
         color: AppColors.bgDark,
         border: Border(
-          bottom: BorderSide(
-            color: AppColors.inputBg.withValues(alpha: 0.4),
-          ),
+          bottom: BorderSide(color: AppColors.inputBg.withValues(alpha: 0.4)),
         ),
       ),
       child: Row(
@@ -167,9 +165,7 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
               ? AppColors.primaryCyan
               : AppColors.grey.withValues(alpha: 0.4),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
@@ -186,17 +182,22 @@ class _WeekView extends StatelessWidget {
 
   List<DateTime> get _weekDays {
     final start = anchor.subtract(Duration(days: anchor.weekday % 7));
-    return List.generate(7, (i) => DateTime(start.year, start.month, start.day + i));
+    return List.generate(
+      7,
+      (i) => DateTime(start.year, start.month, start.day + i),
+    );
   }
 
   List<ClassNotification> _eventsForDay(DateTime day) {
     return service.notifications
-        .where((n) =>
-            n.type == NotificationType.activityAssignment &&
-            n.deadline != null &&
-            n.deadline!.year == day.year &&
-            n.deadline!.month == day.month &&
-            n.deadline!.day == day.day)
+        .where(
+          (n) =>
+              n.type == NotificationType.activityAssignment &&
+              n.deadline != null &&
+              n.deadline!.year == day.year &&
+              n.deadline!.month == day.month &&
+              n.deadline!.day == day.day,
+        )
         .toList();
   }
 
@@ -211,7 +212,8 @@ class _WeekView extends StatelessWidget {
           // Day headers
           Row(
             children: days.map((d) {
-              final isToday = d.year == today.year &&
+              final isToday =
+                  d.year == today.year &&
                   d.month == today.month &&
                   d.day == today.day;
               return Expanded(
@@ -255,10 +257,7 @@ class _WeekView extends StatelessWidget {
               );
             }).toList(),
           ),
-          Divider(
-            color: AppColors.inputBg.withValues(alpha: 0.5),
-            height: 1,
-          ),
+          Divider(color: AppColors.inputBg.withValues(alpha: 0.5), height: 1),
           // All-day events row
           IntrinsicHeight(
             child: Row(
@@ -291,9 +290,7 @@ class _WeekView extends StatelessWidget {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: events
-                            .map((e) => _eventChip(e))
-                            .toList(),
+                        children: events.map((e) => _eventChip(e)).toList(),
                       ),
                     ),
                   );
@@ -301,10 +298,7 @@ class _WeekView extends StatelessWidget {
               ],
             ),
           ),
-          Divider(
-            color: AppColors.inputBg.withValues(alpha: 0.5),
-            height: 1,
-          ),
+          Divider(color: AppColors.inputBg.withValues(alpha: 0.5), height: 1),
           // Hour grid
           ...List.generate(12, (i) {
             final hour = i + 12; // 12pm to 11pm
@@ -323,10 +317,7 @@ class _WeekView extends StatelessWidget {
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(4),
         border: Border(
-          left: BorderSide(
-            color: const Color(0xFF8E24AA),
-            width: 3,
-          ),
+          left: BorderSide(color: const Color(0xFF8E24AA), width: 3),
         ),
       ),
       child: Text(
@@ -418,15 +409,18 @@ class _MonthView extends StatelessWidget {
     }
     for (var d = 1; d <= daysInMonth; d++) {
       final date = DateTime(anchor.year, anchor.month, d);
-      final isToday = date.year == today.year &&
+      final isToday =
+          date.year == today.year &&
           date.month == today.month &&
           date.day == today.day;
-      final dayEvents = service.notifications.where((n) =>
-          n.type == NotificationType.activityAssignment &&
-          n.deadline != null &&
-          n.deadline!.year == date.year &&
-          n.deadline!.month == date.month &&
-          n.deadline!.day == date.day);
+      final dayEvents = service.notifications.where(
+        (n) =>
+            n.type == NotificationType.activityAssignment &&
+            n.deadline != null &&
+            n.deadline!.year == date.year &&
+            n.deadline!.month == date.month &&
+            n.deadline!.day == date.day,
+      );
       cells.add(_buildCell(d, isToday, dayEvents.length));
     }
 
@@ -507,8 +501,7 @@ class _MonthView extends StatelessWidget {
               bottom: 4,
               right: 4,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFF8E24AA),
                   borderRadius: BorderRadius.circular(8),
@@ -530,8 +523,18 @@ class _MonthView extends StatelessWidget {
 
   String _formatMonthYear(DateTime dt) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[dt.month - 1]} ${dt.year}';
   }
@@ -547,12 +550,15 @@ class _AgendaView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final upcoming = service.notifications
-        .where((n) =>
-            n.type == NotificationType.activityAssignment &&
-            n.deadline != null)
-        .toList()
-      ..sort((a, b) => a.deadline!.compareTo(b.deadline!));
+    final upcoming =
+        service.notifications
+            .where(
+              (n) =>
+                  n.type == NotificationType.activityAssignment &&
+                  n.deadline != null,
+            )
+            .toList()
+          ..sort((a, b) => a.deadline!.compareTo(b.deadline!));
 
     if (upcoming.isEmpty) {
       return Center(
@@ -614,8 +620,18 @@ class _AgendaView extends StatelessWidget {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }

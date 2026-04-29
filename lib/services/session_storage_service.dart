@@ -243,4 +243,15 @@ class SessionStorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(key);
   }
+
+  /// Clear all student account data
+  static Future<void> clearStudentAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_sessionsKey);
+    await prefs.remove(_trashKey);
+    await prefs.remove(_usernameKey);
+    await prefs.remove(_roleKey);
+    await prefs.remove(_classesKey);
+    await prefs.clear(); // Clear everything for safety
+  }
 }

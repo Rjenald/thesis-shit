@@ -16,9 +16,7 @@ class StudentCalendarPage extends StatefulWidget {
 class _StudentCalendarPageState extends State<StudentCalendarPage> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
   bool _calendarVisible = true;
-  final List<_TodoItem> _todos = [
-    _TodoItem(id: '1', text: 'comsciii!!!!!!!'),
-  ];
+  final List<_TodoItem> _todos = [_TodoItem(id: '1', text: 'comsciii!!!!!!!')];
 
   void _prevMonth() {
     setState(() {
@@ -34,11 +32,16 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
 
   Set<int> _dueDaysInMonth(ClassNotificationsService service) {
     return service.notifications
-        .where((n) =>
-            n.type == NotificationType.activityAssignment && n.deadline != null)
-        .where((n) =>
-            n.deadline!.year == _currentMonth.year &&
-            n.deadline!.month == _currentMonth.month)
+        .where(
+          (n) =>
+              n.type == NotificationType.activityAssignment &&
+              n.deadline != null,
+        )
+        .where(
+          (n) =>
+              n.deadline!.year == _currentMonth.year &&
+              n.deadline!.month == _currentMonth.month,
+        )
         .map((n) => n.deadline!.day)
         .toSet();
   }
@@ -46,10 +49,12 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
   int _totalAssignmentsDue(ClassNotificationsService service) {
     final now = DateTime.now();
     return service.notifications
-        .where((n) =>
-            n.type == NotificationType.activityAssignment &&
-            n.deadline != null &&
-            n.deadline!.isAfter(now.subtract(const Duration(days: 1))))
+        .where(
+          (n) =>
+              n.type == NotificationType.activityAssignment &&
+              n.deadline != null &&
+              n.deadline!.isAfter(now.subtract(const Duration(days: 1))),
+        )
         .length;
   }
 
@@ -60,17 +65,16 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
         final controller = TextEditingController();
         return AlertDialog(
           backgroundColor: AppColors.cardBg,
-          title: const Text(
-            'Add To-do',
-            style: TextStyle(color: Colors.white),
-          ),
+          title: const Text('Add To-do', style: TextStyle(color: Colors.white)),
           content: TextField(
             controller: controller,
             autofocus: true,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'What do you need to do?',
-              hintStyle: TextStyle(color: AppColors.grey.withValues(alpha: 0.6)),
+              hintStyle: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.6),
+              ),
               filled: true,
               fillColor: AppColors.inputBg,
               border: OutlineInputBorder(
@@ -89,10 +93,12 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                 final text = controller.text.trim();
                 if (text.isNotEmpty) {
                   setState(() {
-                    _todos.add(_TodoItem(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      text: text,
-                    ));
+                    _todos.add(
+                      _TodoItem(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        text: text,
+                      ),
+                    );
                   });
                 }
                 Navigator.pop(ctx);
@@ -157,11 +163,9 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                         if (_calendarVisible) ...[
                           // Month nav
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
                                   icon: const Icon(
@@ -193,32 +197,33 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
 
                           // Weekday headers
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Row(
-                              children: const ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-                                  .map((d) => Expanded(
-                                        child: Center(
-                                          child: Text(
-                                            d,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              fontFamily: 'Roboto',
+                              children:
+                                  const ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+                                      .map(
+                                        (d) => Expanded(
+                                          child: Center(
+                                            child: Text(
+                                              d,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                fontFamily: 'Roboto',
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ))
-                                  .toList(),
+                                      )
+                                      .toList(),
                             ),
                           ),
                           const SizedBox(height: 8),
 
                           // Days grid
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: _buildMonthGrid(dueDays),
                           ),
                           const SizedBox(height: 8),
@@ -231,16 +236,14 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                             vertical: 12,
                           ),
                           child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          const FullCalendarPage(),
+                                      builder: (_) => const FullCalendarPage(),
                                     ),
                                   );
                                 },
@@ -255,7 +258,8 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                               ),
                               GestureDetector(
                                 onTap: () => setState(
-                                    () => _calendarVisible = !_calendarVisible),
+                                  () => _calendarVisible = !_calendarVisible,
+                                ),
                                 child: Text(
                                   _calendarVisible ? 'hide' : 'show',
                                   style: const TextStyle(
@@ -314,8 +318,7 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                           ),
                         ),
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Row(
                             children: [
                               Icon(
@@ -329,8 +332,7 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          const FullCalendarPage(),
+                                      builder: (_) => const FullCalendarPage(),
                                     ),
                                   );
                                 },
@@ -374,13 +376,13 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
                                 IconButton(
                                   icon: Icon(
                                     Icons.delete_outline,
-                                    color: AppColors.grey
-                                        .withValues(alpha: 0.7),
+                                    color: AppColors.grey.withValues(
+                                      alpha: 0.7,
+                                    ),
                                     size: 18,
                                   ),
                                   onPressed: () {
-                                    setState(
-                                        () => _todos.remove(todo));
+                                    setState(() => _todos.remove(todo));
                                   },
                                 ),
                               ],
@@ -407,15 +409,21 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
 
   Widget _buildMonthGrid(Set<int> dueDays) {
     final firstDay = DateTime(_currentMonth.year, _currentMonth.month, 1);
-    final daysInMonth =
-        DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
-    final daysInPrevMonth =
-        DateTime(_currentMonth.year, _currentMonth.month, 0).day;
+    final daysInMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month + 1,
+      0,
+    ).day;
+    final daysInPrevMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month,
+      0,
+    ).day;
     final firstWeekday = firstDay.weekday % 7; // 0=Sun
 
     final today = DateTime.now();
-    final isCurrentMonth = today.year == _currentMonth.year &&
-        today.month == _currentMonth.month;
+    final isCurrentMonth =
+        today.year == _currentMonth.year && today.month == _currentMonth.month;
 
     final cells = <Widget>[];
 
@@ -434,25 +442,35 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
 
     // Trailing days
     while (cells.length % 7 != 0) {
-      cells.add(_dayCell(cells.length - daysInMonth - firstWeekday + 1,
-          isOtherMonth: true));
+      cells.add(
+        _dayCell(
+          cells.length - daysInMonth - firstWeekday + 1,
+          isOtherMonth: true,
+        ),
+      );
     }
 
     final rows = <Widget>[];
     for (var i = 0; i < cells.length; i += 7) {
-      rows.add(Row(
-        children: cells
-            .sublist(i, i + 7)
-            .map((c) => Expanded(child: c))
-            .toList(),
-      ));
+      rows.add(
+        Row(
+          children: cells
+              .sublist(i, i + 7)
+              .map((c) => Expanded(child: c))
+              .toList(),
+        ),
+      );
     }
 
     return Column(children: rows);
   }
 
-  Widget _dayCell(int day,
-      {bool isOtherMonth = false, bool isToday = false, bool hasDue = false}) {
+  Widget _dayCell(
+    int day, {
+    bool isOtherMonth = false,
+    bool isToday = false,
+    bool hasDue = false,
+  }) {
     Color textColor;
     if (isOtherMonth) {
       textColor = AppColors.grey.withValues(alpha: 0.3);
@@ -492,8 +510,18 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
 
   String _formatMonthYear(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.year}';
   }

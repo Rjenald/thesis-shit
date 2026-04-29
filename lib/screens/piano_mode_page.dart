@@ -17,7 +17,9 @@ Uint8List _makeWav(double hz, {int ms = 700}) {
   final buf = ByteData(44 + n * 2);
 
   void w(int o, List<int> c) {
-    for (int i = 0; i < c.length; i++) { buf.setUint8(o + i, c[i]); }
+    for (int i = 0; i < c.length; i++) {
+      buf.setUint8(o + i, c[i]);
+    }
   }
 
   w(0, [82, 73, 70, 70]); // RIFF
@@ -45,7 +47,8 @@ Uint8List _makeWav(double hz, {int ms = 700}) {
     }
     // Piano-like timbre: fundamental + 2nd + 3rd harmonic
     final t = i / sr;
-    final v = sin(2 * pi * hz * t) * 0.55 +
+    final v =
+        sin(2 * pi * hz * t) * 0.55 +
         sin(4 * pi * hz * t) * 0.25 +
         sin(6 * pi * hz * t) * 0.10;
     final s = (env * v * 32767 * 0.75).round().clamp(-32768, 32767);
@@ -82,18 +85,18 @@ class _BytesSource extends StreamAudioSource {
 
 // Solfège map: note letter/sharp → syllable
 const _kSolfege = {
-  'C':  'Do',
+  'C': 'Do',
   'C#': 'Di',
-  'D':  'Re',
+  'D': 'Re',
   'D#': 'Ri',
-  'E':  'Mi',
-  'F':  'Fa',
+  'E': 'Mi',
+  'F': 'Fa',
   'F#': 'Fi',
-  'G':  'Sol',
+  'G': 'Sol',
   'G#': 'Si',
-  'A':  'La',
+  'A': 'La',
   'A#': 'Li',
-  'B':  'Ti',
+  'B': 'Ti',
 };
 
 class _PKey {
@@ -175,7 +178,7 @@ class _PianoModePageState extends State<PianoModePage> {
   String _studentFeedback = '';
   bool _stepDone = false;
   double _currentCents = 0; // live deviation from target in cents
-  double _detectedHz = 0;   // live detected frequency
+  double _detectedHz = 0; // live detected frequency
 
   final AudioService _audioService = AudioService();
   StreamSubscription<NoteResult?>? _audioSub;
@@ -237,7 +240,8 @@ class _PianoModePageState extends State<PianoModePage> {
     if (!ok) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Microphone permission denied')));
+          const SnackBar(content: Text('Microphone permission denied')),
+        );
       }
       return;
     }
@@ -293,8 +297,7 @@ class _PianoModePageState extends State<PianoModePage> {
         final dir = cents > 0 ? '↑ Too high' : '↓ Too low';
         if (mounted) {
           setState(() {
-            _studentFeedback =
-                '$dir  (${cents.abs().toStringAsFixed(0)}¢ off)';
+            _studentFeedback = '$dir  (${cents.abs().toStringAsFixed(0)}¢ off)';
             _currentCents = cents;
             _detectedHz = result.frequency;
           });
@@ -330,9 +333,10 @@ class _PianoModePageState extends State<PianoModePage> {
       appBar: AppBar(
         backgroundColor: AppColors.bgDark,
         foregroundColor: AppColors.white,
-        title: const Text('Piano Mode',
-            style: TextStyle(
-                fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Piano Mode',
+          style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         actions: [
           Padding(
@@ -346,8 +350,9 @@ class _PianoModePageState extends State<PianoModePage> {
                 const SizedBox(width: 6),
                 _chip('Student Follow', _isStudentMode, () {
                   if (_sequence.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Record a sequence first!')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Record a sequence first!')),
+                    );
                     return;
                   }
                   setState(() {
@@ -366,9 +371,7 @@ class _PianoModePageState extends State<PianoModePage> {
           const SizedBox(height: 4),
           _buildKeyboard(),
           Expanded(
-            child: _isStudentMode
-                ? _buildStudentPanel()
-                : _buildTeacherPanel(),
+            child: _isStudentMode ? _buildStudentPanel() : _buildTeacherPanel(),
           ),
         ],
       ),
@@ -379,19 +382,20 @@ class _PianoModePageState extends State<PianoModePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: active ? AppColors.primaryCyan : AppColors.inputBg,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Text(label,
-            style: TextStyle(
-                color: active ? Colors.black : AppColors.grey,
-                fontSize: 11,
-                fontWeight:
-                    active ? FontWeight.bold : FontWeight.normal,
-                fontFamily: 'Roboto')),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? Colors.black : AppColors.grey,
+            fontSize: 11,
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
+            fontFamily: 'Roboto',
+          ),
+        ),
       ),
     );
   }
@@ -401,18 +405,19 @@ class _PianoModePageState extends State<PianoModePage> {
   Widget _buildNoteDisplay() {
     // Find the active key object for solfège lookup
     final _PKey? activeKey = _pressedKey != null
-        ? _kKeys.firstWhere((k) => k.name == _pressedKey,
-            orElse: () => _kKeys.first)
+        ? _kKeys.firstWhere(
+            (k) => k.name == _pressedKey,
+            orElse: () => _kKeys.first,
+          )
         : (_isStudentMode && _studentStep < _sequence.length
-            ? _sequence[_studentStep].key
-            : null);
+              ? _sequence[_studentStep].key
+              : null);
 
     final noteLabel = activeKey?.name ?? '—';
     final solfegeLabel = activeKey?.solfege ?? '';
 
     Color feedbackColor = const Color(0xFF4CAF50);
-    if (_studentFeedback.startsWith('↑') ||
-        _studentFeedback.startsWith('↓')) {
+    if (_studentFeedback.startsWith('↑') || _studentFeedback.startsWith('↓')) {
       feedbackColor = const Color(0xFFF44336);
     } else if (_studentFeedback.startsWith('Sing')) {
       feedbackColor = AppColors.grey;
@@ -428,27 +433,34 @@ class _PianoModePageState extends State<PianoModePage> {
             Text(
               solfegeLabel,
               style: const TextStyle(
-                  color: Color(0xFF4FC3F7),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Roboto',
-                  letterSpacing: 1.5),
+                color: Color(0xFF4FC3F7),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Roboto',
+                letterSpacing: 1.5,
+              ),
             ),
-          Text(noteLabel,
-              style: const TextStyle(
-                  color: AppColors.primaryCyan,
-                  fontSize: 38,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto')),
+          Text(
+            noteLabel,
+            style: const TextStyle(
+              color: AppColors.primaryCyan,
+              fontSize: 38,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Roboto',
+            ),
+          ),
           if (_isStudentMode && _studentFeedback.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text(_studentFeedback,
-                  style: TextStyle(
-                      color: feedbackColor,
-                      fontSize: 14,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500)),
+              child: Text(
+                _studentFeedback,
+                style: TextStyle(
+                  color: feedbackColor,
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
         ],
       ),
@@ -484,115 +496,120 @@ class _PianoModePageState extends State<PianoModePage> {
       child: SizedBox(
         width: totalW,
         height: wh,
-        child: Stack(children: [
-          // White keys (bottom layer)
-          ...whites.map((rec) {
-            final key = rec.$1;
-            final x = rec.$2;
-            final pressed = _pressedKey == key.name;
-            final isTarget = _isStudentMode &&
-                _studentStep < _sequence.length &&
-                _sequence[_studentStep].key.name == key.name;
-            return Positioned(
-              left: x,
-              top: 0,
-              child: GestureDetector(
-                onTapDown: (_) => _pressKey(key),
-                child: Container(
-                  width: ww - 1.5,
-                  height: wh,
-                  decoration: BoxDecoration(
-                    color: pressed
-                        ? AppColors.primaryCyan.withValues(alpha: 0.55)
-                        : isTarget
-                            ? AppColors.primaryCyan.withValues(alpha: 0.22)
-                            : Colors.white,
-                    borderRadius: const BorderRadius.only(
+        child: Stack(
+          children: [
+            // White keys (bottom layer)
+            ...whites.map((rec) {
+              final key = rec.$1;
+              final x = rec.$2;
+              final pressed = _pressedKey == key.name;
+              final isTarget =
+                  _isStudentMode &&
+                  _studentStep < _sequence.length &&
+                  _sequence[_studentStep].key.name == key.name;
+              return Positioned(
+                left: x,
+                top: 0,
+                child: GestureDetector(
+                  onTapDown: (_) => _pressKey(key),
+                  child: Container(
+                    width: ww - 1.5,
+                    height: wh,
+                    decoration: BoxDecoration(
+                      color: pressed
+                          ? AppColors.primaryCyan.withValues(alpha: 0.55)
+                          : isTarget
+                          ? AppColors.primaryCyan.withValues(alpha: 0.22)
+                          : Colors.white,
+                      borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(5),
-                        bottomRight: Radius.circular(5)),
-                    border:
-                        Border.all(color: Colors.black26, width: 1),
-                  ),
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          key.solfege,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: pressed || isTarget
-                                ? AppColors.primaryCyan
-                                : const Color(0xFF1565C0),
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                        Text(
-                          key.name.replaceAll(RegExp(r'\d'), ''),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w500,
-                            color: pressed || isTarget
-                                ? AppColors.primaryCyan
-                                : Colors.black38,
-                          ),
-                        ),
-                      ],
+                        bottomRight: Radius.circular(5),
+                      ),
+                      border: Border.all(color: Colors.black26, width: 1),
                     ),
-                  ),
-                ),
-              ),
-            );
-          }),
-          // Black keys (top layer)
-          ...blacks.map((rec) {
-            final key = rec.$1;
-            final x = rec.$2;
-            final pressed = _pressedKey == key.name;
-            final isTarget = _isStudentMode &&
-                _studentStep < _sequence.length &&
-                _sequence[_studentStep].key.name == key.name;
-            return Positioned(
-              left: x,
-              top: 0,
-              child: GestureDetector(
-                onTapDown: (_) => _pressKey(key),
-                child: Container(
-                  width: bw,
-                  height: bh,
-                  decoration: BoxDecoration(
-                    color: pressed
-                        ? AppColors.primaryCyan
-                        : isTarget
-                            ? AppColors.primaryCyan.withValues(alpha: 0.65)
-                            : Colors.black87,
-                    borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(4),
-                        bottomRight: Radius.circular(4)),
-                  ),
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(
-                      key.solfege,
-                      style: TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.w700,
-                        color: pressed || isTarget
-                            ? Colors.black
-                            : Colors.white54,
-                        fontFamily: 'Roboto',
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            key.solfege,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: pressed || isTarget
+                                  ? AppColors.primaryCyan
+                                  : const Color(0xFF1565C0),
+                              fontFamily: 'Roboto',
+                            ),
+                          ),
+                          Text(
+                            key.name.replaceAll(RegExp(r'\d'), ''),
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              color: pressed || isTarget
+                                  ? AppColors.primaryCyan
+                                  : Colors.black38,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
-        ]),
+              );
+            }),
+            // Black keys (top layer)
+            ...blacks.map((rec) {
+              final key = rec.$1;
+              final x = rec.$2;
+              final pressed = _pressedKey == key.name;
+              final isTarget =
+                  _isStudentMode &&
+                  _studentStep < _sequence.length &&
+                  _sequence[_studentStep].key.name == key.name;
+              return Positioned(
+                left: x,
+                top: 0,
+                child: GestureDetector(
+                  onTapDown: (_) => _pressKey(key),
+                  child: Container(
+                    width: bw,
+                    height: bh,
+                    decoration: BoxDecoration(
+                      color: pressed
+                          ? AppColors.primaryCyan
+                          : isTarget
+                          ? AppColors.primaryCyan.withValues(alpha: 0.65)
+                          : Colors.black87,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(4),
+                        bottomRight: Radius.circular(4),
+                      ),
+                    ),
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Text(
+                        key.solfege,
+                        style: TextStyle(
+                          fontSize: 7,
+                          fontWeight: FontWeight.w700,
+                          color: pressed || isTarget
+                              ? Colors.black
+                              : Colors.white54,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -606,71 +623,87 @@ class _PianoModePageState extends State<PianoModePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Record row
-          Row(children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _toggleRecording,
-                icon: Icon(
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _toggleRecording,
+                  icon: Icon(
                     _isRecording
                         ? Icons.stop_rounded
                         : Icons.fiber_manual_record,
                     color: Colors.white,
-                    size: 18),
-                label: Text(
-                    _isRecording
-                        ? 'Stop Recording'
-                        : 'Record Sequence',
-                    style: const TextStyle(fontFamily: 'Roboto')),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _isRecording ? Colors.red : AppColors.inputBg,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  elevation: 0,
+                    size: 18,
+                  ),
+                  label: Text(
+                    _isRecording ? 'Stop Recording' : 'Record Sequence',
+                    style: const TextStyle(fontFamily: 'Roboto'),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isRecording
+                        ? Colors.red
+                        : AppColors.inputBg,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                  ),
                 ),
               ),
-            ),
-            if (_sequence.isNotEmpty) ...[
-              const SizedBox(width: 10),
-              IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: Color(0xFFF44336)),
-                onPressed: () => setState(() => _sequence.clear()),
-                tooltip: 'Clear',
-              ),
+              if (_sequence.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Color(0xFFF44336),
+                  ),
+                  onPressed: () => setState(() => _sequence.clear()),
+                  tooltip: 'Clear',
+                ),
+              ],
             ],
-          ]),
+          ),
 
           if (_isRecording)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Row(children: [
-                Container(
+              child: Row(
+                children: [
+                  Container(
                     width: 8,
                     height: 8,
                     decoration: const BoxDecoration(
-                        color: Colors.red, shape: BoxShape.circle)),
-                const SizedBox(width: 6),
-                Text('Recording… tap keys above',
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Recording… tap keys above',
                     style: TextStyle(
-                        color: Colors.red.withValues(alpha: 0.9),
-                        fontSize: 12,
-                        fontFamily: 'Roboto')),
-              ]),
+                      color: Colors.red.withValues(alpha: 0.9),
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ],
+              ),
             ),
 
           // Recorded sequence chips
           if (_sequence.isNotEmpty) ...[
             const SizedBox(height: 20),
             Text(
-                'Sequence  (${_sequence.length} notes)',
-                style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto')),
+              'Sequence  (${_sequence.length} notes)',
+              style: const TextStyle(
+                color: AppColors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 6,
@@ -678,23 +711,26 @@ class _PianoModePageState extends State<PianoModePage> {
               children: _sequence.asMap().entries.map((e) {
                 return Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 6),
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: e.key.isEven
                         ? AppColors.primaryCyan.withValues(alpha: 0.15)
                         : AppColors.inputBg,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color:
-                            AppColors.primaryCyan.withValues(alpha: 0.3)),
+                      color: AppColors.primaryCyan.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     '${e.key + 1}. ${e.value.key.name}',
                     style: const TextStyle(
-                        color: AppColors.primaryCyan,
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500),
+                      color: AppColors.primaryCyan,
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 );
               }).toList(),
@@ -708,14 +744,17 @@ class _PianoModePageState extends State<PianoModePage> {
                   _resetStudent();
                 }),
                 icon: const Icon(Icons.people_outline, size: 18),
-                label: const Text('Switch to Student Follow',
-                    style: TextStyle(fontFamily: 'Roboto')),
+                label: const Text(
+                  'Switch to Student Follow',
+                  style: TextStyle(fontFamily: 'Roboto'),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryCyan,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -726,21 +765,26 @@ class _PianoModePageState extends State<PianoModePage> {
             Padding(
               padding: const EdgeInsets.only(top: 24),
               child: Center(
-                child: Column(children: [
-                  Icon(Icons.piano,
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.piano,
                       color: AppColors.grey.withValues(alpha: 0.25),
-                      size: 56),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Tap "Record Sequence" then\npress piano keys to create\na student exercise.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
+                      size: 56,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Tap "Record Sequence" then\npress piano keys to create\na student exercise.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
                         color: AppColors.grey.withValues(alpha: 0.5),
                         fontSize: 13,
                         fontFamily: 'Roboto',
-                        height: 1.5),
-                  ),
-                ]),
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
@@ -756,21 +800,30 @@ class _PianoModePageState extends State<PianoModePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle_outline,
-                color: Color(0xFF4CAF50), size: 80),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Color(0xFF4CAF50),
+              size: 80,
+            ),
             const SizedBox(height: 16),
-            const Text('Sequence Complete!',
-                style: TextStyle(
-                    color: Color(0xFF4CAF50),
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto')),
+            const Text(
+              'Sequence Complete!',
+              style: TextStyle(
+                color: Color(0xFF4CAF50),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Roboto',
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('${_sequence.length} / ${_sequence.length} notes correct',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.65),
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
+            Text(
+              '${_sequence.length} / ${_sequence.length} notes correct',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.65),
+                fontSize: 13,
+                fontFamily: 'Roboto',
+              ),
+            ),
             const SizedBox(height: 28),
             ElevatedButton(
               onPressed: _resetStudent,
@@ -778,12 +831,17 @@ class _PianoModePageState extends State<PianoModePage> {
                 backgroundColor: AppColors.inputBg,
                 foregroundColor: AppColors.white,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 32, vertical: 12),
+                  horizontal: 32,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: const Text('Try Again',
-                  style: TextStyle(fontFamily: 'Roboto')),
+              child: const Text(
+                'Try Again',
+                style: TextStyle(fontFamily: 'Roboto'),
+              ),
             ),
           ],
         ),
@@ -806,8 +864,8 @@ class _PianoModePageState extends State<PianoModePage> {
               final state = idx < _studentStep
                   ? 'done'
                   : idx == _studentStep
-                      ? 'current'
-                      : 'pending';
+                  ? 'current'
+                  : 'pending';
               return Container(
                 width: 28,
                 height: 28,
@@ -815,8 +873,8 @@ class _PianoModePageState extends State<PianoModePage> {
                   color: state == 'done'
                       ? const Color(0xFF4CAF50)
                       : state == 'current'
-                          ? AppColors.primaryCyan
-                          : AppColors.inputBg,
+                      ? AppColors.primaryCyan
+                      : AppColors.inputBg,
                   shape: BoxShape.circle,
                   border: state == 'current'
                       ? Border.all(color: AppColors.primaryCyan, width: 2)
@@ -826,11 +884,10 @@ class _PianoModePageState extends State<PianoModePage> {
                   child: Text(
                     e.value.key.solfege,
                     style: TextStyle(
-                        color: state == 'pending'
-                            ? AppColors.grey
-                            : Colors.white,
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold),
+                      color: state == 'pending' ? AppColors.grey : Colors.white,
+                      fontSize: 7,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               );
@@ -843,9 +900,10 @@ class _PianoModePageState extends State<PianoModePage> {
           Text(
             '${_studentStep + 1} / ${_sequence.length}  •  ${current.solfege} (${current.name})',
             style: TextStyle(
-                color: AppColors.grey.withValues(alpha: 0.55),
-                fontSize: 12,
-                fontFamily: 'Roboto'),
+              color: AppColors.grey.withValues(alpha: 0.55),
+              fontSize: 12,
+              fontFamily: 'Roboto',
+            ),
           ),
 
           const SizedBox(height: 14),
@@ -867,9 +925,10 @@ class _PianoModePageState extends State<PianoModePage> {
                     border: Border.all(color: Colors.red, width: 2),
                   ),
                   child: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color: _isListening ? Colors.white : Colors.red,
-                      size: 28),
+                    _isListening ? Icons.mic : Icons.mic_none,
+                    color: _isListening ? Colors.white : Colors.red,
+                    size: 28,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -879,10 +938,11 @@ class _PianoModePageState extends State<PianoModePage> {
                   Text(
                     _isListening ? 'Listening…' : 'Tap mic to start',
                     style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w600),
+                      color: AppColors.white,
+                      fontSize: 13,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -890,19 +950,17 @@ class _PianoModePageState extends State<PianoModePage> {
                         ? 'Sing into the mic'
                         : 'Then sing the note shown above',
                     style: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.55),
-                        fontSize: 11,
-                        fontFamily: 'Roboto'),
+                      color: AppColors.grey.withValues(alpha: 0.55),
+                      fontSize: 11,
+                      fontFamily: 'Roboto',
+                    ),
                   ),
                 ],
               ),
             ],
           ),
 
-          if (_isListening) ...[
-            const SizedBox(height: 14),
-            _buildPitchGauge(),
-          ],
+          if (_isListening) ...[const SizedBox(height: 14), _buildPitchGauge()],
         ],
       ),
     );
@@ -921,10 +979,10 @@ class _PianoModePageState extends State<PianoModePage> {
     final needleColor = !hasSignal
         ? AppColors.grey
         : inTune
-            ? const Color(0xFF4CAF50)
-            : close
-                ? const Color(0xFFFFA726)
-                : const Color(0xFFF44336);
+        ? const Color(0xFF4CAF50)
+        : close
+        ? const Color(0xFFFFA726)
+        : const Color(0xFFF44336);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -933,24 +991,31 @@ class _PianoModePageState extends State<PianoModePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('↓ Lower',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.5),
-                    fontSize: 10,
-                    fontFamily: 'Roboto')),
+            Text(
+              '↓ Lower',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.5),
+                fontSize: 10,
+                fontFamily: 'Roboto',
+              ),
+            ),
             Text(
               hasSignal ? '${_detectedHz.toStringAsFixed(1)} Hz' : '— Hz',
               style: TextStyle(
-                  color: needleColor,
-                  fontSize: 11,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600),
+                color: needleColor,
+                fontSize: 11,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            Text('↑ Higher',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.5),
-                    fontSize: 10,
-                    fontFamily: 'Roboto')),
+            Text(
+              '↑ Higher',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.5),
+                fontSize: 10,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 4),
@@ -967,33 +1032,50 @@ class _PianoModePageState extends State<PianoModePage> {
                 bottom: 10,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: Row(children: [
-                    Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
                         flex: 2,
                         child: Container(
-                            color: const Color(0xFFF44336)
-                                .withValues(alpha: 0.20))),
-                    Expanded(
+                          color: const Color(
+                            0xFFF44336,
+                          ).withValues(alpha: 0.20),
+                        ),
+                      ),
+                      Expanded(
                         flex: 1,
                         child: Container(
-                            color: const Color(0xFFFFA726)
-                                .withValues(alpha: 0.22))),
-                    Expanded(
+                          color: const Color(
+                            0xFFFFA726,
+                          ).withValues(alpha: 0.22),
+                        ),
+                      ),
+                      Expanded(
                         flex: 1,
                         child: Container(
-                            color: const Color(0xFF4CAF50)
-                                .withValues(alpha: 0.28))),
-                    Expanded(
+                          color: const Color(
+                            0xFF4CAF50,
+                          ).withValues(alpha: 0.28),
+                        ),
+                      ),
+                      Expanded(
                         flex: 1,
                         child: Container(
-                            color: const Color(0xFFFFA726)
-                                .withValues(alpha: 0.22))),
-                    Expanded(
+                          color: const Color(
+                            0xFFFFA726,
+                          ).withValues(alpha: 0.22),
+                        ),
+                      ),
+                      Expanded(
                         flex: 2,
                         child: Container(
-                            color: const Color(0xFFF44336)
-                                .withValues(alpha: 0.20))),
-                  ]),
+                          color: const Color(
+                            0xFFF44336,
+                          ).withValues(alpha: 0.20),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -1016,12 +1098,12 @@ class _PianoModePageState extends State<PianoModePage> {
                 child: Text(
                   'TARGET',
                   style: TextStyle(
-                      color:
-                          const Color(0xFF4CAF50).withValues(alpha: 0.7),
-                      fontSize: 7,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5),
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.7),
+                    fontSize: 7,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
 
@@ -1060,14 +1142,15 @@ class _PianoModePageState extends State<PianoModePage> {
           child: Text(
             hasSignal
                 ? inTune
-                    ? '${_currentCents.toStringAsFixed(0)}¢  —  in tune!'
-                    : '${_currentCents > 0 ? '+' : ''}${_currentCents.toStringAsFixed(0)}¢  ${_currentCents > 0 ? '(sing lower)' : '(sing higher)'}'
+                      ? '${_currentCents.toStringAsFixed(0)}¢  —  in tune!'
+                      : '${_currentCents > 0 ? '+' : ''}${_currentCents.toStringAsFixed(0)}¢  ${_currentCents > 0 ? '(sing lower)' : '(sing higher)'}'
                 : 'Waiting for signal…',
             style: TextStyle(
-                color: needleColor,
-                fontSize: 12,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600),
+              color: needleColor,
+              fontSize: 12,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
 
@@ -1080,17 +1163,19 @@ class _PianoModePageState extends State<PianoModePage> {
             value: _correctFrames / _framesNeeded,
             minHeight: 5,
             backgroundColor: AppColors.inputBg,
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
           ),
         ),
         const SizedBox(height: 3),
         Center(
-          child: Text('Hold in tune to advance',
-              style: TextStyle(
-                  color: AppColors.grey.withValues(alpha: 0.45),
-                  fontSize: 10,
-                  fontFamily: 'Roboto')),
+          child: Text(
+            'Hold in tune to advance',
+            style: TextStyle(
+              color: AppColors.grey.withValues(alpha: 0.45),
+              fontSize: 10,
+              fontFamily: 'Roboto',
+            ),
+          ),
         ),
       ],
     );

@@ -43,34 +43,40 @@ class KaraokePracticeModePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios_new,
-                        color: Colors.black, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      className.toUpperCase(),
-                      style: const TextStyle(
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
                         color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
+                        size: 20,
                       ),
                     ),
-                  ),
-                ]),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        className.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.only(left: 36),
                   child: Text(
                     'Lesson 2: Karaoke Practice',
                     style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 12,
-                        fontFamily: 'Roboto'),
+                      color: Colors.black87,
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
                   ),
                 ),
               ],
@@ -250,8 +256,7 @@ class KaraokePracticeModePage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined,
-              onTap: () => Navigator.pop(context)),
+          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
           _navIcon(Icons.person_outline),
         ],
       ),
@@ -263,8 +268,11 @@ class KaraokePracticeModePage extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Icon(icon,
-            color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+        child: Icon(
+          icon,
+          color: AppColors.grey.withValues(alpha: 0.5),
+          size: 26,
+        ),
       ),
     );
   }

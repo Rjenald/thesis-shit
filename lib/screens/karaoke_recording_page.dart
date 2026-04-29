@@ -866,12 +866,12 @@ class _KaraokePitchGraphPainter extends CustomPainter {
   /// Map a frequency (Hz) to a Y pixel position using a logarithmic scale.
   /// Returns [height] (bottom) for silence (hz == 0).
   double _hzToY(double hz, double height) {
-    const double minHz = 80.0;   // ~E2 — lower bound
+    const double minHz = 80.0; // ~E2 — lower bound
     const double maxHz = 1100.0; // ~C6 — upper bound
     if (hz <= 0) return height;
     final logMin = math.log(minHz);
     final logMax = math.log(maxHz);
-    final logHz  = math.log(hz.clamp(minHz, maxHz));
+    final logHz = math.log(hz.clamp(minHz, maxHz));
     return height - ((logHz - logMin) / (logMax - logMin)) * height;
   }
 
@@ -897,8 +897,7 @@ class _KaraokePitchGraphPainter extends CustomPainter {
     final double step = count > 1 ? w / (count - 1) : w;
 
     final List<Offset> points = [
-      for (int i = 0; i < count; i++)
-        Offset(i * step, _hzToY(data[i], h)),
+      for (int i = 0; i < count; i++) Offset(i * step, _hzToY(data[i], h)),
     ];
 
     // ── Filled gradient area ──────────────────────────────────────────────
@@ -938,13 +937,11 @@ class _KaraokePitchGraphPainter extends CustomPainter {
     if (points.isNotEmpty && data.last > 0) {
       final last = points.last;
       canvas.drawCircle(
-        last, 6,
+        last,
+        6,
         Paint()..color = AppColors.primaryCyan.withValues(alpha: 0.22),
       );
-      canvas.drawCircle(
-        last, 2.8,
-        Paint()..color = AppColors.primaryCyan,
-      );
+      canvas.drawCircle(last, 2.8, Paint()..color = AppColors.primaryCyan);
     }
   }
 

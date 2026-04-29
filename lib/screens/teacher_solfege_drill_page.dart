@@ -109,18 +109,15 @@ class _TeacherSolfegeDrillState extends State<TeacherSolfegeDrill> {
       });
 
       if (_feedback == PitchFeedback.correct) {
-        _holdTimer ??= Timer.periodic(
-          const Duration(milliseconds: 100),
-          (_) {
-            if (!mounted) return;
-            setState(() => _holdMs += 100);
-            if (_holdMs >= _required) {
-              _holdTimer?.cancel();
-              _holdTimer = null;
-              _advance();
-            }
-          },
-        );
+        _holdTimer ??= Timer.periodic(const Duration(milliseconds: 100), (_) {
+          if (!mounted) return;
+          setState(() => _holdMs += 100);
+          if (_holdMs >= _required) {
+            _holdTimer?.cancel();
+            _holdTimer = null;
+            _advance();
+          }
+        });
       } else {
         _holdTimer?.cancel();
         _holdTimer = null;
@@ -277,8 +274,11 @@ class _TeacherSolfegeDrillState extends State<TeacherSolfegeDrill> {
                         ),
                         const Row(
                           children: [
-                            Icon(Icons.circle,
-                                color: Color(0xFF4CAF50), size: 7),
+                            Icon(
+                              Icons.circle,
+                              color: Color(0xFF4CAF50),
+                              size: 7,
+                            ),
                             SizedBox(width: 5),
                             Text(
                               'Auto-progression • Real-time Detection',
@@ -355,11 +355,14 @@ class _TeacherSolfegeDrillState extends State<TeacherSolfegeDrill> {
                     height: 200,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _noteColorMap[currentNote] ?? AppColors.primaryCyan,
+                      color:
+                          _noteColorMap[currentNote] ?? AppColors.primaryCyan,
                       boxShadow: [
                         BoxShadow(
-                          color: (_noteColorMap[currentNote] ?? AppColors.primaryCyan)
-                              .withValues(alpha: 0.4),
+                          color:
+                              (_noteColorMap[currentNote] ??
+                                      AppColors.primaryCyan)
+                                  .withValues(alpha: 0.4),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
@@ -423,7 +426,9 @@ class _TeacherSolfegeDrillState extends State<TeacherSolfegeDrill> {
                           Text(
                             'Holding...',
                             style: TextStyle(
-                              color: const Color(0xFF4CAF50).withValues(alpha: 0.7),
+                              color: const Color(
+                                0xFF4CAF50,
+                              ).withValues(alpha: 0.7),
                               fontSize: 12,
                               fontFamily: 'Roboto',
                             ),
@@ -469,9 +474,7 @@ class _TeacherSolfegeDrillState extends State<TeacherSolfegeDrill> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (_running
-                                ? Colors.red
-                                : AppColors.primaryCyan)
+                        color: (_running ? Colors.red : AppColors.primaryCyan)
                             .withValues(alpha: 0.4),
                         blurRadius: 20,
                         spreadRadius: 2,
@@ -523,10 +526,7 @@ class _PitchMeter extends StatelessWidget {
   final double cents;
   final Color needleColor;
 
-  const _PitchMeter({
-    required this.cents,
-    required this.needleColor,
-  });
+  const _PitchMeter({required this.cents, required this.needleColor});
 
   @override
   Widget build(BuildContext context) {
@@ -578,7 +578,7 @@ class _PitchMeter extends StatelessWidget {
                           BoxShadow(
                             color: needleColor.withValues(alpha: 0.6),
                             blurRadius: 4,
-                          )
+                          ),
                         ],
                       ),
                     ),

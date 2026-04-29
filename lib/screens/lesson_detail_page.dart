@@ -28,9 +28,7 @@ class LessonDetailPage extends StatelessWidget {
           _SubLesson('1.2', 'Solfege Activity'),
         ];
       case 2:
-        return [
-          _SubLesson('2.1', 'Practice Karaoke'),
-        ];
+        return [_SubLesson('2.1', 'Practice Karaoke')];
       default:
         return [];
     }
@@ -92,8 +90,11 @@ class LessonDetailPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.black, size: 20),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -130,9 +131,7 @@ class LessonDetailPage extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(24),
-              children: _subLessons
-                  .map((s) => _buildCard(context, s))
-                  .toList(),
+              children: _subLessons.map((s) => _buildCard(context, s)).toList(),
             ),
           ),
         ],
@@ -172,8 +171,7 @@ class LessonDetailPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined,
-              onTap: () => Navigator.pop(context)),
+          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
           _navIcon(Icons.person_outline),
         ],
       ),
@@ -185,8 +183,11 @@ class LessonDetailPage extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Icon(icon,
-            color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+        child: Icon(
+          icon,
+          color: AppColors.grey.withValues(alpha: 0.5),
+          size: 26,
+        ),
       ),
     );
   }
