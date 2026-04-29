@@ -75,59 +75,10 @@ class ClassDetailPage extends StatelessWidget {
           // ── Body ──────────────────────────────────────────────────────
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               children: [
-                const Text(
-                  'Lessons',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-                const SizedBox(height: 16),
-
                 // Lesson cards
                 ..._lessons.map((l) => _buildLessonCard(l)),
-
-                const SizedBox(height: 28),
-
-                // View Students button
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ClassStudentsPage(
-                          classData: classData,
-                          classIndex: classIndex,
-                          onStudentsUpdated: onClassUpdated,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: AppColors.white, width: 1.5),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'View Students',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -140,7 +91,6 @@ class ClassDetailPage extends StatelessWidget {
   Widget _buildLessonCard(Map<String, Object> lesson) {
     final number = lesson['number'] as int;
     final title = lesson['title'] as String;
-    final subtitle = lesson['subtitle'] as String;
 
     return Builder(
       builder: (context) => GestureDetector(
@@ -156,62 +106,19 @@ class ClassDetailPage extends StatelessWidget {
         ),
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           decoration: BoxDecoration(
-            color: AppColors.cardBg,
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFF4A4A4A),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Row(
-            children: [
-              // Number badge
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryCyan.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '$number',
-                  style: const TextStyle(
-                    color: AppColors.primaryCyan,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              // Text
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Lesson $number: $title',
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.7),
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right,
-                  color: AppColors.grey, size: 20),
-            ],
+          child: Text(
+            'Lesson $number: $title',
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Roboto',
+            ),
           ),
         ),
       ),
