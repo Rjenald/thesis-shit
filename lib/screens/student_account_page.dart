@@ -1,38 +1,13 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MusicApp());
-}
-
-class MusicApp extends StatelessWidget {
-  const MusicApp({super.key});
+class StudentAccountPage extends StatefulWidget {
+  const StudentAccountPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Music Education App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
-        primaryColor: const Color(0xFF00ACC1), // Cyan accent
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF00ACC1),
-          surface: Color(0xFF1E1E1E),
-        ),
-      ),
-      home: const MainNavigationScreen(),
-    );
-  }
+  State<StudentAccountPage> createState() => _StudentAccountPageState();
 }
 
-class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
-
-  @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _StudentAccountPageState extends State<StudentAccountPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
