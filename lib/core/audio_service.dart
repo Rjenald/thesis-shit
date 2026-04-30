@@ -1,12 +1,16 @@
 /// AudioService — streams mic PCM to the CREPE backend WebSocket and
 /// emits NoteResult events.
 ///
-/// Primary:  CREPE server via WebSocket (highest accuracy).
-/// Fallback: On-device YIN pitch detector (works without any server).
+/// Primary:  CREPE server via WebSocket (highest accuracy, ~±5 cents).
+/// Fallback: On-device YIN pitch detector  (works without any server, ~±10 cents).
 ///
-/// The fallback activates automatically if the WebSocket does not send its
-/// first message within [_wsFallbackDelay].  Once local mode is active it
-/// stays active for the duration of the session.
+/// Accuracy improvements vs. original:
+///  • Fallback timer raised to 1 500 ms — gives slower networks more time.
+///  • CREPE results below 0.55 confidence are silently dropped.
+///  • Emissions are rate-limited to at most one per 80 ms (≤12 Hz) so the UI
+///    is not flooded with redundant readings.
+///  • Local detector now uses Hanning window + stricter threshold + median
+///    filter (see LocalPitchDetector for details).
 library;
 
 import 'dart:async';
@@ -24,9 +28,21 @@ import 'pitch_server_config.dart';
 class AudioService {
   static const int _sampleRate = 44100;
 
-  // How long to wait for the first WebSocket message before giving up
-  static const Duration _wsFallbackDelay = Duration(milliseconds: 800);
+  // ── Tuning constants ────────────────────────────────────────────────────────
 
+  /// Time to wait for the first WebSocket message before falling back to
+  /// local detection. Raised from 800 ms → 1 500 ms for slow connections.
+  static const Duration _wsFallbackDelay = Duration(milliseconds: 1500);
+
+  /// Minimum CREPE confidence to accept a result.
+  /// Readings below this are noise / vowel transitions — discard them.
+  static const double _minConfidence = 0.55;
+
+  /// Minimum time between emitted results (rate limiter).
+  /// Prevents flooding the UI at 100+ Hz; 80 ms gives ~12 Hz update rate.
+  static const Duration _minEmitInterval = Duration(milliseconds: 80);
+
+  // ── Internal state ──────────────────────────────────────────────────────────
   final _recorder = AudioRecorder();
   WebSocketChannel? _ws;
 
@@ -39,16 +55,19 @@ class AudioService {
   bool _isRunning = false;
   bool _disposed = false;
 
-  // ── WebSocket health tracking ───────────────────────────────────────────────
-  bool _wsReceived = false; // true once the first WS message arrives
-  bool _useLocal = false;   // true when falling back to on-device detection
+  bool _wsReceived = false;
+  bool _useLocal = false;
   Timer? _fallbackTimer;
 
-  // ── Local (on-device) pitch detection ──────────────────────────────────────
   final LocalPitchDetector _localDetector = LocalPitchDetector();
-  double? _targetFreq; // stored so local mode can use it too
+  double? _targetFreq;
+
+  // Rate-limiter state
+  DateTime _lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get isRunning => _isRunning;
+
+  // ── Public API ──────────────────────────────────────────────────────────────
 
   /// Request mic permission, connect to CREPE WebSocket, start streaming.
   /// Returns false only if microphone permission is denied.
@@ -58,6 +77,7 @@ class AudioService {
     _targetFreq = targetFreq;
     _wsReceived = false;
     _useLocal = false;
+    _lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
     _localDetector.reset();
 
     // ── 1. Mic permission ───────────────────────────────────────────────────
@@ -71,7 +91,7 @@ class AudioService {
       _wsSub = _ws!.stream.listen(
         (message) {
           if (_disposed) return;
-          _wsReceived = true; // server is alive — cancel fallback timer
+          _wsReceived = true;
           _fallbackTimer?.cancel();
           _fallbackTimer = null;
 
@@ -80,27 +100,28 @@ class AudioService {
                 json.decode(message as String) as Map<String, dynamic>;
             final freq = (data['frequency'] as num).toDouble();
             final conf = (data['confidence'] as num?)?.toDouble() ?? 1.0;
+
+            // Gate: ignore low-confidence readings (noise / transitions)
+            if (conf < _minConfidence) {
+              _emitIfReady(null);
+              return;
+            }
+
             if (freq > 0) {
-              _resultController.add(analyzeFrequency(
+              _emitIfReady(analyzeFrequency(
                 freq,
                 targetFreq: targetFreq,
                 confidence: conf,
               ));
             } else {
-              _resultController.add(null);
+              _emitIfReady(null);
             }
           } catch (_) {
-            _resultController.add(null);
+            _emitIfReady(null);
           }
         },
-        onError: (_) {
-          // WebSocket error → switch to local immediately
-          _activateLocalFallback();
-        },
-        onDone: () {
-          // Server closed → switch to local
-          _activateLocalFallback();
-        },
+        onError: (_) => _activateLocalFallback(),
+        onDone: () => _activateLocalFallback(),
         cancelOnError: true,
       );
 
@@ -111,11 +132,10 @@ class AudioService {
         _activateLocalFallback();
       }
     } catch (_) {
-      // Could not even create the WebSocket → use local immediately
       _useLocal = true;
     }
 
-    // ── 3. Fallback timer — give the server 3 s to respond ─────────────────
+    // ── 3. Fallback timer ────────────────────────────────────────────────────
     if (!_useLocal) {
       _fallbackTimer = Timer(_wsFallbackDelay, () {
         if (!_wsReceived && !_disposed) _activateLocalFallback();
@@ -155,22 +175,18 @@ class AudioService {
         if (_disposed) return;
 
         if (_useLocal) {
-          // ── On-device YIN pitch detection ───────────────────────────────
           final hz = _localDetector.process(bytes);
           if (hz == null) return; // buffer not full yet
-          if (!_disposed) {
-            if (hz > 0) {
-              _resultController.add(analyzeFrequency(
-                hz,
-                targetFreq: _targetFreq,
-                confidence: 1.0, // local detector has no confidence score
-              ));
-            } else {
-              _resultController.add(null); // silence
-            }
+          if (hz > 0) {
+            _emitIfReady(analyzeFrequency(
+              hz,
+              targetFreq: _targetFreq,
+              confidence: 1.0,
+            ));
+          } else {
+            _emitIfReady(null); // silence
           }
         } else {
-          // ── Stream to CREPE server ───────────────────────────────────────
           try {
             _ws?.sink.add(Uint8List.fromList(bytes));
           } catch (_) {
@@ -179,14 +195,25 @@ class AudioService {
         }
       },
       onError: (_) {
-        if (!_disposed) _resultController.add(null);
+        if (!_disposed) _emitIfReady(null);
       },
     );
 
     return true;
   }
 
-  /// Switch to on-device detection (idempotent — safe to call multiple times).
+  // ── Private helpers ─────────────────────────────────────────────────────────
+
+  /// Emit a result only if the rate-limiter allows it.
+  void _emitIfReady(NoteResult? result) {
+    if (_disposed) return;
+    final now = DateTime.now();
+    if (now.difference(_lastEmit) < _minEmitInterval) return; // throttle
+    _lastEmit = now;
+    _resultController.add(result);
+  }
+
+  /// Switch to on-device YIN (idempotent — safe to call multiple times).
   void _activateLocalFallback() {
     if (_useLocal || _disposed) return;
     _useLocal = true;
@@ -194,6 +221,8 @@ class AudioService {
     _fallbackTimer = null;
     _localDetector.reset();
   }
+
+  // ── Lifecycle ───────────────────────────────────────────────────────────────
 
   /// Stop recording and close WebSocket. Safe to call multiple times.
   Future<void> stop() async {

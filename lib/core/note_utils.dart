@@ -116,10 +116,13 @@ enum PitchFeedback { correct, tooHigh, tooLow, noSignal }
 
 /// Classify the singing feedback given a cents deviation.
 ///
-/// [toleranceCents] defines the "in-tune" window.
-/// 25 cents = a quarter semitone — a reasonable tolerance for beginners.
-/// 15 cents = stricter, suitable for more advanced practice.
-PitchFeedback classifyPitch(double cents, {double toleranceCents = 35.0}) {
+/// [toleranceCents] defines the "in-tune" window (±cents from the target).
+///  • 25 cents (default) — a quarter-semitone; accurate but beginner-friendly.
+///  • 15 cents — stricter; use for advanced / performance mode.
+///  • 35 cents — lenient; use for very young or beginner students.
+///
+/// The previous default of 35 cents was too wide and masked intonation errors.
+PitchFeedback classifyPitch(double cents, {double toleranceCents = 25.0}) {
   if (cents.abs() <= toleranceCents) return PitchFeedback.correct;
   if (cents > 0) return PitchFeedback.tooHigh;
   return PitchFeedback.tooLow;
