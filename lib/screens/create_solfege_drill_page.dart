@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../core/note_utils.dart';
 import 'teacher_solfege_drill_page.dart';
 
 class CreateSolfegeDrillPage extends StatefulWidget {
@@ -315,7 +314,7 @@ class _CreateSolfegeDrillPageState extends State<CreateSolfegeDrillPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'Students will sing in order: ${_selectedNotes.join(" → ")}',
+                                  'Students will sing in order: ${_selectedNotes.join(" â†’ ")}',
                                   style: TextStyle(
                                     color: AppColors.grey.withValues(
                                       alpha: 0.7,

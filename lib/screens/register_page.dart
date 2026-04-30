@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'home_page.dart';
@@ -201,7 +201,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (loadingProgress == null) return child;
                         return Container(color: Colors.black);
                       },
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (_, _, _) =>
                           Container(color: Colors.black),
                     ),
                   ),

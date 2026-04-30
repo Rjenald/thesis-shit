@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../models/class_notification.dart';
@@ -166,7 +166,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   return ListView.separated(
                     padding: EdgeInsets.zero,
                     itemCount: notifications.length,
-                    separatorBuilder: (_, __) => Divider(
+                    separatorBuilder: (_, _) => Divider(
                       height: 1,
                       thickness: 1,
                       color: AppColors.inputBg.withValues(alpha: 0.3),

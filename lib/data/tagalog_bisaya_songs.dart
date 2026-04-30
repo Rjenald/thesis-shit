@@ -232,7 +232,6 @@ class TagalogBisayaSongs {
 
   /// Get random songs
   static List<KaraokeSong> getRandomSongs({int count = 10}) {
-    final random = <KaraokeSong>[];
     final shuffled = List<KaraokeSong>.from(songs)..shuffle();
     return shuffled.take(count).toList();
   }

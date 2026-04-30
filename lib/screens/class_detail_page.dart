@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import 'class_students_page.dart';
 import 'lesson_detail_page.dart';
 
-/// Class detail page — shows lesson list and "View Students" button.
+/// Class detail page â€” shows lesson list and "View Students" button.
 /// Header is full-width teal/cyan matching Figma design.
 class ClassDetailPage extends StatelessWidget {
   final Map<String, dynamic> classData;
@@ -38,7 +37,7 @@ class ClassDetailPage extends StatelessWidget {
       backgroundColor: AppColors.bgDark,
       body: Column(
         children: [
-          // ── Teal full-width header ─────────────────────────────────────
+          // â”€â”€ Teal full-width header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             width: double.infinity,
             color: AppColors.primaryCyan,
@@ -75,7 +74,7 @@ class ClassDetailPage extends StatelessWidget {
             ),
           ),
 
-          // ── Body ──────────────────────────────────────────────────────
+          // â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -128,7 +127,7 @@ class ClassDetailPage extends StatelessWidget {
     );
   }
 
-  // ── Bottom nav ─────────────────────────────────────────────────────────
+  // â”€â”€ Bottom nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildBottomNav(BuildContext context) {
     return Container(
       height: 70,

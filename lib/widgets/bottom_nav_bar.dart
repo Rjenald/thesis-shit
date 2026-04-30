@@ -100,18 +100,24 @@ class BottomNavBar extends StatelessWidget {
           }
         }
 
+        // Slide left/right based on tab direction (higher index → from right)
+        final slideFromRight = index > currentIndex;
         Navigator.pushAndRemoveUntil(
           context,
           PageRouteBuilder(
             pageBuilder: (ctx, anim, sec) => destination,
-            transitionDuration: const Duration(milliseconds: 220),
-            transitionsBuilder: (ctx, animation, sec, child) => FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeInOut,
-              ),
-              child: child,
-            ),
+            transitionDuration: const Duration(milliseconds: 260),
+            reverseTransitionDuration: const Duration(milliseconds: 220),
+            transitionsBuilder: (ctx, animation, sec, child) {
+              final tween = Tween<Offset>(
+                begin: Offset(slideFromRight ? 1.0 : -1.0, 0.0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeInOutCubic));
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
           ),
           (route) => route.isFirst,
         );

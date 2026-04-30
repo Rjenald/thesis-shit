@@ -44,12 +44,13 @@ class _TeacherModePageState extends State<TeacherModePage> {
   Future<void> _load() async {
     final cls = await SessionStorageService.loadClasses();
     final sess = await SessionStorageService.loadSessions();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _classes = cls;
         _sessions = sess;
         _loading = false;
       });
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1635,10 +1636,12 @@ class _TeacherModePageState extends State<TeacherModePage> {
   List<String> _buildRecommendations(double flat, double sharp, double silent) {
     final r = <String>[];
     if (flat > 20) r.add('Focus on high note drills for students singing flat');
-    if (sharp > 15)
+    if (sharp > 15) {
       r.add('Practice slow, sustained phrases to reduce sharpness');
-    if (silent > 30)
+    }
+    if (silent > 30) {
       r.add('Schedule breath control workshops to improve voice activity');
+    }
     r.add('Introduce more Filipino songs to diversify repertoire');
     if (r.length < 3) r.add('Group practice sessions encourage peer learning');
     return r.take(4).toList();
