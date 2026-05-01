@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -61,7 +62,7 @@ class LyricsSyncService {
           ));
         }
       } catch (e) {
-        print('Error parsing lyric line: $e');
+        debugPrint('Error parsing lyric line: $e');
       }
     }
 
@@ -97,7 +98,7 @@ class LyricsSyncService {
         }
       }
     } catch (e) {
-      print('Error fetching lyrics from LrcLib: $e');
+      debugPrint('Error fetching lyrics from LrcLib: $e');
     }
 
     return [];
@@ -154,7 +155,7 @@ class LyricsSyncService {
     var lyrics = await fetchTimedLyricsFromLrcLib(title, artist);
     if (lyrics.isNotEmpty) return lyrics;
 
-    // TODO: Add more fallback sources if needed
+    // Additional fallback sources can be added here if needed
 
     return [];
   }
