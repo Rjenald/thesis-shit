@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import '../constants/app_colors.dart';
 import '../core/audio_service.dart';
 import '../core/note_utils.dart';
+import '../services/recording_storage_service.dart';
+import 'save_record_page.dart';
 
 class WithoutKaraokeRecordingPage extends StatefulWidget {
   const WithoutKaraokeRecordingPage({super.key});
@@ -19,8 +24,13 @@ class _WithoutKaraokeRecordingPageState
   // ── Audio ──────────────────────────────────────────────────────────────────
   final AudioService _audioService = AudioService();
   StreamSubscription<NoteResult?>? _audioSub;
+  StreamSubscription<List<int>>? _bytesSub;
 
   bool _isRecording = false;
+  bool _isSaving = false;
+
+  // PCM buffer for WAV export
+  final List<int> _recordedPcm = [];
 
   // ── Timer ──────────────────────────────────────────────────────────────────
   int _seconds = 0;
@@ -59,6 +69,7 @@ class _WithoutKaraokeRecordingPageState
     _waveTimer?.cancel();
     _timer?.cancel();
     _audioSub?.cancel();
+    _bytesSub?.cancel();
     _audioService.dispose();
     super.dispose();
   }
@@ -67,13 +78,20 @@ class _WithoutKaraokeRecordingPageState
   Future<void> _toggleRecording() async {
     if (_isRecording) {
       // Stop
+      await _bytesSub?.cancel();
+      _bytesSub = null;
       await _audioSub?.cancel();
       _audioSub = null;
       await _audioService.stop();
       _timer?.cancel();
       _waveTimer?.cancel();
+
+      final durationSecs = _seconds;
+      final pcmSnapshot = List<int>.from(_recordedPcm);
+
       setState(() {
         _isRecording = false;
+        _isSaving = true;
         _seconds = 0;
         _noteDisplay = '--';
         _freqDisplay = '';
@@ -84,8 +102,15 @@ class _WithoutKaraokeRecordingPageState
           _bars[i] = 0.05;
         }
       });
+
+      if (pcmSnapshot.isNotEmpty && durationSecs >= 1) {
+        await _saveWav(pcmSnapshot, durationSecs);
+      }
+
+      if (mounted) setState(() => _isSaving = false);
     } else {
       // Start
+      _recordedPcm.clear();
       final started = await _audioService.start();
       if (!started) {
         if (mounted) {
@@ -98,19 +123,23 @@ class _WithoutKaraokeRecordingPageState
 
       setState(() => _isRecording = true);
 
+      // Buffer raw PCM for saving
+      _bytesSub = _audioService.rawBytes.listen((bytes) {
+        _recordedPcm.addAll(bytes);
+      });
+
       // Timer
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _seconds++);
       });
 
-      // Waveform ticker (updates bars ~30fps)
+      // Waveform ticker (~30fps)
       _waveTimer = Timer.periodic(const Duration(milliseconds: 33), (_) {
         if (!mounted) return;
         setState(() {
           for (int i = 0; i < _barCount - 1; i++) {
             _bars[i] = _bars[i + 1];
           }
-          // New bar height based on current signal
           final base = _feedback == PitchFeedback.noSignal ? 0.05 : 0.2;
           final noise =
               Random().nextDouble() *
@@ -140,6 +169,92 @@ class _WithoutKaraokeRecordingPageState
         });
       });
     }
+  }
+
+  // ── WAV file builder ───────────────────────────────────────────────────────
+  Future<void> _saveWav(List<int> pcm, int durationSecs) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final id = DateTime.now().millisecondsSinceEpoch.toString();
+      final path = '${dir.path}/recording_$id.wav';
+
+      final wavBytes = _buildWavBytes(pcm, sampleRate: 44100, channels: 1);
+      await File(path).writeAsBytes(wavBytes);
+
+      final now = DateTime.now();
+      final title =
+          'Recording ${now.year}-${_pad(now.month)}-${_pad(now.day)} '
+          '${_pad(now.hour)}:${_pad(now.minute)}';
+
+      await RecordingStorageService.saveRecording(
+        RecordingEntry(
+          id: id,
+          title: title,
+          filePath: path,
+          durationSeconds: durationSecs,
+          createdAt: now,
+        ),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Recording saved!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save: $e')),
+        );
+      }
+    }
+  }
+
+  String _pad(int v) => v.toString().padLeft(2, '0');
+
+  Uint8List _buildWavBytes(
+    List<int> pcm, {
+    required int sampleRate,
+    required int channels,
+  }) {
+    const bitsPerSample = 16;
+    final byteRate = sampleRate * channels * bitsPerSample ~/ 8;
+    final blockAlign = channels * bitsPerSample ~/ 8;
+    final dataLength = pcm.length;
+    final buf = ByteData(44 + dataLength);
+
+    // RIFF chunk
+    buf.setUint8(0, 0x52); // R
+    buf.setUint8(1, 0x49); // I
+    buf.setUint8(2, 0x46); // F
+    buf.setUint8(3, 0x46); // F
+    buf.setUint32(4, 36 + dataLength, Endian.little);
+    buf.setUint8(8, 0x57);  // W
+    buf.setUint8(9, 0x41);  // A
+    buf.setUint8(10, 0x56); // V
+    buf.setUint8(11, 0x45); // E
+    // fmt sub-chunk
+    buf.setUint8(12, 0x66); // f
+    buf.setUint8(13, 0x6D); // m
+    buf.setUint8(14, 0x74); // t
+    buf.setUint8(15, 0x20); // space
+    buf.setUint32(16, 16, Endian.little);
+    buf.setUint16(20, 1, Endian.little); // PCM
+    buf.setUint16(22, channels, Endian.little);
+    buf.setUint32(24, sampleRate, Endian.little);
+    buf.setUint32(28, byteRate, Endian.little);
+    buf.setUint16(32, blockAlign, Endian.little);
+    buf.setUint16(34, bitsPerSample, Endian.little);
+    // data sub-chunk
+    buf.setUint8(36, 0x64); // d
+    buf.setUint8(37, 0x61); // a
+    buf.setUint8(38, 0x74); // t
+    buf.setUint8(39, 0x61); // a
+    buf.setUint32(40, dataLength, Endian.little);
+    for (int i = 0; i < dataLength; i++) {
+      buf.setUint8(44 + i, pcm[i] & 0xFF);
+    }
+    return buf.buffer.asUint8List();
   }
 
   // ── Feedback helpers ───────────────────────────────────────────────────────
@@ -254,6 +369,22 @@ class _WithoutKaraokeRecordingPageState
                       color: AppColors.white,
                       fontFamily: 'Roboto',
                     ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.menu,
+                      color: AppColors.white,
+                      size: 26,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SaveRecordPage(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -483,7 +614,7 @@ class _WithoutKaraokeRecordingPageState
 
                   // Record / Stop button
                   GestureDetector(
-                    onTap: _toggleRecording,
+                    onTap: (_isSaving) ? null : _toggleRecording,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: 64,
@@ -503,11 +634,22 @@ class _WithoutKaraokeRecordingPageState
                               ]
                             : [],
                       ),
-                      child: Icon(
-                        _isRecording ? Icons.stop : Icons.fiber_manual_record,
-                        color: Colors.white,
-                        size: 30,
-                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Icon(
+                              _isRecording
+                                  ? Icons.stop
+                                  : Icons.fiber_manual_record,
+                              color: Colors.white,
+                              size: 30,
+                            ),
                     ),
                   ),
 

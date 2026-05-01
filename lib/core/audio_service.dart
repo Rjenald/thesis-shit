@@ -36,6 +36,9 @@ class AudioService {
   final _resultController = StreamController<NoteResult?>.broadcast();
   Stream<NoteResult?> get results => _resultController.stream;
 
+  final _bytesController = StreamController<List<int>>.broadcast();
+  Stream<List<int>> get rawBytes => _bytesController.stream;
+
   bool _isRunning = false;
   bool _disposed = false;
 
@@ -154,6 +157,8 @@ class AudioService {
       (bytes) {
         if (_disposed) return;
 
+        if (!_bytesController.isClosed) _bytesController.add(bytes);
+
         if (_useLocal) {
           // ── On-device YIN pitch detection ───────────────────────────────
           final hz = _localDetector.process(bytes);
@@ -229,6 +234,7 @@ class AudioService {
     _wsSub = null;
 
     _resultController.close();
+    _bytesController.close();
 
     _recorder.stop().then((_) => _recorder.dispose()).ignore();
     try {
