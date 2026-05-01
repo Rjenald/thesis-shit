@@ -7,11 +7,11 @@ class SimplePlatform extends StatelessWidget {
   final Offset position;
 
   const SimplePlatform({
-    Key? key,
+    super.key,
     this.width = 60,
     this.height = 10,
     this.position = const Offset(0, 0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +38,11 @@ class GlassPlatform extends StatelessWidget {
   final Offset position;
 
   const GlassPlatform({
-    Key? key,
+    super.key,
     this.width = 60,
     this.height = 10,
     this.position = const Offset(0, 0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,15 +53,15 @@ class GlassPlatform extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.blue[300]!.withOpacity(0.6),
+          color: Colors.blue[300]!.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(5),
           border: Border.all(
-            color: Colors.blue[600]!.withOpacity(0.8),
+            color: Colors.blue[600]!.withValues(alpha: 0.8),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue[400]!.withOpacity(0.4),
+              color: Colors.blue[400]!.withValues(alpha: 0.4),
               blurRadius: 8,
               spreadRadius: 2,
             ),
@@ -79,11 +79,11 @@ class NeonPlatform extends StatelessWidget {
   final Offset position;
 
   const NeonPlatform({
-    Key? key,
+    super.key,
     this.width = 60,
     this.height = 10,
     this.position = const Offset(0, 0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -102,12 +102,12 @@ class NeonPlatform extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
           boxShadow: [
             BoxShadow(
-              color: Colors.purple[400]!.withOpacity(0.7),
+              color: Colors.purple[400]!.withValues(alpha: 0.7),
               blurRadius: 15,
               spreadRadius: 2,
             ),
             BoxShadow(
-              color: Colors.pink[400]!.withOpacity(0.5),
+              color: Colors.pink[400]!.withValues(alpha: 0.5),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -125,11 +125,11 @@ class PixelPlatform extends StatelessWidget {
   final Offset position;
 
   const PixelPlatform({
-    Key? key,
+    super.key,
     this.width = 60,
     this.height = 10,
     this.position = const Offset(0, 0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +144,7 @@ class PixelPlatform extends StatelessWidget {
           border: Border.all(color: Colors.orange[900]!, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.orange[900]!.withOpacity(0.6),
+              color: Colors.orange[900]!.withValues(alpha: 0.6),
               offset: const Offset(3, 3),
               blurRadius: 0,
             ),
@@ -184,11 +184,11 @@ class SpringPlatform extends StatefulWidget {
   final Offset position;
 
   const SpringPlatform({
-    Key? key,
+    super.key,
     this.width = 60,
     this.height = 10,
     this.position = const Offset(0, 0),
-  }) : super(key: key);
+  });
 
   @override
   State<SpringPlatform> createState() => _SpringPlatformState();
@@ -236,13 +236,13 @@ class _SpringPlatformState extends State<SpringPlatform>
               borderRadius: BorderRadius.circular(5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red[400]!.withOpacity(0.5),
+                  color: Colors.red[400]!.withValues(alpha: 0.5),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
               ],
             ),
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.star,
                 color: Colors.white,

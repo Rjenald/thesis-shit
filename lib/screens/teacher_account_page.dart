@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
+import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
 import 'class_detail_page.dart';
 import 'start_page.dart';
@@ -248,6 +250,19 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                 ],
               ),
             ),
+            // Add Student
+            GestureDetector(
+              onTap: () => _showAddStudentDialog(name),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.person_add_outlined,
+                  color: AppColors.primaryCyan,
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 2),
             // Edit
             GestureDetector(
               onTap: () => _showEditClassDialog(realIndex, cls),
@@ -407,6 +422,154 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const StartPage()),
       (route) => false,
+    );
+  }
+
+  // ── Add Student dialog ───────────────────────────────────────────────────
+  /// Opens a dialog where the teacher types a student name/ID and sends an
+  /// enrollment invitation. The invitation appears in the student's
+  /// Notification screen where they can Accept or Delete it.
+  void _showAddStudentDialog(String className) {
+    final ctrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        contentPadding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryCyan.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.person_add_outlined,
+                color: AppColors.primaryCyan,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Add Student',
+              style: TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Class badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.primaryCyan.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primaryCyan.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.class_outlined,
+                    size: 12,
+                    color: AppColors.primaryCyan,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    className,
+                    style: const TextStyle(
+                      color: AppColors.primaryCyan,
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            _fLabel('Student Name or ID'),
+            const SizedBox(height: 6),
+            _fField(ctrl, 'e.g. Juan Dela Cruz'),
+            const SizedBox(height: 6),
+            Text(
+              'An enrollment notification will be sent to the student.',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.55),
+                fontSize: 11,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.8),
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              final studentName = ctrl.text.trim();
+              if (studentName.isEmpty) return;
+
+              // Send via shared EnrollmentService
+              context.read<EnrollmentService>().sendInvite(
+                    teacherName: _username,
+                    className: className,
+                    studentName: studentName,
+                  );
+
+              Navigator.pop(ctx);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Enrollment invite sent to $studentName',
+                    style: const TextStyle(fontFamily: 'Roboto'),
+                  ),
+                  backgroundColor: AppColors.primaryCyan,
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            icon: const Icon(Icons.send_outlined, size: 16),
+            label: const Text(
+              'Send Invite',
+              style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Roboto'),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryCyan,
+              foregroundColor: Colors.black,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(9),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

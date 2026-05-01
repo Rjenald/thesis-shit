@@ -3,9 +3,6 @@ import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../data/tagalog_bisaya_songs.dart';
 import '../screens/karaoke_recording_page.dart';
-import 'home_page.dart';
-import 'library_page.dart';
-import 'education_mode_page.dart';
 
 class KaraokeHomePage extends StatefulWidget {
   const KaraokeHomePage({super.key});
@@ -405,25 +402,7 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: 2,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const HomePage()),
-              (route) => false,
-            );
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const LibraryPage()),
-            );
-          } else if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const EducationModePage()),
-            );
-          }
-        },
+        onTap: (_) {},
       ),
     );
   }

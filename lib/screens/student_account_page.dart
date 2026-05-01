@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../data/tagalog_bisaya_songs.dart';
+import '../services/enrollment_service.dart';
 import 'karaoke_recording_page.dart';
 import 'practice_solfege_page.dart';
 import 'karaoke_practice_mode_page.dart';
@@ -22,22 +24,17 @@ class StudentAccountPage extends StatefulWidget {
 class _StudentAccountPageState extends State<StudentAccountPage> {
   int _selectedIndex = 0;
 
-  // Enrollment state — becomes true when student confirms the enrollment notif
-  bool _isEnrolled = false;
-  final String _enrolledClass = 'Grade 11 – Sampaguita';
-
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
 
+  /// Called by NotificationScreen when a student accepts an invite.
+  /// EnrollmentService already updated the state — just jump to Classroom tab.
   void _onEnrollmentConfirmed() {
-    setState(() {
-      _isEnrolled = true;
-      _selectedIndex = 2; // Jump to Home (Classroom)
-    });
+    setState(() => _selectedIndex = 2);
   }
 
-  Widget _getScreen() {
+  Widget _getScreen(EnrollmentService enrollment) {
     switch (_selectedIndex) {
       case 0:
         return NotificationScreen(onEnrollmentConfirmed: _onEnrollmentConfirmed);
@@ -45,8 +42,8 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
         return const StudentKaraokeModeScreen();
       case 2:
         return ClassroomScreen(
-          isEnrolled: _isEnrolled,
-          className: _enrolledClass,
+          isEnrolled: enrollment.isEnrolled,
+          className: enrollment.primaryClass ?? 'Not Enrolled',
         );
       case 3:
         return const CalendarScreen();
@@ -54,16 +51,19 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
         return const ProfileScreen();
       default:
         return ClassroomScreen(
-          isEnrolled: _isEnrolled,
-          className: _enrolledClass,
+          isEnrolled: enrollment.isEnrolled,
+          className: enrollment.primaryClass ?? 'Not Enrolled',
         );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final enrollment = context.watch<EnrollmentService>();
+    final pendingCount = enrollment.pendingInvites.length;
+
     return Scaffold(
-      body: _getScreen(),
+      body: _getScreen(enrollment),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: _navBg,
@@ -81,7 +81,13 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(Icons.notifications_outlined, 'Notification', 0),
+                // Notification tab — shows badge when invites are pending
+                _buildNavItem(
+                  Icons.notifications_outlined,
+                  'Notification',
+                  0,
+                  badge: pendingCount,
+                ),
                 _buildNavItem(Icons.mic_none, 'Karaoke Mode', 1),
                 _buildNavItem(Icons.home_outlined, 'Home', 2),
                 _buildNavItem(Icons.calendar_today_outlined, 'Calendar', 3),
@@ -94,14 +100,41 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index, {int badge = 0}) {
     final isSelected = _selectedIndex == index;
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? _cyan : Colors.white70, size: 24),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(icon, color: isSelected ? _cyan : Colors.white70, size: 24),
+              if (badge > 0)
+                Positioned(
+                  top: -4,
+                  right: -6,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '$badge',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 4),
           Text(
             label,
@@ -128,74 +161,129 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final List<Map<String, dynamic>> _notifications = [
+  // Non-enrollment notifications stay here (activity reminders, etc.)
+  final List<Map<String, dynamic>> _activityNotifs = [
     {
-      'name': 'Bags, Kian Francis',
-      'action': 'Add to Grade 11 – Sampaguita',
-      'type': 'enrollment',
-    },
-    {
-      'name': 'Bags, Kian Francis',
+      'name': 'Teacher',
       'action': 'Added Activity | Solfege',
       'deadline': '01.01.21',
       'type': 'activity',
     },
   ];
 
-  void _confirmNotification(int index) {
-    final type = _notifications[index]['type'];
-    setState(() => _notifications.removeAt(index));
-    if (type == 'enrollment') {
-      widget.onEnrollmentConfirmed?.call();
-    }
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Confirmed — you are now enrolled!'),
-      backgroundColor: _cyan,
-      duration: Duration(seconds: 2),
-    ));
-  }
-
-  void _deleteNotification(int index) {
-    setState(() => _notifications.removeAt(index));
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Notification deleted'),
-      backgroundColor: Colors.redAccent,
-      duration: Duration(seconds: 2),
-    ));
-  }
+  final List<int> _dismissedActivity = [];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _dark,
-      appBar: AppBar(
-        backgroundColor: _dark,
-        elevation: 0,
-        title: const Text('Notification',
-            style: TextStyle(
+    return Consumer<EnrollmentService>(
+      builder: (context, enrollment, _) {
+        final invites = enrollment.pendingInvites;
+        final activities = _activityNotifs
+            .asMap()
+            .entries
+            .where((e) => !_dismissedActivity.contains(e.key))
+            .map((e) => e.value)
+            .toList();
+
+        final hasNotifications = invites.isNotEmpty || activities.isNotEmpty;
+
+        return Scaffold(
+          backgroundColor: _dark,
+          appBar: AppBar(
+            backgroundColor: _dark,
+            elevation: 0,
+            title: const Text(
+              'Notification',
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
-                fontWeight: FontWeight.bold)),
-      ),
-      body: _notifications.isEmpty
-          ? const Center(
-              child: Text('No new notifications',
-                  style: TextStyle(color: Colors.white54, fontSize: 16)))
-          : ListView.builder(
-              itemCount: _notifications.length,
-              padding: EdgeInsets.zero,
-              itemBuilder: (context, index) {
-                final n = _notifications[index];
-                return _NotifCard(
-                  name: n['name'],
-                  action: n['action'],
-                  deadline: n['deadline'],
-                  type: n['type'],
-                  onConfirm: () => _confirmNotification(index),
-                  onDelete: () => _deleteNotification(index),
-                );
-              },
+                fontWeight: FontWeight.bold,
+              ),
             ),
+          ),
+          body: !hasNotifications
+              ? const Center(
+                  child: Text(
+                    'No new notifications',
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
+                )
+              : ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    // ── Enrollment invitations (from teacher) ────────────
+                    ...invites.map((invite) => _NotifCard(
+                          name: invite.teacherName,
+                          action:
+                              'Wants to enroll you in ${invite.className}',
+                          type: 'enrollment',
+                          onConfirm: () {
+                            enrollment.acceptInvite(invite.id);
+                            widget.onEnrollmentConfirmed?.call();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Enrolled in ${invite.className}!',
+                                  style:
+                                      const TextStyle(fontFamily: 'Roboto'),
+                                ),
+                                backgroundColor: _cyan,
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          onDelete: () {
+                            enrollment.declineInvite(invite.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Enrollment declined'),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        )),
+
+                    // ── Activity notifications ────────────────────────────
+                    ...activities.asMap().entries.map((e) {
+                      final n = e.value;
+                      return _NotifCard(
+                        name: n['name'],
+                        action: n['action'],
+                        deadline: n['deadline'],
+                        type: n['type'],
+                        onConfirm: () {
+                          setState(
+                              () => _dismissedActivity.add(e.key));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Notification dismissed'),
+                              backgroundColor: _cyan,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        onDelete: () {
+                          setState(
+                              () => _dismissedActivity.add(e.key));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Notification deleted'),
+                              backgroundColor: Colors.redAccent,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ],
+                ),
+        );
+      },
     );
   }
 }
@@ -252,6 +340,7 @@ class _NotifCard extends StatelessWidget {
             Text('Deadline: $deadline',
                 style: const TextStyle(color: Colors.white54, fontSize: 11))
           else if (type == 'enrollment') ...[
+            // Accept enrollment
             TextButton(
               onPressed: onConfirm,
               style: TextButton.styleFrom(
@@ -260,9 +349,10 @@ class _NotifCard extends StatelessWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('Confirm',
+              child: const Text('Accept',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             ),
+            // Decline enrollment
             TextButton(
               onPressed: onDelete,
               style: TextButton.styleFrom(
@@ -272,6 +362,19 @@ class _NotifCard extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text('Delete',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            ),
+          ] else if (type == 'activity') ...[
+            // Dismiss activity
+            TextButton(
+              onPressed: onDelete,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white54,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text('Dismiss',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             ),
           ],
