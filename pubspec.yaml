@@ -22,6 +22,15 @@ dependencies:
   video_player: ^2.9.2
   provider: ^6.0.0
 
+tflite_flutter:
+  git:
+    url: https://github.com/am15h/tflite_flutter_plugin.git
+    ref: master
+    path: tflite_flutter
+
+
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -47,3 +56,4 @@ flutter:
   assets:
     - assets/logo.png
     - assets/videos/lifetime_benben.mp4
+    - assets/models/huni_crepe.tflite

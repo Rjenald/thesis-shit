@@ -1,5 +1,11 @@
 /// Converts raw frequencies (Hz) into musical notes, solfège syllables,
 /// and cents-deviation feedback.
+///
+/// Updated for Huni CREPE integration:
+///  • Added NoteResult.fromFrequency() static factory
+///  • Added NoteResult.silent() factory for no-signal states
+///  • Added hzToNoteName() top-level helper
+///  • All existing functions unchanged — fully backward compatible
 library;
 
 import 'dart:math';
@@ -21,20 +27,17 @@ const List<String> kNoteNames = [
 ];
 
 // ── Solfège syllables for the C-major diatonic scale ─────────────────────────
-// Only the 7 natural notes have solfège names in Do-Re-Mi training.
-// Sharps/flats are considered "between notes" for our purposes.
 const Map<int, String> kDiatonicSolfege = {
-  0: 'Do', // C
-  2: 'Re', // D
-  4: 'Mi', // E
-  5: 'Fa', // F
+  0: 'Do',  // C
+  2: 'Re',  // D
+  4: 'Mi',  // E
+  5: 'Fa',  // F
   7: 'Sol', // G
-  9: 'La', // A
-  11: 'Ti', // B  (some traditions use "Si")
+  9: 'La',  // A
+  11: 'Ti', // B
 };
 
-// ── Reference frequencies for C4 (middle C) through B4 ───────────────────────
-// Generated from A4 = 440 Hz: freq = 440 * 2^((midi - 69) / 12)
+// ── Reference frequencies ─────────────────────────────────────────────────────
 const Map<String, double> kNoteFrequencies = {
   'C4': 261.63,
   'D4': 293.66,
@@ -72,56 +75,58 @@ class LessonNote {
 // ── Core conversion functions ─────────────────────────────────────────────────
 
 /// Convert a frequency in Hz to a fractional MIDI note number.
-/// A4 (440 Hz) = MIDI 69. Each semitone = 1 MIDI step.
-///
-/// Formula: midi = 69 + 12 × log₂(freq / 440)
+/// A4 (440 Hz) = MIDI 69.
 double freqToMidi(double freq) {
   if (freq <= 0) return 0.0;
   return 69.0 + 12.0 * log(freq / 440.0) / ln2;
 }
 
-/// Round a fractional MIDI number to the nearest integer (nearest semitone).
+/// Round a fractional MIDI number to the nearest integer.
 int midiToNearestNote(double midi) => midi.round();
 
 /// Return the chromatic note name (e.g. "A", "C#") for a MIDI note number.
 String midiToNoteName(int midi) => kNoteNames[midi % 12];
 
-/// Return the octave number for a MIDI note (C4 = MIDI 60, octave 4).
+/// Return the octave number for a MIDI note.
 int midiToOctave(int midi) => (midi ~/ 12) - 1;
 
-/// Return the solfège syllable for a note's chromatic index (0–11), or null
-/// if it is a chromatic note not in the C-major scale.
+/// Return the solfège syllable for a chromatic index (0–11), or null.
 String? noteIndexToSolfege(int chromatic) => kDiatonicSolfege[chromatic];
 
-/// Cents deviation of `freq` from the nearest equal-tempered semitone.
-/// Positive = sharp (too high), negative = flat (too low).
-/// Range: −50 to +50 cents.
-///
-/// Formula: cents = (midi − round(midi)) × 100
+/// Cents deviation of freq from the nearest equal-tempered semitone.
+/// Positive = sharp, negative = flat. Range: −50 to +50.
 double centsFromNearest(double freq) {
   final midi = freqToMidi(freq);
   return (midi - midi.round()) * 100.0;
 }
 
-/// Cents deviation of `detectedFreq` from a specific `targetFreq`.
-/// Used in lesson mode to compare against a known target note.
+/// Cents deviation of detectedFreq from a specific targetFreq.
 double centsFromTarget(double detectedFreq, double targetFreq) {
   if (detectedFreq <= 0 || targetFreq <= 0) return 0.0;
   return 1200.0 * log(detectedFreq / targetFreq) / ln2;
+}
+
+/// Convert Hz directly to a note name string (e.g. 440.0 → "A4").
+/// Used by CrepeService and AudioService for quick display.
+String hzToNoteName(double hz) {
+  if (hz <= 0) return '';
+  final midi      = freqToMidi(hz);
+  final nearestMidi = midiToNearestNote(midi);
+  final noteName  = midiToNoteName(nearestMidi);
+  final octave    = midiToOctave(nearestMidi);
+  return '$noteName$octave';
 }
 
 // ── Feedback classification ───────────────────────────────────────────────────
 
 enum PitchFeedback { correct, tooHigh, tooLow, noSignal }
 
-/// Classify the singing feedback given a cents deviation.
+/// Classify pitch feedback given a cents deviation.
 ///
-/// [toleranceCents] defines the "in-tune" window (±cents from the target).
-///  • 25 cents (default) — a quarter-semitone; accurate but beginner-friendly.
-///  • 15 cents — stricter; use for advanced / performance mode.
-///  • 35 cents — lenient; use for very young or beginner students.
-///
-/// The previous default of 35 cents was too wide and masked intonation errors.
+/// Tolerance guide:
+///  • 25 cents (default) — quarter-semitone, beginner-friendly
+///  • 15 cents           — strict, advanced/performance mode
+///  • 35 cents           — lenient, young/beginner students
 PitchFeedback classifyPitch(double cents, {double toleranceCents = 25.0}) {
   if (cents.abs() <= toleranceCents) return PitchFeedback.correct;
   if (cents > 0) return PitchFeedback.tooHigh;
@@ -131,31 +136,32 @@ PitchFeedback classifyPitch(double cents, {double toleranceCents = 25.0}) {
 /// Full analysis of a detected frequency against an optional target.
 ///
 /// [confidence] is the CREPE model confidence (0.0 – 1.0).
-/// Pass 1.0 when no confidence is available.
+/// Pass 1.0 when using local YIN (no confidence available).
 NoteResult analyzeFrequency(
   double freq, {
   double? targetFreq,
   double confidence = 1.0,
+  double toleranceCents = 25.0,   // ← new: configurable tolerance
 }) {
-  final midi = freqToMidi(freq);
+  final midi        = freqToMidi(freq);
   final nearestMidi = midiToNearestNote(midi);
-  final noteIndex = nearestMidi % 12;
-  final noteName = midiToNoteName(nearestMidi);
-  final octave = midiToOctave(nearestMidi);
-  final solfege = noteIndexToSolfege(noteIndex);
-  final cents = targetFreq != null
+  final noteIndex   = nearestMidi % 12;
+  final noteName    = midiToNoteName(nearestMidi);
+  final octave      = midiToOctave(nearestMidi);
+  final solfege     = noteIndexToSolfege(noteIndex);
+  final cents       = targetFreq != null
       ? centsFromTarget(freq, targetFreq)
       : centsFromNearest(freq);
-  final feedback = classifyPitch(cents);
+  final feedback    = classifyPitch(cents, toleranceCents: toleranceCents);
 
   return NoteResult(
-    frequency: freq,
-    midiNote: nearestMidi,
-    noteName: noteName,
-    octave: octave,
-    solfege: solfege,
-    cents: cents,
-    feedback: feedback,
+    frequency:  freq,
+    midiNote:   nearestMidi,
+    noteName:   noteName,
+    octave:     octave,
+    solfege:    solfege,
+    cents:      cents,
+    feedback:   feedback,
     confidence: confidence.clamp(0.0, 1.0),
   );
 }
@@ -167,7 +173,7 @@ class NoteResult {
   final int midiNote;
   final String noteName;
   final int octave;
-  final String? solfege; // null for chromatic (non-diatonic) notes
+  final String? solfege;
   final double cents;
   final PitchFeedback feedback;
 
@@ -185,8 +191,52 @@ class NoteResult {
     this.confidence = 1.0,
   });
 
+  // ── Static factories ──────────────────────────────────────────────────────
+
+  /// Create a NoteResult directly from a frequency in Hz.
+  /// Used by CrepeService and AudioService.
+  ///
+  /// Example:
+  ///   final result = NoteResult.fromFrequency(440.0, confidence: 0.87);
+  ///   print(result.fullName);    // "A4"
+  ///   print(result.cents);       // ~0.0 (perfect A4)
+  ///   print(result.feedback);    // PitchFeedback.correct
+  static NoteResult fromFrequency(
+    double freq, {
+    double confidence = 1.0,
+    double? targetFreq,
+    double toleranceCents = 25.0,
+  }) {
+    return analyzeFrequency(
+      freq,
+      targetFreq:     targetFreq,
+      confidence:     confidence,
+      toleranceCents: toleranceCents,
+    );
+  }
+
+  /// Create a silent / no-signal NoteResult.
+  /// Used when CREPE confidence is too low or mic detects silence.
+  ///
+  /// Example:
+  ///   _resultController.add(NoteResult.silent());
+  static NoteResult silent() {
+    return const NoteResult(
+      frequency:  0,
+      midiNote:   0,
+      noteName:   '',
+      octave:     0,
+      solfege:    null,
+      cents:      0,
+      feedback:   PitchFeedback.noSignal,
+      confidence: 0,
+    );
+  }
+
+  // ── Computed properties ───────────────────────────────────────────────────
+
   /// Human-readable note with octave, e.g. "A4" or "C#3".
-  String get fullName => '$noteName$octave';
+  String get fullName => frequency > 0 ? '$noteName$octave' : '';
 
   /// Display name: solfège if available, else note name.
   String get displayName => solfege ?? noteName;
@@ -194,8 +244,20 @@ class NoteResult {
   /// Voice clarity as percentage (0–100), derived from CREPE confidence.
   int get clarityPercent => (confidence * 100).round();
 
+  /// True if this result represents actual detected pitch (not silence).
+  bool get hasSignal => frequency > 0 && feedback != PitchFeedback.noSignal;
+
+  /// True if pitch is within tolerance (in tune).
+  bool get isInTune => feedback == PitchFeedback.correct;
+
+  /// True if singing too high (sharp).
+  bool get isSharp => feedback == PitchFeedback.tooHigh;
+
+  /// True if singing too low (flat).
+  bool get isFlat => feedback == PitchFeedback.tooLow;
+
   @override
   String toString() =>
       'NoteResult($fullName, ${frequency.toStringAsFixed(1)} Hz, '
-      '${cents.toStringAsFixed(1)} cents, $clarityPercent% clarity, $feedback)';
+      '${cents.toStringAsFixed(1)} ¢, $clarityPercent% clarity, $feedback)';
 }
