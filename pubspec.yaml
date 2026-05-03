@@ -22,14 +22,9 @@ dependencies:
   video_player: ^2.9.2
   provider: ^6.0.0
 
-tflite_flutter:
-  git:
-    url: https://github.com/am15h/tflite_flutter_plugin.git
-    ref: master
-    path: tflite_flutter
-
-
-
+ 
+  tflite_flutter: ^0.10.4
+    
 
 dev_dependencies:
   flutter_test:

@@ -17,7 +17,7 @@ class CrepeResult {
   String get noteName {
     if (frequencyHz <= 0) return '';
     const noteNames = [
-      'C', 'C#', 'D', 'D#', 'E', 'F',
+      'C', 'C#', 'D', 'D#', 'E', 'F', 
       'F#', 'G', 'G#', 'A', 'A#', 'B'
     ];
     final midiNote = (69 + 12 * log(frequencyHz / 440.0) / log(2)).round();
