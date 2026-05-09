@@ -33,18 +33,18 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   bool _isRecording = false;
   int  _currentLineIndex = 0;
 
-  // ── Elapsed seconds (synced to YT position when available) ────────────────
-  int _elapsedSeconds = 0;
+  // ── Position tracking ──────────────────────────────────────────────────────
+  // _posMs is the single source of truth for where we are in the song.
+  // It is either read from the YouTube controller or driven by a 100ms fallback timer.
+  int _posMs = 0;
 
-  // ── Non-synced fallback timers ─────────────────────────────────────────────
-  Timer? _lyricTimer;
-  Timer? _sessionTimer;
+  /// Fallback position timer: increments _posMs by 100ms when YT is not
+  /// supplying position updates (video still loading / API failed).
+  Timer? _posTimer;
 
   // ── Audio & pitch ──────────────────────────────────────────────────────────
   final AudioService _audioService = AudioService();
   StreamSubscription<NoteResult?>? _audioSub;
-
-  /// Most-recent pitch reading — drives the real-time pitch bar.
   NoteResult? _currentPitch;
 
   // ── Pitch graph history (last 80 samples) ─────────────────────────────────
@@ -60,18 +60,16 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 
   // ── YouTube ────────────────────────────────────────────────────────────────
   YoutubePlayerController? _ytController;
-  /// null = searching  |  '' = failed  |  'xyzABC' = ready
+  /// null = searching  |  '' = failed  |  videoId = ready
   String? _ytVideoId;
+  /// True once the YT controller is firing position updates.
+  bool _ytPositionActive = false;
 
   // ── Lyrics ─────────────────────────────────────────────────────────────────
   List<LyricLine> _lyrics       = const [];
   bool            _lyricsLoading = true;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
-  /// True when at least one lyric line has a real LRC timestamp.
-  bool get _hasSyncedLyrics => _lyrics.any((l) => l.startMs > 0);
-
+  // ── Colour palette ─────────────────────────────────────────────────────────
   static const _colorInTune  = Color(0xFF4CAF50);
   static const _colorOffTune = Color(0xFFF44336);
   static const _colorSilent  = Color(0xFF9E9E9E);
@@ -91,13 +89,59 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 
   @override
   void dispose() {
-    _lyricTimer?.cancel();
-    _sessionTimer?.cancel();
+    _posTimer?.cancel();
     _audioSub?.cancel();
     _audioService.dispose();
     _ytController?.removeListener(_onYTUpdate);
     _ytController?.dispose();
     super.dispose();
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Lyrics loader
+  // ══════════════════════════════════════════════════════════════════════════
+
+  Future<void> _loadLyrics() async {
+    List<LyricLine>? fetched;
+    try {
+      fetched = await LrcLibService.fetchLyrics(
+        title:  widget.songTitle,
+        artist: widget.songArtist,
+      );
+    } catch (_) {}
+
+    final raw = fetched ?? SongLyrics.forSong(widget.songTitle);
+
+    // Give every line a position timestamp so the sync engine always works.
+    // Real LRC timestamps are kept as-is; plain lyrics get virtual timestamps
+    // derived from their durationSeconds.
+    final lines = _assignTimestamps(raw);
+
+    if (mounted) {
+      setState(() {
+        _lyrics        = lines;
+        _linePitch     = List.generate(lines.length, (_) => []);
+        _lineCents     = List.generate(lines.length, (_) => []);
+        _lyricsLoading = false;
+      });
+    }
+  }
+
+  /// Ensures every LyricLine has a startMs.
+  /// Lines that already have startMs > 0 (real LRC data) are kept unchanged.
+  /// Lines with startMs == 0 get virtual timestamps by summing durations.
+  static List<LyricLine> _assignTimestamps(List<LyricLine> raw) {
+    final hasReal = raw.any((l) => l.startMs > 0);
+    if (hasReal) return raw; // Already has real LRC timestamps — no change needed.
+
+    // Plain lyrics: assign virtual timestamps from cumulative durations.
+    final result = <LyricLine>[];
+    int accMs = 0;
+    for (final line in raw) {
+      result.add(LyricLine(line.text, line.durationSeconds, startMs: accMs));
+      accMs += line.durationSeconds * 1000;
+    }
+    return result;
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -122,7 +166,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           enableCaption:   false,
         ),
       );
-      // This listener fires on every position tick → drives lyric sync.
       ctrl.addListener(_onYTUpdate);
       setState(() {
         _ytVideoId    = videoId;
@@ -134,136 +177,120 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // YouTube position listener — the heart of lyric sync
+  // Core sync engine — called from both YT listener and fallback timer
   // ══════════════════════════════════════════════════════════════════════════
 
-  void _onYTUpdate() {
-    if (!mounted || _ytController == null) return;
-    final v = _ytController!.value;
+  /// Advances lyrics to match [posMs].  Called by _onYTUpdate (primary) and
+  /// _posTimer (fallback when video is loading or API failed).
+  void _syncToPosition(int posMs) {
+    if (!mounted || _lyrics.isEmpty) return;
 
     bool dirty = false;
 
-    // 1. Sync elapsed time from video position.
-    final newElapsed = v.position.inSeconds;
-    if (newElapsed != _elapsedSeconds) {
-      _elapsedSeconds = newElapsed;
+    // Update position tracking.
+    if (posMs != _posMs) {
+      _posMs = posMs;
       dirty = true;
     }
 
-    // 2. Sync _isPlaying (the video can be paused by the user tapping the
-    //    built-in controls, so we read the ground truth from the controller).
-    if (_isPlaying != v.isPlaying) {
-      _isPlaying = v.isPlaying;
-      dirty = true;
+    // Find which lyric line belongs to this position.
+    int newLine = 0;
+    for (int i = 0; i < _lyrics.length; i++) {
+      if (_lyrics[i].startMs <= posMs) {
+        newLine = i;
+      } else {
+        break;
+      }
     }
 
-    // 3. Advance lyric lines based on video position (synced lyrics only).
-    if (_hasSyncedLyrics && _lyrics.isNotEmpty) {
-      final posMs = v.position.inMilliseconds;
-
-      // Linear scan: find the last line whose startMs ≤ current position.
-      int newLine = 0;
-      for (int i = 0; i < _lyrics.length; i++) {
-        if (_lyrics[i].startMs <= posMs) {
-          newLine = i;
-        } else {
-          break;
+    if (newLine > _currentLineIndex) {
+      // Seal every line we advanced past.
+      while (_currentLineIndex < newLine) {
+        final i = _currentLineIndex;
+        if (i < _lyrics.length && _completedLines.length == i) {
+          _completedLines.add(LyricPitchData(
+            lyricText:     _lyrics[i].text,
+            pitchReadings: List<double>.from(
+                i < _linePitch.length ? _linePitch[i] : const []),
+            centsReadings: List<double>.from(
+                i < _lineCents.length ? _lineCents[i] : const []),
+          ));
+          _lineTimestamps.add(_lyrics[i].startMs ~/ 1000);
+          if (i < _linePitch.length) { _linePitch[i].clear(); }
+          if (i < _lineCents.length) { _lineCents[i].clear(); }
         }
+        _currentLineIndex++;
       }
-
-      if (newLine > _currentLineIndex) {
-        // Seal every line we just passed over.
-        while (_currentLineIndex < newLine) {
-          final i = _currentLineIndex;
-          if (i < _lyrics.length && _completedLines.length == i) {
-            _completedLines.add(LyricPitchData(
-              lyricText:     _lyrics[i].text,
-              pitchReadings: List<double>.from(
-                  i < _linePitch.length ? _linePitch[i] : const []),
-              centsReadings: List<double>.from(
-                  i < _lineCents.length ? _lineCents[i] : const []),
-            ));
-            _lineTimestamps.add(_lyrics[i].startMs ~/ 1000);
-            if (i < _linePitch.length) _linePitch[i].clear();
-            if (i < _lineCents.length) _lineCents[i].clear();
-          }
-          _currentLineIndex++;
-        }
-        dirty = true;
-      } else if (newLine < _currentLineIndex) {
-        // User seeked backward — roll back sealed lines.
-        _currentLineIndex = newLine;
-        while (_completedLines.length > newLine) { _completedLines.removeLast(); }
-        while (_lineTimestamps.length > newLine)  { _lineTimestamps.removeLast(); }
-        dirty = true;
-      }
+      dirty = true;
+    } else if (newLine < _currentLineIndex) {
+      // User seeked backward — roll back.
+      _currentLineIndex = newLine;
+      while (_completedLines.length > newLine) { _completedLines.removeLast(); }
+      while (_lineTimestamps.length > newLine) { _lineTimestamps.removeLast(); }
+      dirty = true;
     }
 
     if (dirty && mounted) setState(() {});
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Lyrics loader
+  // YouTube position listener
   // ══════════════════════════════════════════════════════════════════════════
 
-  Future<void> _loadLyrics() async {
-    List<LyricLine>? fetched;
-    try {
-      fetched = await LrcLibService.fetchLyrics(
-        title:  widget.songTitle,
-        artist: widget.songArtist,
-      );
-    } catch (_) {}
+  void _onYTUpdate() {
+    if (!mounted || _ytController == null) return;
+    final v = _ytController!.value;
 
-    final lines = fetched ?? SongLyrics.forSong(widget.songTitle);
-    if (mounted) {
-      setState(() {
-        _lyrics        = lines;
-        _linePitch     = List.generate(lines.length, (_) => []);
-        _lineCents     = List.generate(lines.length, (_) => []);
-        _lyricsLoading = false;
-      });
+    // Sync play state so our ▶/❚❚ icon tracks the video's actual state.
+    if (_isPlaying != v.isPlaying) {
+      setState(() => _isPlaying = v.isPlaying);
+    }
+
+    // Once the YT controller starts delivering real position data, cancel the
+    // fallback timer so we don't double-advance.
+    if (v.isPlaying && !_ytPositionActive) {
+      _ytPositionActive = true;
+      _posTimer?.cancel();
+      _posTimer = null;
+    }
+
+    // Drive lyric sync from the video's real position.
+    if (v.isPlaying || v.position.inMilliseconds > 0) {
+      _syncToPosition(v.position.inMilliseconds);
     }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Non-synced fallback: timer-based lyric advancement
+  // Play / pause
   // ══════════════════════════════════════════════════════════════════════════
 
-  void _startLyrics() => _advanceLine();
+  void _togglePlayPause() {
+    final ytPlaying = _ytController?.value.isPlaying ?? false;
 
-  void _advanceLine() {
-    if (!mounted || _currentLineIndex >= _lyrics.length) return;
-    _lyricTimer = Timer(
-      Duration(seconds: _lyrics[_currentLineIndex].durationSeconds),
-      () {
-        if (!mounted) return;
-        _sealCurrentLine();
-        setState(() {
-          if (_currentLineIndex < _lyrics.length - 1) _currentLineIndex++;
+    if (ytPlaying) {
+      // ── Pause ───────────────────────────────────────────────────────────
+      _ytController?.pause();
+      _posTimer?.cancel();
+      _posTimer = null;
+      setState(() => _isPlaying = false);
+    } else {
+      // ── Play ────────────────────────────────────────────────────────────
+      _ytController?.play();
+      setState(() => _isPlaying = true);
+
+      // Start a 100ms fallback timer.  It drives lyrics while the video is
+      // buffering or if the YT API failed completely.  _onYTUpdate() cancels
+      // it as soon as real position data starts arriving.
+      if (_posTimer == null) {
+        _posTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+          if (!mounted || !_isPlaying) return;
+          // Only use the timer if YT is NOT driving position.
+          if (!_ytPositionActive) {
+            _syncToPosition(_posMs + 100);
+          }
         });
-        _advanceLine();
-      },
-    );
-  }
-
-  void _pauseLyrics() => _lyricTimer?.cancel();
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Seal a completed lyric line
-  // ══════════════════════════════════════════════════════════════════════════
-
-  void _sealCurrentLine() {
-    final i = _currentLineIndex;
-    if (i >= _lyrics.length || _completedLines.length != i) return;
-    _completedLines.add(LyricPitchData(
-      lyricText:     _lyrics[i].text,
-      pitchReadings: List<double>.from(_linePitch[i]),
-      centsReadings: List<double>.from(_lineCents[i]),
-    ));
-    _lineTimestamps.add(_elapsedSeconds);
-    _linePitch[i].clear();
-    _lineCents[i].clear();
+      }
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -284,16 +311,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     _audioSub = _audioService.results.listen((result) {
       if (!mounted) return;
       final i = _currentLineIndex;
-
-      // Accumulate pitch for the active lyric line.
       if (i < _linePitch.length) {
         _linePitch[i].add(result?.frequency ?? 0);
         _lineCents[i].add(result?.cents ?? 0);
       }
-
       setState(() {
         _pitchHistory.add(result?.frequency ?? 0);
-        if (_pitchHistory.length > _maxPitchHistory) _pitchHistory.removeAt(0);
+        if (_pitchHistory.length > _maxPitchHistory) { _pitchHistory.removeAt(0); }
         _currentPitch = result;
       });
     });
@@ -307,15 +331,28 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Stop & navigate to results
+  // Stop & go to results
   // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _stopAll() async {
-    _lyricTimer?.cancel();
-    _sessionTimer?.cancel();
+    _posTimer?.cancel();
+    _posTimer = null;
     _ytController?.pause();
     if (_isRecording) await _stopRecording();
     if (mounted) setState(() { _isPlaying = false; _isRecording = false; });
+  }
+
+  void _sealCurrentLine() {
+    final i = _currentLineIndex;
+    if (i >= _lyrics.length || _completedLines.length != i) return;
+    _completedLines.add(LyricPitchData(
+      lyricText:     _lyrics[i].text,
+      pitchReadings: List<double>.from(_linePitch[i]),
+      centsReadings: List<double>.from(_lineCents[i]),
+    ));
+    _lineTimestamps.add(_posMs ~/ 1000);
+    _linePitch[i].clear();
+    _lineCents[i].clear();
   }
 
   Future<void> _finishAndShowResults() async {
@@ -336,7 +373,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       songImage:       widget.songImage,
       completedAt:     DateTime.now(),
       lyricResults:    List<LyricPitchData>.from(_completedLines),
-      durationSeconds: _elapsedSeconds,
+      durationSeconds: _posMs ~/ 1000,
     );
 
     if (!mounted) return;
@@ -344,37 +381,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       context,
       MaterialPageRoute(builder: (_) => ResultsPage(session: session)),
     );
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Play / pause
-  // ══════════════════════════════════════════════════════════════════════════
-
-  void _togglePlayPause() {
-    if (_hasSyncedLyrics) {
-      // Synced mode: YouTube is the clock. _onYTUpdate() will update _isPlaying.
-      if (_ytController?.value.isPlaying ?? false) {
-        _ytController?.pause();
-      } else {
-        _ytController?.play();
-      }
-    } else {
-      // Plain-lyrics fallback: manual timer.
-      final nowPlaying = !_isPlaying;
-      setState(() => _isPlaying = nowPlaying);
-      if (nowPlaying) {
-        _startLyrics();
-        _ytController?.play();
-        _sessionTimer = Timer.periodic(
-          const Duration(seconds: 1),
-          (_) => setState(() => _elapsedSeconds++),
-        );
-      } else {
-        _pauseLyrics();
-        _ytController?.pause();
-        _sessionTimer?.cancel();
-      }
-    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -403,6 +409,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   // ── Header ─────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
+    final elapsedSec = _posMs ~/ 1000;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
@@ -426,8 +433,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           const Spacer(),
           if (_isPlaying || _isRecording)
             Text(
-              '${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:'
-              '${(_elapsedSeconds % 60).toString().padLeft(2, '0')}',
+              '${(elapsedSec ~/ 60).toString().padLeft(2, '0')}:'
+              '${(elapsedSec % 60).toString().padLeft(2, '0')}',
               style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.55),
                   fontSize: 12,
@@ -473,7 +480,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         children: [
           CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
           SizedBox(height: 10),
-          Text('Loading video…', style: TextStyle(color: Colors.white30, fontSize: 12)),
+          Text('Loading video…',
+              style: TextStyle(color: Colors.white30, fontSize: 12)),
         ],
       ));
     }
@@ -484,7 +492,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         children: [
           Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
           SizedBox(height: 8),
-          Text('No video found', style: TextStyle(color: Colors.white24, fontSize: 11)),
+          Text('No video found',
+              style: TextStyle(color: Colors.white24, fontSize: 11)),
         ],
       ));
     }
@@ -591,7 +600,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
+            const CircularProgressIndicator(
+                color: AppColors.primaryCyan, strokeWidth: 2),
             const SizedBox(height: 16),
             Text('Loading lyrics…',
                 style: TextStyle(
@@ -614,11 +624,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     final currentText = _currentLineIndex < _lyrics.length
         ? _lyrics[_currentLineIndex].text
         : '';
-    final isGap = currentText.isEmpty; // intro / instrumental break
+    final isGap = currentText.isEmpty;
 
     return Column(
       children: [
-        // ── Current lyric line ─────────────────────────────────────────────
+        // ── Active lyric line ──────────────────────────────────────────────
         Container(
           width: double.infinity,
           color: const Color(0xFF111111),
@@ -627,10 +637,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.music_note, color: Colors.white24, size: 16),
+                    const Icon(Icons.music_note,
+                        color: Colors.white24, size: 16),
                     const SizedBox(width: 6),
                     Text(
-                      _isPlaying ? '♪  Intro / Instrumental  ♪' : 'Press ▶ to start',
+                      _isPlaying
+                          ? '♪  Intro / Instrumental  ♪'
+                          : 'Press ▶ to start',
                       style: const TextStyle(
                           color: Colors.white38,
                           fontSize: 15,
@@ -650,7 +663,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
                 ),
         ),
 
-        // ── Live pitch bar (shown while mic is on and a lyric is active) ───
+        // ── Live pitch bar ─────────────────────────────────────────────────
         if (_isRecording && !isGap && _currentPitch != null)
           _buildPitchBar(_currentPitch!),
 
@@ -659,11 +672,12 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
           child: Row(
             children: const [
-              SizedBox(width: 28, child: Text('#',          style: colStyle)),
-              SizedBox(width: 56, child: Text('Time',       style: colStyle)),
-              Expanded(           child: Text('Pitch',      style: colStyle)),
-              SizedBox(width: 80, child: Text('Direction',  style: colStyle,
-                  textAlign: TextAlign.right)),
+              SizedBox(width: 28, child: Text('#',         style: colStyle)),
+              SizedBox(width: 56, child: Text('Time',      style: colStyle)),
+              Expanded(           child: Text('Pitch',     style: colStyle)),
+              SizedBox(width: 80,
+                  child: Text('Direction', style: colStyle,
+                      textAlign: TextAlign.right)),
             ],
           ),
         ),
@@ -707,13 +721,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   // ── Real-time pitch bar ────────────────────────────────────────────────────
 
   Widget _buildPitchBar(NoteResult pitch) {
-    Color  barColor;
-    String statusLabel;
+    Color    barColor;
+    String   statusLabel;
     IconData icon;
 
     switch (pitch.feedback) {
       case PitchFeedback.correct:
-        barColor = _colorInTune;  statusLabel = 'In Tune';   icon = Icons.check_circle_outline; break;
+        barColor = _colorInTune;  statusLabel = 'In Tune';    icon = Icons.check_circle_outline; break;
       case PitchFeedback.tooHigh:
         barColor = _colorOffTune; statusLabel = 'Too High ↑'; icon = Icons.arrow_upward;         break;
       case PitchFeedback.tooLow:
@@ -722,8 +736,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         barColor = _colorSilent;  statusLabel = 'No Signal';  icon = Icons.mic_off;              break;
     }
 
-    final cents    = pitch.cents;
-    final centsStr = '${cents >= 0 ? '+' : ''}${cents.toStringAsFixed(0)}¢';
+    final centsStr =
+        '${pitch.cents >= 0 ? '+' : ''}${pitch.cents.toStringAsFixed(0)}¢';
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 120),
@@ -739,42 +753,31 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         children: [
           Icon(icon, color: barColor, size: 15),
           const SizedBox(width: 8),
-          // Note name
-          Text(
-            pitch.fullName,
-            style: TextStyle(
-                color: barColor,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto'),
-          ),
-          // Divider
+          Text(pitch.fullName,
+              style: TextStyle(
+                  color: barColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto')),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Container(
                 width: 1, height: 18, color: barColor.withValues(alpha: 0.3)),
           ),
-          // Status
-          Text(
-            statusLabel,
-            style: TextStyle(
-                color: barColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto'),
-          ),
+          Text(statusLabel,
+              style: TextStyle(
+                  color: barColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto')),
           const SizedBox(width: 10),
-          // Cents
-          Text(
-            centsStr,
-            style: TextStyle(
-                color: barColor.withValues(alpha: 0.65),
-                fontSize: 11,
-                fontFamily: 'Roboto'),
-          ),
+          Text(centsStr,
+              style: TextStyle(
+                  color: barColor.withValues(alpha: 0.65),
+                  fontSize: 11,
+                  fontFamily: 'Roboto')),
           const SizedBox(width: 10),
-          // Mini ±50 ¢ needle meter
-          _buildCentsMeter(cents, barColor),
+          _buildCentsMeter(pitch.cents, barColor),
         ],
       ),
     );
@@ -788,7 +791,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [
-          // Track
           Container(
             height: 4,
             decoration: BoxDecoration(
@@ -796,9 +798,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Centre mark
           Center(child: Container(width: 1, height: 10, color: Colors.white24)),
-          // Needle
           Positioned(
             left: (fraction * 57).clamp(0.0, 54.0),
             child: Container(
@@ -824,13 +824,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     Color  color;
     switch (line.status) {
       case LineStatus.correct:
-        pitch = 'In Tune';    direction = '—';        color = _colorInTune;  break;
+        pitch = 'In Tune';   direction = '—';        color = _colorInTune;  break;
       case LineStatus.flat:
-        pitch = 'Flat';       direction = 'Too Low';  color = _colorOffTune; break;
+        pitch = 'Flat';      direction = 'Too Low';  color = _colorOffTune; break;
       case LineStatus.sharp:
-        pitch = 'Sharp';      direction = 'Too High'; color = _colorOffTune; break;
+        pitch = 'Sharp';     direction = 'Too High'; color = _colorOffTune; break;
       case LineStatus.noSignal:
-        pitch = 'No Signal';  direction = '—';        color = _colorSilent;  break;
+        pitch = 'No Signal'; direction = '—';        color = _colorSilent;  break;
     }
 
     return Padding(
@@ -841,7 +841,9 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
             width: 28,
             child: Text('$num.',
                 style: const TextStyle(
-                    color: Colors.white54, fontSize: 13, fontFamily: 'Roboto')),
+                    color: Colors.white54,
+                    fontSize: 13,
+                    fontFamily: 'Roboto')),
           ),
           SizedBox(
             width: 56,
@@ -882,12 +884,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ── ▶ / ❚❚ ──────────────────────────────────────────────────────
+          // ▶ / ❚❚
           GestureDetector(
             onTap: _lyricsLoading ? null : _togglePlayPause,
             child: Container(
-              width: 52,
-              height: 52,
+              width: 52, height: 52,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -902,14 +903,16 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
                             color: AppColors.primaryCyan, strokeWidth: 2),
                       ))
                   : Icon(
-                      _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      _isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
                       color: Colors.white, size: 28),
             ),
           ),
 
           const SizedBox(width: 24),
 
-          // ── 🔴 Mic ──────────────────────────────────────────────────────
+          // 🔴 Mic
           GestureDetector(
             onTap: () async {
               if (_isRecording) {
@@ -926,14 +929,14 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
                 color: _isRecording ? Colors.red[700] : Colors.red,
               ),
               child: Icon(
-                _isRecording ? Icons.stop_rounded : Icons.mic,
-                color: Colors.white, size: 30),
+                  _isRecording ? Icons.stop_rounded : Icons.mic,
+                  color: Colors.white, size: 30),
             ),
           ),
 
           const SizedBox(width: 24),
 
-          // ── ⬜ Finish ────────────────────────────────────────────────────
+          // ⬜ Finish
           GestureDetector(
             onTap: _finishAndShowResults,
             child: Container(
@@ -964,7 +967,8 @@ class _KaraokePitchGraphPainter extends CustomPainter {
     if (hz <= 0) return h;
     final logMin = math.log(minHz);
     final logMax = math.log(maxHz);
-    return h - ((math.log(hz.clamp(minHz, maxHz)) - logMin) / (logMax - logMin)) * h;
+    return h -
+        ((math.log(hz.clamp(minHz, maxHz)) - logMin) / (logMax - logMin)) * h;
   }
 
   @override
@@ -973,7 +977,7 @@ class _KaraokePitchGraphPainter extends CustomPainter {
     final h = size.height;
 
     final refPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.07)
+      ..color       = Colors.white.withValues(alpha: 0.07)
       ..strokeWidth = 1;
     for (final hz in [130.81, 261.63, 523.25]) {
       final y = _hzToY(hz, h);
@@ -998,8 +1002,8 @@ class _KaraokePitchGraphPainter extends CustomPainter {
         fillPath,
         Paint()
           ..shader = const LinearGradient(
-            begin: Alignment.topCenter,
-            end:   Alignment.bottomCenter,
+            begin:  Alignment.topCenter,
+            end:    Alignment.bottomCenter,
             colors: [Color(0x4000E0FF), Color(0x0000E0FF)],
           ).createShader(Rect.fromLTWH(0, 0, w, h)),
       );
@@ -1019,8 +1023,8 @@ class _KaraokePitchGraphPainter extends CustomPainter {
 
     if (pts.isNotEmpty && data.last > 0) {
       final last = pts.last;
-      canvas.drawCircle(
-          last, 6, Paint()..color = AppColors.primaryCyan.withValues(alpha: 0.22));
+      canvas.drawCircle(last, 6,
+          Paint()..color = AppColors.primaryCyan.withValues(alpha: 0.22));
       canvas.drawCircle(last, 2.8, Paint()..color = AppColors.primaryCyan);
     }
   }
