@@ -4,7 +4,14 @@ import 'screens/splash_screen.dart';
 import 'services/class_notifications_service.dart';
 import 'services/enrollment_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize persisted services before the widget tree is built so that
+  // data is available on the very first frame.
+  await Future.wait([
+    ClassNotificationsService().initialize(),
+    EnrollmentService().initialize(),
+  ]);
   runApp(const MyApp());
 }
 

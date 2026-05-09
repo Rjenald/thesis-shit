@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
+import '../models/class_notification.dart';
+import '../services/class_notifications_service.dart';
 import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
 import 'class_detail_page.dart';
@@ -21,10 +23,33 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   String _username = 'Teacher';
   int _navIndex = 1;
 
+  // Keep a reference so we can remove the listener in dispose().
+  EnrollmentService? _enrollmentService;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  /// Called once the Provider tree is available (first frame + on dep changes).
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-register listener each time dependencies rebuild (safe — remove first).
+    _enrollmentService?.removeListener(_onEnrollmentChanged);
+    _enrollmentService = context.read<EnrollmentService>();
+    _enrollmentService!.addListener(_onEnrollmentChanged);
+  }
+
+  /// Reloads class data from SharedPreferences whenever a student accepts an
+  /// enrollment invite so the teacher's student count updates in real time.
+  void _onEnrollmentChanged() => _loadData();
+
+  @override
+  void dispose() {
+    _enrollmentService?.removeListener(_onEnrollmentChanged);
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -257,6 +282,18 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                 padding: const EdgeInsets.all(6),
                 child: Icon(
                   Icons.person_add_outlined,
+                  color: AppColors.primaryCyan,
+                  size: 20,
+                ),
+              ),
+            ),
+            // Assign Activity
+            GestureDetector(
+              onTap: () => _showAssignActivityDialog(name),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.assignment_outlined,
                   color: AppColors.primaryCyan,
                   size: 20,
                 ),
@@ -571,6 +608,283 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
         ],
       ),
     );
+  }
+
+  // ── Assign Activity dialog (Outlook-style) ────────────────────────────────
+  /// Teacher selects an activity type, sets a title, optional description,
+  /// and a deadline. On confirm, a [ClassNotification] of type
+  /// [activityAssignment] is pushed to [ClassNotificationsService] so the
+  /// student sees it in their Notification and Calendar screens.
+  void _showAssignActivityDialog(String className) {
+    const types = ['Solfege Drill', 'Practice Exercise', 'Task Performance', 'Karaoke'];
+    String selectedType = types[0];
+    final titleCtrl = TextEditingController(text: 'Activity 1');
+    final descCtrl = TextEditingController();
+    DateTime deadline = DateTime.now().add(const Duration(days: 7));
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          return AlertDialog(
+            backgroundColor: AppColors.cardBg,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            contentPadding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryCyan.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.assignment_outlined,
+                      color: AppColors.primaryCyan, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Assign Activity',
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Class badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryCyan.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.primaryCyan.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.class_outlined, size: 12, color: AppColors.primaryCyan),
+                        const SizedBox(width: 5),
+                        Text(className,
+                            style: const TextStyle(
+                                color: AppColors.primaryCyan,
+                                fontSize: 12,
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Activity type chips
+                  _fLabel('Activity Type'),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: types.map((t) {
+                      final active = t == selectedType;
+                      return GestureDetector(
+                        onTap: () {
+                          setS(() {
+                            selectedType = t;
+                            titleCtrl.text =
+                                'Activity 1 — $t';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: active
+                                ? AppColors.primaryCyan
+                                : AppColors.inputBg,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: active
+                                  ? AppColors.primaryCyan
+                                  : AppColors.grey.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Text(
+                            t,
+                            style: TextStyle(
+                              color: active ? Colors.black : AppColors.grey,
+                              fontSize: 12,
+                              fontFamily: 'Roboto',
+                              fontWeight: active
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Title
+                  _fLabel('Title'),
+                  const SizedBox(height: 6),
+                  _fField(titleCtrl, 'e.g. Activity 1 — Solfege Drill'),
+                  const SizedBox(height: 12),
+
+                  // Description
+                  _fLabel('Description (optional)'),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: descCtrl,
+                    maxLines: 2,
+                    style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 14,
+                        fontFamily: 'Roboto'),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppColors.inputBg,
+                      hintText: 'Instructions or notes…',
+                      hintStyle: TextStyle(
+                          color: AppColors.grey.withValues(alpha: 0.5),
+                          fontFamily: 'Roboto',
+                          fontSize: 13),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Deadline picker (Outlook-style row)
+                  _fLabel('Deadline'),
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: deadline,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now()
+                            .add(const Duration(days: 365)),
+                        builder: (ctx2, child) => Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: AppColors.primaryCyan,
+                              surface: Color(0xFF2A2A2A),
+                            ),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (picked != null) setS(() => deadline = picked);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: AppColors.primaryCyan.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_month_outlined,
+                              color: AppColors.primaryCyan, size: 18),
+                          const SizedBox(width: 10),
+                          Text(
+                            '${_monthName(deadline.month)} ${deadline.day}, ${deadline.year}',
+                            style: const TextStyle(
+                                color: AppColors.white,
+                                fontFamily: 'Roboto',
+                                fontSize: 14),
+                          ),
+                          const Spacer(),
+                          Icon(Icons.arrow_drop_down,
+                              color: AppColors.grey.withValues(alpha: 0.6)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Students will be notified immediately.',
+                    style: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.55),
+                        fontSize: 11,
+                        fontFamily: 'Roboto'),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel',
+                    style: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.8),
+                        fontFamily: 'Roboto')),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  final title = titleCtrl.text.trim();
+                  if (title.isEmpty) return;
+
+                  ClassNotificationsService().addNotification(
+                    ClassNotification(
+                      id: '${DateTime.now().millisecondsSinceEpoch}',
+                      teacherName: _username,
+                      className: className,
+                      message: 'Added Activity / $selectedType',
+                      timestamp: DateTime.now(),
+                      type: NotificationType.activityAssignment,
+                      activityName: title,
+                      deadline: deadline,
+                    ),
+                  );
+
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Activity "$title" assigned to $className',
+                        style: const TextStyle(fontFamily: 'Roboto')),
+                    backgroundColor: AppColors.primaryCyan,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ));
+                },
+                icon: const Icon(Icons.send_outlined, size: 16),
+                label: const Text('Assign',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryCyan,
+                  foregroundColor: Colors.black,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(9)),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  String _monthName(int month) {
+    const names = [
+      '', 'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    return names[month];
   }
 
   // ── Add class dialog ──────────────────────────────────────────────────────

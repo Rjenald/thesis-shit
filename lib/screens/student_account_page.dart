@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data/tagalog_bisaya_songs.dart';
+import '../models/class_notification.dart';
+import '../services/class_notifications_service.dart';
 import '../services/enrollment_service.dart';
+import '../services/session_storage_service.dart';
 import 'karaoke_recording_page.dart';
 import 'practice_solfege_page.dart';
 import 'karaoke_practice_mode_page.dart';
@@ -60,7 +63,9 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
   @override
   Widget build(BuildContext context) {
     final enrollment = context.watch<EnrollmentService>();
-    final pendingCount = enrollment.pendingInvites.length;
+    final notifSvc = context.watch<ClassNotificationsService>();
+    final pendingCount =
+        enrollment.pendingInvites.length + notifSvc.unreadCount;
 
     return Scaffold(
       body: _getScreen(enrollment),
@@ -161,31 +166,18 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  // Non-enrollment notifications stay here (activity reminders, etc.)
-  final List<Map<String, dynamic>> _activityNotifs = [
-    {
-      'name': 'Teacher',
-      'action': 'Added Activity | Solfege',
-      'deadline': '01.01.21',
-      'type': 'activity',
-    },
-  ];
-
-  final List<int> _dismissedActivity = [];
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<EnrollmentService>(
-      builder: (context, enrollment, _) {
+    return Consumer2<EnrollmentService, ClassNotificationsService>(
+      builder: (context, enrollment, notifSvc, _) {
         final invites = enrollment.pendingInvites;
-        final activities = _activityNotifs
-            .asMap()
-            .entries
-            .where((e) => !_dismissedActivity.contains(e.key))
-            .map((e) => e.value)
-            .toList();
+        final activities = notifSvc.notifications
+            .where((n) =>
+                n.type == NotificationType.activityAssignment && !n.isDeclined)
+            .toList()
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-        final hasNotifications = invites.isNotEmpty || activities.isNotEmpty;
+        final hasAny = invites.isNotEmpty || activities.isNotEmpty;
 
         return Scaffold(
           backgroundColor: _dark,
@@ -195,43 +187,41 @@ class _NotificationScreenState extends State<NotificationScreen> {
             title: const Text(
               'Notification',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold),
             ),
           ),
-          body: !hasNotifications
+          body: !hasAny
               ? const Center(
-                  child: Text(
-                    'No new notifications',
-                    style: TextStyle(color: Colors.white54, fontSize: 16),
-                  ),
+                  child: Text('No new notifications',
+                      style: TextStyle(color: Colors.white54, fontSize: 16)),
                 )
               : ListView(
                   padding: EdgeInsets.zero,
                   children: [
-                    // ── Enrollment invitations (from teacher) ────────────
+                    // ── Enrollment invitations ───────────────────────────
                     ...invites.map((invite) => _NotifCard(
                           name: invite.teacherName,
                           action:
                               'Wants to enroll you in ${invite.className}',
                           type: 'enrollment',
-                          onConfirm: () {
-                            enrollment.acceptInvite(invite.id);
+                          onConfirm: () async {
+                            await enrollment.acceptInvite(invite.id);
                             widget.onEnrollmentConfirmed?.call();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Enrolled in ${invite.className}!',
-                                  style:
-                                      const TextStyle(fontFamily: 'Roboto'),
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Enrolled in ${invite.className}!',
+                                      style: const TextStyle(
+                                          fontFamily: 'Roboto')),
+                                  backgroundColor: _cyan,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: const Duration(seconds: 2),
                                 ),
-                                backgroundColor: _cyan,
-                                behavior: SnackBarBehavior.floating,
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
+                              );
+                            }
                           },
                           onDelete: () {
                             enrollment.declineInvite(invite.id);
@@ -246,45 +236,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           },
                         )),
 
-                    // ── Activity notifications ────────────────────────────
-                    ...activities.asMap().entries.map((e) {
-                      final n = e.value;
-                      return _NotifCard(
-                        name: n['name'],
-                        action: n['action'],
-                        deadline: n['deadline'],
-                        type: n['type'],
-                        onConfirm: () {
-                          setState(
-                              () => _dismissedActivity.add(e.key));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Notification dismissed'),
-                              backgroundColor: _cyan,
-                              behavior: SnackBarBehavior.floating,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                        onDelete: () {
-                          setState(
-                              () => _dismissedActivity.add(e.key));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Notification deleted'),
-                              backgroundColor: Colors.redAccent,
-                              behavior: SnackBarBehavior.floating,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      );
-                    }),
+                    // ── Activity assignments ─────────────────────────────
+                    ...activities.map((n) => _NotifCard(
+                          name: n.teacherName,
+                          action: n.activityName ?? n.message,
+                          deadline: n.deadline != null
+                              ? _fmtDeadline(n.deadline!)
+                              : null,
+                          type: 'activity',
+                          onConfirm: () {
+                            notifSvc.declineNotification(n.id);
+                          },
+                          onDelete: () {
+                            notifSvc.removeNotification(n.id);
+                          },
+                        )),
                   ],
                 ),
         );
       },
     );
+  }
+
+  String _fmtDeadline(DateTime dt) {
+    final mm = dt.month.toString().padLeft(2, '0');
+    final dd = dt.day.toString().padLeft(2, '0');
+    final yy = (dt.year % 100).toString().padLeft(2, '0');
+    return '$mm.$dd.$yy';
   }
 }
 
@@ -292,9 +270,9 @@ class _NotifCard extends StatelessWidget {
   final String name;
   final String action;
   final String? deadline;
-  final String type;
-  final VoidCallback onConfirm;
-  final VoidCallback onDelete;
+  final String type; // 'enrollment' | 'activity'
+  final VoidCallback onConfirm; // enrollment→Accept, activity→Dismiss
+  final VoidCallback onDelete;  // enrollment→Delete, activity→Delete
 
   const _NotifCard({
     required this.name,
@@ -316,7 +294,11 @@ class _NotifCard extends StatelessWidget {
           CircleAvatar(
             radius: 18,
             backgroundColor: Colors.grey[700],
-            child: const Icon(Icons.person, color: Colors.white, size: 18),
+            child: Icon(
+              type == 'activity' ? Icons.assignment_outlined : Icons.person,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -331,51 +313,68 @@ class _NotifCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
                 Text(action,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 12),
                     overflow: TextOverflow.ellipsis),
+                if (type == 'activity' && deadline != null) ...[
+                  const SizedBox(height: 3),
+                  Text('Deadline: $deadline',
+                      style: const TextStyle(
+                          color: _cyan, fontSize: 11)),
+                ],
               ],
             ),
           ),
-          if (type == 'activity' && deadline != null)
-            Text('Deadline: $deadline',
-                style: const TextStyle(color: Colors.white54, fontSize: 11))
-          else if (type == 'enrollment') ...[
-            // Accept enrollment
+          const SizedBox(width: 8),
+          if (type == 'enrollment') ...[
             TextButton(
               onPressed: onConfirm,
               style: TextButton.styleFrom(
                 foregroundColor: _cyan,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('Accept',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              child: const Text('Accept Enroll',
+                  style:
+                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
             ),
-            // Decline enrollment
             TextButton(
               onPressed: onDelete,
               style: TextButton.styleFrom(
                 foregroundColor: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text('Delete',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  style:
+                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
             ),
           ] else if (type == 'activity') ...[
-            // Dismiss activity
             TextButton(
-              onPressed: onDelete,
+              onPressed: onConfirm,
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white54,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text('Dismiss',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  style:
+                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+            ),
+            TextButton(
+              onPressed: onDelete,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text('Delete',
+                  style:
+                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
             ),
           ],
         ],
@@ -1300,36 +1299,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
   late DateTime _today;
   late DateTime _focusedMonth;
   bool _calendarHidden = false;
-
-  // Demo due-date events (relative to today so they always show in the week view)
-  late final List<Map<String, dynamic>> _events;
-  final List<String> _todos = ['comscii!!!!!!!!!'];
-  static const int _assignmentsDue = 13;
+  final List<String> _todos = [];
 
   @override
   void initState() {
     super.initState();
     _today = DateTime.now();
     _focusedMonth = DateTime(_today.year, _today.month, 1);
-
-    // Put events on the Tuesday & Wednesday of the current week
-    final sundayOfWeek =
-        _today.subtract(Duration(days: _today.weekday % 7));
-    final tue = sundayOfWeek.add(const Duration(days: 2));
-    final wed = sundayOfWeek.add(const Duration(days: 3));
-    _events = [
-      {'date': tue, 'title': 'Due: 05 Activity 1'},
-      {'date': tue, 'title': 'Due: 05 Practice Exercise 1'},
-      {'date': tue, 'title': 'Due: 05 Task Performance 1 – ARG'},
-      {'date': wed, 'title': 'Due: 06 Task Performance 1 – ARG'},
-    ];
   }
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  bool _hasEvent(DateTime d) =>
-      _events.any((e) => _isSameDay(e['date'] as DateTime, d));
+  List<Map<String, dynamic>> _eventsFromService(
+      ClassNotificationsService svc) {
+    return svc.notifications
+        .where((n) =>
+            n.type == NotificationType.activityAssignment &&
+            !n.isDeclined &&
+            n.deadline != null)
+        .map((n) => {
+              'date': n.deadline!,
+              'title': 'Due: ${n.activityName ?? n.message}',
+            })
+        .toList();
+  }
+
+  bool _hasEvent(List<Map<String, dynamic>> events, DateTime d) =>
+      events.any((e) => _isSameDay(e['date'] as DateTime, d));
 
   static const _monthNames = [
     '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -1338,198 +1335,369 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _dark,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Title ─────────────────────────────────────────────────
-              const Row(
+    return Consumer<ClassNotificationsService>(
+      builder: (context, notifSvc, _) {
+        final events = _eventsFromService(notifSvc);
+        final todayEvents =
+            events.where((e) => _isSameDay(e['date'] as DateTime, _today)).toList();
+
+        return Scaffold(
+          backgroundColor: _dark,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.calendar_today, color: _cyan, size: 18),
-                  SizedBox(width: 8),
-                  Text('Calendar',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // ── Mini month calendar ────────────────────────────────────
-              if (!_calendarHidden) ...[
-                // Month navigation
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () => setState(() => _focusedMonth =
-                          DateTime(_focusedMonth.year,
-                              _focusedMonth.month - 1)),
-                      child: const Icon(Icons.chevron_left,
-                          color: Colors.white70, size: 22),
-                    ),
-                    Text(
-                      '${_monthNames[_focusedMonth.month]} ${_focusedMonth.year}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    GestureDetector(
-                      onTap: () => setState(() => _focusedMonth =
-                          DateTime(_focusedMonth.year,
-                              _focusedMonth.month + 1)),
-                      child: const Icon(Icons.chevron_right,
-                          color: Colors.white70, size: 22),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Day-of-week header row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-                      .map((h) => SizedBox(
-                            width: 32,
-                            child: Center(
-                              child: Text(h,
-                                  style: const TextStyle(
-                                      color: Colors.white54,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600)),
-                            ),
-                          ))
-                      .toList(),
-                ),
-                const SizedBox(height: 6),
-
-                // Date grid
-                _buildMonthGrid(),
-                const SizedBox(height: 12),
-              ],
-
-              // ── full calendar | hide ──────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => FullCalendarPage(events: _events)),
-                    ),
-                    child: const Text('full calendar',
-                        style: TextStyle(
-                            color: _cyan,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500)),
-                  ),
-                  GestureDetector(
-                    onTap: () =>
-                        setState(() => _calendarHidden = !_calendarHidden),
-                    child: Text(
-                      _calendarHidden ? 'show' : 'hide',
-                      style: const TextStyle(
-                          color: Colors.white54, fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-              const Divider(color: Colors.white12),
-              const SizedBox(height: 12),
-
-              // ── To-do section ─────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                  // ── Title ────────────────────────────────────────────
                   const Row(
                     children: [
-                      Icon(Icons.check_circle_outline,
+                      Icon(Icons.calendar_today, color: _cyan, size: 18),
+                      SizedBox(width: 8),
+                      Text('Calendar',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Mini month calendar ───────────────────────────────
+                  if (!_calendarHidden) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(() => _focusedMonth =
+                              DateTime(_focusedMonth.year,
+                                  _focusedMonth.month - 1)),
+                          child: const Icon(Icons.chevron_left,
+                              color: Colors.white70, size: 22),
+                        ),
+                        Text(
+                          '${_monthNames[_focusedMonth.month]} ${_focusedMonth.year}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        GestureDetector(
+                          onTap: () => setState(() => _focusedMonth =
+                              DateTime(_focusedMonth.year,
+                                  _focusedMonth.month + 1)),
+                          child: const Icon(Icons.chevron_right,
+                              color: Colors.white70, size: 22),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+                          .map((h) => SizedBox(
+                                width: 32,
+                                child: Center(
+                                  child: Text(h,
+                                      style: const TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600)),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 6),
+                    _buildMonthGrid(events),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // ── full calendar | hide ──────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  FullCalendarPage(events: events)),
+                        ),
+                        child: const Text('full calendar',
+                            style: TextStyle(
+                                color: _cyan,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(
+                            () => _calendarHidden = !_calendarHidden),
+                        child: Text(
+                          _calendarHidden ? 'show' : 'hide',
+                          style: const TextStyle(
+                              color: Colors.white54, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 12),
+
+                  // ── Upcoming deadlines ────────────────────────────────
+                  const Row(
+                    children: [
+                      Icon(Icons.assignment_outlined,
                           color: _cyan, size: 18),
                       SizedBox(width: 6),
-                      Text('To-do',
+                      Text('Upcoming Deadlines',
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600)),
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () {},
-                    child: const Icon(Icons.add,
-                        color: Colors.white70, size: 20),
+                  const SizedBox(height: 10),
+
+                  if (events.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No activities assigned yet.',
+                          style: TextStyle(
+                              color: Colors.white38, fontSize: 13)),
+                    )
+                  else
+                    ...events.map((e) {
+                      final d = e['date'] as DateTime;
+                      final daysLeft = d
+                          .difference(DateTime(
+                              _today.year, _today.month, _today.day))
+                          .inDays;
+                      final overdue = daysLeft < 0;
+                      final urgent = daysLeft >= 0 && daysLeft <= 2;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A1A),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border(
+                            left: BorderSide(
+                              color: overdue
+                                  ? Colors.redAccent
+                                  : urgent
+                                      ? Colors.orange
+                                      : _cyan,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e['title'] as String,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '${d.month}/${d.day}/${d.year}',
+                                    style: const TextStyle(
+                                        color: Colors.white54,
+                                        fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: overdue
+                                    ? Colors.redAccent.withValues(alpha: 0.15)
+                                    : urgent
+                                        ? Colors.orange
+                                            .withValues(alpha: 0.15)
+                                        : _cyan.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                overdue
+                                    ? 'Overdue'
+                                    : daysLeft == 0
+                                        ? 'Today'
+                                        : '$daysLeft day${daysLeft == 1 ? '' : 's'}',
+                                style: TextStyle(
+                                  color: overdue
+                                      ? Colors.redAccent
+                                      : urgent
+                                          ? Colors.orange
+                                          : _cyan,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+
+                  const SizedBox(height: 20),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 12),
+
+                  // ── To-do section ─────────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.check_circle_outline,
+                              color: _cyan, size: 18),
+                          SizedBox(width: 6),
+                          Text('To-do',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () => _addTodo(context),
+                        child: const Icon(Icons.add,
+                            color: Colors.white70, size: 20),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  _todoRow(
+                    icon: Icons.description_outlined,
+                    text: '${events.length} assignment${events.length == 1 ? '' : 's'} due',
+                    color: _cyan,
+                  ),
+                  const SizedBox(height: 6),
+
+                  ..._todos.map(
+                    (t) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: _todoRow(
+                        icon: Icons.push_pin_outlined,
+                        text: t,
+                        color: Colors.white70,
+                        trailing: GestureDetector(
+                          onTap: () => setState(() => _todos.remove(t)),
+                          child: const Icon(Icons.delete_outline,
+                              color: Colors.white38, size: 16),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-              // Assignments due
-              _todoRow(
-                icon: Icons.description_outlined,
-                text: '$_assignmentsDue assignments due',
-                color: _cyan,
-              ),
-              const SizedBox(height: 6),
-
-              // Todo items
-              ..._todos.map(
-                (t) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: _todoRow(
-                    icon: Icons.push_pin_outlined,
-                    text: t,
-                    color: Colors.white70,
-                    trailing: GestureDetector(
-                      onTap: () => setState(() => _todos.remove(t)),
-                      child: const Icon(Icons.delete_outline,
-                          color: Colors.white38, size: 16),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+  void _addTodo(BuildContext context) {
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text('Add To-do',
+            style: TextStyle(color: Colors.white, fontSize: 16)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'e.g. Practice scales',
+            hintStyle: TextStyle(color: Colors.white38),
+            enabledBorder:
+                UnderlineInputBorder(borderSide: BorderSide(color: _cyan)),
+            focusedBorder:
+                UnderlineInputBorder(borderSide: BorderSide(color: _cyan)),
           ),
         ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Colors.white54))),
+          TextButton(
+            onPressed: () {
+              final t = ctrl.text.trim();
+              if (t.isNotEmpty) setState(() => _todos.add(t));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Add', style: TextStyle(color: _cyan)),
+          ),
+        ],
       ),
     );
   }
 
-  // ── Month grid ──────────────────────────────────────────────────────────────
-  Widget _buildMonthGrid() {
+  // ── Month grid ────────────────────────────────────────────────────────────
+  Widget _buildMonthGrid(List<Map<String, dynamic>> events) {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
-    final firstDow = firstDay.weekday % 7; // 0 = Sun
+    final firstDow = firstDay.weekday % 7;
     final daysInMonth =
         DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
 
     final cells = <Widget>[
-      ...List.generate(firstDow, (_) => const SizedBox(width: 32, height: 32)),
+      ...List.generate(
+          firstDow, (_) => const SizedBox(width: 32, height: 32)),
       ...List.generate(daysInMonth, (i) {
         final day = i + 1;
-        final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+        final date =
+            DateTime(_focusedMonth.year, _focusedMonth.month, day);
         final isToday = _isSameDay(date, _today);
-        final bold = _hasEvent(date);
+        final hasEv = _hasEvent(events, date);
         return SizedBox(
           width: 32,
           height: 32,
-          child: Container(
-            decoration: isToday
-                ? const BoxDecoration(color: _cyan, shape: BoxShape.circle)
-                : null,
+          child: Stack(
             alignment: Alignment.center,
-            child: Text('$day',
-                style: TextStyle(
-                    color: isToday ? Colors.black : Colors.white70,
-                    fontSize: 13,
-                    fontWeight:
-                        bold ? FontWeight.bold : FontWeight.normal)),
+            children: [
+              Container(
+                decoration: isToday
+                    ? const BoxDecoration(
+                        color: _cyan, shape: BoxShape.circle)
+                    : null,
+                alignment: Alignment.center,
+                child: Text('$day',
+                    style: TextStyle(
+                        color:
+                            isToday ? Colors.black : Colors.white70,
+                        fontSize: 13,
+                        fontWeight: hasEv
+                            ? FontWeight.bold
+                            : FontWeight.normal)),
+              ),
+              if (hasEv && !isToday)
+                Positioned(
+                  bottom: 3,
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                        color: _cyan, shape: BoxShape.circle),
+                  ),
+                ),
+            ],
           ),
         );
       }),
@@ -1543,8 +1711,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
       }
       rows.add(Padding(
         padding: const EdgeInsets.only(bottom: 4),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: slice),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: slice),
       ));
     }
     return Column(children: rows);
@@ -1565,7 +1734,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     color: color,
                     fontSize: 13,
                     fontWeight: FontWeight.w500))),
-        ?trailing,
+        if (trailing != null) trailing!,
       ]);
 }
 
@@ -1903,123 +2072,176 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
 
 // ==================== PROFILE SCREEN ====================
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _username = 'Student';
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    final name = await SessionStorageService.loadUsername();
+    if (mounted) {
+      setState(() {
+        _username = (name != null && name.isNotEmpty) ? name : 'Student';
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _logout() async {
+    await SessionStorageService.saveUsername('');
+    await SessionStorageService.saveRole('');
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final enrollment = context.watch<EnrollmentService>();
+    final notifSvc = context.watch<ClassNotificationsService>();
+    final className =
+        enrollment.primaryClass ?? 'Not Enrolled';
+    final activityCount = notifSvc.notifications
+        .where((n) =>
+            n.type == NotificationType.activityAssignment && !n.isDeclined)
+        .length;
+    final initial =
+        _username.isNotEmpty ? _username[0].toUpperCase() : 'S';
+
     return Scaffold(
       backgroundColor: _dark,
       body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ────────────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Profile',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold)),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // ── Avatar ────────────────────────────────────────────────
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2A),
-                shape: BoxShape.circle,
-                border: Border.all(color: _cyan, width: 2),
-              ),
-              child: const Icon(Icons.person,
-                  color: Colors.white70, size: 52),
-            ),
-
-            const SizedBox(height: 14),
-
-            // ── Name + class ──────────────────────────────────────────
-            const Text('Student',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: _cyan.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text('Grade 11 – Sampaguita',
-                  style: TextStyle(
-                      color: _cyan,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500)),
-            ),
-
-            const SizedBox(height: 32),
-
-            // ── Info cards ────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
+        child: _loading
+            ? const Center(
+                child: CircularProgressIndicator(color: _cyan))
+            : Column(
                 children: [
-                  _infoRow(Icons.school_outlined, 'Section',
-                      'Grade 11 – Sampaguita'),
-                  const SizedBox(height: 10),
-                  _infoRow(Icons.person_outline, 'Role', 'Student'),
-                  const SizedBox(height: 10),
-                  _infoRow(Icons.assignment_outlined, 'Assignments Due', '13'),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Profile',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Avatar with initial
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: _cyan.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _cyan, width: 2),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                            color: _cyan,
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Text(_username,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _cyan.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(className,
+                        style: const TextStyle(
+                            color: _cyan,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                  const SizedBox(height: 32),
+
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        _infoRow(Icons.school_outlined, 'Section',
+                            className),
+                        const SizedBox(height: 10),
+                        _infoRow(
+                            Icons.person_outline, 'Role', 'Student'),
+                        const SizedBox(height: 10),
+                        _infoRow(
+                            Icons.assignment_outlined,
+                            'Assignments Due',
+                            '$activityCount'),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _logout,
+                        icon: const Icon(Icons.logout, size: 18),
+                        label: const Text('Log Out',
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-
-            const Spacer(),
-
-            // ── Log out button ────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const LoginPage()),
-                      (route) => false,
-                    );
-                  },
-                  icon: const Icon(Icons.logout, size: 18),
-                  label: const Text('Log Out',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  Widget _infoRow(IconData icon, String label, String value) =>
+      Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(10),
