@@ -5,6 +5,7 @@ import '../models/class_notification.dart';
 import '../services/class_notifications_service.dart';
 import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
+import '../widgets/profile_avatar.dart';
 import 'class_detail_page.dart';
 import 'start_page.dart';
 
@@ -382,18 +383,12 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: AppColors.primaryCyan.withValues(alpha: 0.15),
-              child: Text(
-                _username.isNotEmpty ? _username[0].toUpperCase() : 'T',
-                style: const TextStyle(
-                  color: AppColors.primaryCyan,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto',
-                ),
-              ),
+            // Profile picture (tap to change)
+            ProfileAvatar(
+              username: _username,
+              radius: 42,
+              editable: true,
+              accentColor: AppColors.primaryCyan,
             ),
             const SizedBox(height: 12),
             Text(

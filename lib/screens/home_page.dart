@@ -12,7 +12,8 @@ import 'record_selection_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
 import 'start_page.dart';
-import 'karaoke_song_detail_page.dart';
+import 'karaoke_recording_page.dart';
+import '../widgets/profile_avatar.dart';
 import 'notifications_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -232,19 +233,9 @@ class _HomePageState extends State<HomePage> {
                           GestureDetector(
                             onTap: () =>
                                 setState(() => _isMenuOpen = !_isMenuOpen),
-                            child: CircleAvatar(
+                            child: ProfileAvatar(
+                              username: _username,
                               radius: 20,
-                              backgroundColor: AppColors.inputBg,
-                              child: Text(
-                                _username.isNotEmpty
-                                    ? _username[0].toUpperCase()
-                                    : 'U',
-                                style: const TextStyle(
-                                  color: AppColors.primaryCyan,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Roboto',
-                                ),
-                              ),
                             ),
                           ),
                         ],
@@ -429,19 +420,9 @@ class _HomePageState extends State<HomePage> {
                               padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
-                                  CircleAvatar(
+                                  ProfileAvatar(
+                                    username: _username,
                                     radius: 20,
-                                    backgroundColor: AppColors.inputBg,
-                                    child: Text(
-                                      _username.isNotEmpty
-                                          ? _username[0].toUpperCase()
-                                          : 'U',
-                                      style: const TextStyle(
-                                        color: AppColors.primaryCyan,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Roboto',
-                                      ),
-                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -511,11 +492,10 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => KaraokeSongDetailPage(
+              builder: (_) => KaraokeRecordingPage(
                 songTitle: song['title']!,
                 songArtist: song['artist']!,
                 songImage: song['image'] ?? '',
-                youtubeId: song['youtubeId'] ?? '',
               ),
             ),
           );

@@ -3,7 +3,7 @@ import '../constants/app_colors.dart';
 import '../models/session_result.dart';
 import '../services/session_storage_service.dart';
 import 'karaoke_home_page.dart';
-import 'practice_drill_page.dart';
+import 'karaoke_recording_page.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
@@ -18,36 +18,33 @@ class _ResultsPageState extends State<ResultsPage> {
   bool _saved = false;
   bool _saving = false;
 
-  // ── Color helpers ──────────────────────────────────────────────────────────
-  static const _correctColor = Color(0xFF4CAF50);
-  static const _flatColor = Color(0xFFFFA726);
-  static const _sharpColor = Color(0xFFF44336);
-  static const _noSignalColor = Color(0xFF757575);
+  // ── Color palette ──────────────────────────────────────────────────────────
+  static const _onTuneColor  = Color(0xFF4CAF50); // green  — correct
+  static const _offTuneColor = Color(0xFFF44336); // red    — flat / sharp
+  static const _silentColor  = Color(0xFF757575); // grey   — no signal
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   Color _lineColor(LyricPitchData line) {
     switch (line.status) {
-      case LineStatus.correct:
-        return _correctColor;
+      case LineStatus.correct:  return _onTuneColor;
       case LineStatus.flat:
-        return _flatColor;
-      case LineStatus.sharp:
-        return _sharpColor;
-      case LineStatus.noSignal:
-        return _noSignalColor;
+      case LineStatus.sharp:    return _offTuneColor;
+      case LineStatus.noSignal: return _silentColor;
     }
   }
 
-  String _lineLabel(LyricPitchData line) {
-    switch (line.status) {
-      case LineStatus.correct:
-        return 'In Tune';
-      case LineStatus.flat:
-        return 'Flat ${line.avgCents.abs().toStringAsFixed(0)}¢';
-      case LineStatus.sharp:
-        return 'Sharp ${line.avgCents.abs().toStringAsFixed(0)}¢';
-      case LineStatus.noSignal:
-        return 'No Signal';
-    }
+
+  String _feedbackLabel(int scoreInt) {
+    if (scoreInt >= 80) return 'Good';
+    if (scoreInt >= 60) return 'Fair';
+    return 'Needs Practice';
+  }
+
+  String _formatTime(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return s == 0 ? '${m}m' : '${m}m${s}s';
   }
 
   Future<void> _saveSession() async {
@@ -80,464 +77,298 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
+  // ── Build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final s = widget.session;
+    final s        = widget.session;
     final scoreInt = s.score.round();
-    final scorePercent = s.score / 100;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(context),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _buildSongCard(s),
+                  const SizedBox(height: 8),
+                  _buildHeatmap(s),
+                  const SizedBox(height: 16),
+                  _buildFeedbackRow(scoreInt, s),
                   const SizedBox(height: 20),
-                  _buildScoreSection(scoreInt, scorePercent, s),
-                  const SizedBox(height: 16),
-                  _buildStatsRow(s),
-                  const SizedBox(height: 16),
-                  _buildPitchBreakdown(s),
-                  const SizedBox(height: 16),
                   _buildLyricsResults(s),
-                  if (s.vocalHealthAlerts.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _buildVocalHealthSection(s),
-                  ],
-                  const SizedBox(height: 16),
-                  _buildRecommendationsSection(s),
                   const SizedBox(height: 24),
-                  _buildActionButtons(context, s),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
+            _buildActionButtons(context, s),
           ],
         ),
       ),
     );
   }
 
+  // ── Header ─────────────────────────────────────────────────────────────────
+
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: AppColors.white,
-              size: 26,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const Text(
-            'Results',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white,
-              fontFamily: 'Roboto',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSongCard(SessionResult s) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: s.songImage.isNotEmpty
-                ? Image.network(
-                    s.songImage,
-                    width: 46,
-                    height: 46,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, e, st) => _songIconBox(),
-                  )
-                : _songIconBox(),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
+                Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                SizedBox(width: 6),
                 Text(
-                  s.songTitle,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  s.songArtist,
+                  'Record',
                   style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.8),
-                    fontSize: 13,
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                     fontFamily: 'Roboto',
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: _correctColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _correctColor.withValues(alpha: 0.3)),
-            ),
-            child: const Text(
-              'Completed',
-              style: TextStyle(
-                color: _correctColor,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _songIconBox() => Container(
-    width: 46,
-    height: 46,
-    decoration: BoxDecoration(
-      color: AppColors.primaryCyan.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 24),
-  );
+  // ── Heatmap ────────────────────────────────────────────────────────────────
 
-  Widget _buildScoreSection(
-    int scoreInt,
-    double scorePercent,
-    SessionResult s,
-  ) {
-    return Column(
-      children: [
-        SizedBox(
-          width: 120,
-          height: 120,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: scorePercent,
-                strokeWidth: 10,
-                backgroundColor: AppColors.inputBg,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  scoreInt >= 80
-                      ? _correctColor
-                      : scoreInt >= 50
-                      ? _flatColor
-                      : _sharpColor,
-                ),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '$scoreInt',
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
-                      height: 1.0,
-                    ),
-                  ),
-                  Text(
-                    'pts',
-                    style: TextStyle(
-                      color: AppColors.grey.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            5,
-            (i) => Icon(
-              i < s.stars ? Icons.star_rounded : Icons.star_outline_rounded,
-              color: i < s.stars
-                  ? Colors.amber
-                  : AppColors.grey.withValues(alpha: 0.35),
-              size: 28,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildHeatmap(SessionResult s) {
+    final lines = s.lyricResults.where((l) => l.lyricText.isNotEmpty).toList();
+    final duration = s.durationSeconds > 0 ? s.durationSeconds : 210;
 
-  Widget _buildStatsRow(SessionResult s) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _statCard(s.correctLines, 'Correct', _correctColor),
-        const SizedBox(width: 10),
-        _statCard(s.flatLines, 'Flat', _flatColor),
-        const SizedBox(width: 10),
-        _statCard(s.sharpLines, 'Sharp', _sharpColor),
-        const SizedBox(width: 10),
-        _statCard(s.noSignalLines, 'Silent', _noSignalColor),
-      ],
-    );
-  }
+    // Timeline tick marks every 30 s
+    final ticks = <int>[];
+    for (int t = 30; t <= duration; t += 30) {
+      ticks.add(t);
+    }
 
-  Widget _statCard(int count, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '$count',
-            style: TextStyle(
-              color: color,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Roboto',
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppColors.grey.withValues(alpha: 0.8),
-              fontSize: 11,
-              fontFamily: 'Roboto',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPitchBreakdown(SessionResult s) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Pitch Analysis',
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Roboto',
-            ),
-          ),
-          const SizedBox(height: 10),
-          _pitchBar(
-            'In Tune',
-            s.totalLines == 0 ? 0 : s.correctLines / s.totalLines,
-            _correctColor,
-          ),
-          const SizedBox(height: 6),
-          _pitchBar(
-            'Flat',
-            s.totalLines == 0 ? 0 : s.flatLines / s.totalLines,
-            _flatColor,
-          ),
-          const SizedBox(height: 6),
-          _pitchBar(
-            'Sharp',
-            s.totalLines == 0 ? 0 : s.sharpLines / s.totalLines,
-            _sharpColor,
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const SizedBox(width: 70),
-              Expanded(
-                child: Text(
-                  'Avg flat: ${s.avgFlatPercent.toStringAsFixed(0)}%  |  '
-                  'Avg sharp: ${s.avgSharpPercent.toStringAsFixed(0)}%  |  '
-                  'Voice activity: ${(s.overallVoiceActivity * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.65),
-                    fontSize: 10,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pitchBar(String label, double value, Color color) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 65,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: AppColors.grey.withValues(alpha: 0.8),
-              fontSize: 12,
-              fontFamily: 'Roboto',
-            ),
-          ),
-        ),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: value.clamp(0.0, 1.0),
-              minHeight: 8,
-              backgroundColor: AppColors.inputBg,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '${(value * 100).round()}%',
-          style: TextStyle(
-            color: color,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLyricsResults(SessionResult s) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Legend
         Row(
           children: [
-            const Text(
-              'Result Lyrics',
-              style: TextStyle(
-                color: AppColors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
-              ),
-            ),
-            const SizedBox(width: 10),
-            _legendDot(_correctColor, 'In Tune'),
-            const SizedBox(width: 8),
-            _legendDot(_flatColor, 'Flat'),
-            const SizedBox(width: 8),
-            _legendDot(_sharpColor, 'Sharp'),
+            _legendDot(_offTuneColor, 'Flat / Sharp'),
+            const SizedBox(width: 16),
+            _legendDot(_onTuneColor, 'On Tune'),
           ],
         ),
         const SizedBox(height: 8),
-        Container(
-          constraints: const BoxConstraints(maxHeight: 260),
-          decoration: BoxDecoration(
-            color: AppColors.inputBg,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListView.builder(
-            padding: const EdgeInsets.all(12),
-            shrinkWrap: true,
-            itemCount: s.lyricResults.length,
-            itemBuilder: (context, index) {
-              final line = s.lyricResults[index];
-              if (line.lyricText.isEmpty) {
-                return const SizedBox(height: 8);
-              }
-              final color = _lineColor(line);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        line.lyricText,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 13,
-                          fontFamily: 'Roboto',
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _lineLabel(line),
-                      style: TextStyle(
-                        color: color.withValues(alpha: 0.7),
-                        fontSize: 10,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+
+        // Heatmap colour bar
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: SizedBox(
+            height: 36,
+            width: double.infinity,
+            child: lines.isEmpty
+                ? Container(color: Colors.white12)
+                : CustomPaint(
+                    painter: _HeatmapPainter(lines, _lineColor),
+                  ),
           ),
         ),
+
+        const SizedBox(height: 4),
+
+        // Timeline labels
+        if (ticks.isNotEmpty)
+          Row(
+            children: ticks.map((t) {
+              return Expanded(
+                child: Text(
+                  _formatTime(t),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 9,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }
+
+  // ── Feedback row ───────────────────────────────────────────────────────────
+
+  Widget _buildFeedbackRow(int scoreInt, SessionResult s) {
+    final flatnessPct = s.avgFlatPercent.toStringAsFixed(0);
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _chip('Feedback: ${_feedbackLabel(scoreInt)}', AppColors.primaryCyan),
+        _chip('Score: $scoreInt%', AppColors.primaryCyan),
+        _chip('Flatness: $flatnessPct%', Colors.white70),
+      ],
+    );
+  }
+
+  Widget _chip(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  // ── Result Lyrics table ────────────────────────────────────────────────────
+
+  Widget _buildLyricsResults(SessionResult s) {
+    // Build a numbered table matching the Figma layout:
+    //  #   Time   Pitch   Direction
+    final singable = s.lyricResults.where((l) => l.lyricText.isNotEmpty).toList();
+    final totalSec = s.durationSeconds;
+    final perLine  = singable.isEmpty ? 0 : totalSec ~/ singable.length;
+
+    const headerStyle = TextStyle(
+      color: Colors.white38,
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      fontFamily: 'Roboto',
+      letterSpacing: 0.4,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: const [
+              SizedBox(width: 28, child: Text('#',         style: headerStyle)),
+              SizedBox(width: 56, child: Text('Time',      style: headerStyle)),
+              Expanded(          child: Text('Pitch',     style: headerStyle)),
+              SizedBox(width: 80, child: Text('Direction', style: headerStyle,
+                  textAlign: TextAlign.right)),
+            ],
+          ),
+        ),
+        const Divider(color: Colors.white10, height: 1),
+        const SizedBox(height: 4),
+
+        // Data rows
+        ...singable.asMap().entries.map((entry) {
+          final i    = entry.key;
+          final line = entry.value;
+          final sec  = perLine * (i + 1);
+          final m    = sec ~/ 60;
+          final s2   = sec % 60;
+          final ts   =
+              '${m.toString().padLeft(2, '0')}:${s2.toString().padLeft(2, '0')}';
+
+          String pitch, direction;
+          Color  color;
+          switch (line.status) {
+            case LineStatus.correct:
+              pitch = 'In Tune'; direction = '—';
+              color = _onTuneColor;
+              break;
+            case LineStatus.flat:
+              pitch = 'Flat';   direction = 'Too Low';
+              color = _offTuneColor;
+              break;
+            case LineStatus.sharp:
+              pitch = 'Sharp';  direction = 'Too High';
+              color = _offTuneColor;
+              break;
+            case LineStatus.noSignal:
+              pitch = 'No Signal'; direction = '—';
+              color = _silentColor;
+              break;
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 7),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 28,
+                  child: Text('${i + 1}.',
+                      style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 13,
+                          fontFamily: 'Roboto')),
+                ),
+                SizedBox(
+                  width: 56,
+                  child: Text(ts,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Roboto')),
+                ),
+                Expanded(
+                  child: Text(pitch,
+                      style: TextStyle(
+                          color: color,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Roboto')),
+                ),
+                SizedBox(
+                  width: 80,
+                  child: Text(direction,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                          color: color.withValues(alpha: 0.75),
+                          fontSize: 13,
+                          fontFamily: 'Roboto')),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  // ── Legend dot ─────────────────────────────────────────────────────────────
 
   Widget _legendDot(Color color, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 6,
-          height: 6,
+          width: 8,
+          height: 8,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(
-            color: AppColors.grey.withValues(alpha: 0.7),
+          style: const TextStyle(
+            color: Colors.white70,
             fontSize: 11,
             fontFamily: 'Roboto',
           ),
@@ -546,254 +377,135 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  Widget _buildVocalHealthSection(SessionResult s) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.amber.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.health_and_safety_outlined,
-                color: Colors.amber,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Vocal Health Alerts',
-                style: TextStyle(
-                  color: Colors.amber,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Non-diagnostic',
-                style: TextStyle(
-                  color: Colors.amber.withValues(alpha: 0.6),
-                  fontSize: 10,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...s.vocalHealthAlerts.map(
-            (alert) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '• ',
-                    style: TextStyle(color: Colors.amber, fontSize: 13),
-                  ),
-                  Expanded(
-                    child: Text(
-                      alert,
-                      style: TextStyle(
-                        color: AppColors.white.withValues(alpha: 0.85),
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendationsSection(SessionResult s) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.primaryCyan.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primaryCyan.withValues(alpha: 0.25),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.tips_and_updates_outlined,
-                color: AppColors.primaryCyan,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Practice Recommendations',
-                style: TextStyle(
-                  color: AppColors.primaryCyan,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...s.practiceRecommendations.map(
-            (rec) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '• ',
-                    style: TextStyle(
-                      color: AppColors.primaryCyan,
-                      fontSize: 13,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      rec,
-                      style: TextStyle(
-                        color: AppColors.white.withValues(alpha: 0.85),
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PracticeDrillPage(
-                  problemLines: s.singableLines
-                      .where(
-                        (l) =>
-                            l.status == LineStatus.flat ||
-                            l.status == LineStatus.sharp,
-                      )
-                      .map((l) => l.lyricText)
-                      .take(5)
-                      .toList(),
-                ),
-              ),
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.primaryCyan.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppColors.primaryCyan.withValues(alpha: 0.4),
-                ),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.fitness_center_outlined,
-                    color: AppColors.primaryCyan,
-                    size: 16,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Open Practice Drills',
-                    style: TextStyle(
-                      color: AppColors.primaryCyan,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // ── Action buttons ─────────────────────────────────────────────────────────
 
   Widget _buildActionButtons(BuildContext context, SessionResult s) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
+    final btnShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Row(
+        children: [
+          // ── Try Again ────────────────────────────────────────────────────
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.inputBg,
-              foregroundColor: AppColors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
               ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Try Again',
-              style: TextStyle(
-                fontSize: 15,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white24),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: btnShape,
+              ),
+              child: const Text(
+                'Try Again',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _saving ? null : _saveSession,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _saved ? _correctColor : AppColors.primaryCyan,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0,
-            ),
-            child: _saving
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.black,
-                    ),
-                  )
-                : Text(
-                    _saved ? 'Saved ✓' : 'Save',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w600,
-                    ),
+          const SizedBox(width: 8),
+
+          // ── Listen — replay the same song ─────────────────────────────────
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => KaraokeRecordingPage(
+                    songTitle: s.songTitle,
+                    songArtist: s.songArtist,
+                    songImage: s.songImage,
                   ),
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryCyan,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: btnShape,
+                elevation: 0,
+              ),
+              child: const Text(
+                'Listen',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+
+          // ── Save ──────────────────────────────────────────────────────────
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _saving ? null : _saveSession,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _saved
+                    ? _onTuneColor
+                    : const Color(0xFF2A2A2A),
+                foregroundColor: _saved ? Colors.black : Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: btnShape,
+                elevation: 0,
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      _saved ? 'Saved ✓' : 'Save',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+// ── Heatmap painter ───────────────────────────────────────────────────────────
+
+class _HeatmapPainter extends CustomPainter {
+  final List<LyricPitchData> lines;
+  final Color Function(LyricPitchData) colorFor;
+
+  const _HeatmapPainter(this.lines, this.colorFor);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (lines.isEmpty) return;
+    final segW = size.width / lines.length;
+    for (int i = 0; i < lines.length; i++) {
+      final paint = Paint()..color = colorFor(lines[i]);
+      // 1 px gap between segments for readability
+      canvas.drawRect(
+        Rect.fromLTWH(i * segW, 0, segW - 1, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HeatmapPainter old) =>
+      old.lines.length != lines.length;
 }

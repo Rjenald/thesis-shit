@@ -14,26 +14,21 @@ class KaraokeHomePage extends StatefulWidget {
 class _KaraokeHomePageState extends State<KaraokeHomePage> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
-  String _selectedLanguage = 'All';
+  String _selectedFilter = 'All';
 
   List<KaraokeSong> get _filtered {
     final allSongs = TagalogBisayaSongs.songs;
-
-    if (_query.trim().isEmpty && _selectedLanguage == 'All') {
-      return allSongs.toList();
-    }
-
     final q = _query.toLowerCase();
-    return allSongs
-        .where((s) {
-          final matchesQuery = q.isEmpty ||
-              s.title.toLowerCase().contains(q) ||
-              s.artist.toLowerCase().contains(q);
-          final matchesLanguage = _selectedLanguage == 'All' ||
-              s.language == _selectedLanguage;
-          return matchesQuery && matchesLanguage;
-        })
-        .toList();
+    return allSongs.where((s) {
+      final matchesQuery = q.isEmpty ||
+          s.title.toLowerCase().contains(q) ||
+          s.artist.toLowerCase().contains(q);
+      final matchesFilter = _selectedFilter == 'All' ||
+          (_selectedFilter == 'Offline'
+              ? s.offline
+              : s.language == _selectedFilter);
+      return matchesQuery && matchesFilter;
+    }).toList();
   }
 
   @override
@@ -255,17 +250,21 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
               ),
             ),
 
-            // Language Filter Chips
+            // Filter Chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
-                  _buildLanguageChip('All', _selectedLanguage == 'All'),
+                  _buildFilterChip('All'),
                   const SizedBox(width: 8),
-                  _buildLanguageChip('Tagalog', _selectedLanguage == 'Tagalog'),
+                  _buildFilterChip('Tagalog'),
                   const SizedBox(width: 8),
-                  _buildLanguageChip('Bisaya', _selectedLanguage == 'Bisaya'),
+                  _buildFilterChip('Bisaya'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('English'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Offline'),
                 ],
               ),
             ),
@@ -366,22 +365,23 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: song.language == 'Tagalog'
-                                        ? Colors.blue.withValues(alpha: 0.2)
-                                        : Colors.purple.withValues(alpha: 0.2),
+                                    color: _langColor(song.language).withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
-                                    song.language == 'Tagalog' ? 'TGL' : 'BIS',
+                                    _langLabel(song.language),
                                     style: TextStyle(
-                                      color: song.language == 'Tagalog'
-                                          ? Colors.blue[300]
-                                          : Colors.purple[300],
+                                      color: _langColor(song.language),
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
+                                if (song.offline) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.download_done,
+                                      size: 14, color: Color(0xFF4CAF50)),
+                                ],
                                 const SizedBox(width: 8),
                                 Icon(
                                   Icons.arrow_forward_ios,
@@ -407,11 +407,27 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
     );
   }
 
-  Widget _buildLanguageChip(String label, bool isSelected) {
+  Color _langColor(String language) {
+    switch (language) {
+      case 'Tagalog': return Colors.blue[300]!;
+      case 'Bisaya':  return Colors.purple[300]!;
+      default:        return Colors.orange[300]!;
+    }
+  }
+
+  String _langLabel(String language) {
+    switch (language) {
+      case 'Tagalog': return 'TGL';
+      case 'Bisaya':  return 'BIS';
+      default:        return 'ENG';
+    }
+  }
+
+  Widget _buildFilterChip(String label) {
+    final isSelected = _selectedFilter == label;
+    final isOffline = label == 'Offline';
     return GestureDetector(
-      onTap: () {
-        setState(() => _selectedLanguage = label);
-      },
+      onTap: () => setState(() => _selectedFilter = label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -424,14 +440,28 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
             width: 1,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.black : AppColors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isOffline)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  Icons.download_done,
+                  size: 12,
+                  color: isSelected ? Colors.black : const Color(0xFF4CAF50),
+                ),
+              ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.black : AppColors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
         ),
       ),
     );

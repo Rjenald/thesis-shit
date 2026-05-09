@@ -5,6 +5,7 @@ import '../models/class_notification.dart';
 import '../services/class_notifications_service.dart';
 import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
+import '../widgets/profile_avatar.dart';
 import 'karaoke_recording_page.dart';
 import 'practice_solfege_page.dart';
 import 'karaoke_practice_mode_page.dart';
@@ -2120,9 +2121,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .where((n) =>
             n.type == NotificationType.activityAssignment && !n.isDeclined)
         .length;
-    final initial =
-        _username.isNotEmpty ? _username[0].toUpperCase() : 'S';
-
     return Scaffold(
       backgroundColor: _dark,
       body: SafeArea(
@@ -2144,24 +2142,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Avatar with initial
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      color: _cyan.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: _cyan, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        initial,
-                        style: const TextStyle(
-                            color: _cyan,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                  // Profile picture (tap to change)
+                  ProfileAvatar(
+                    username: _username,
+                    radius: 45,
+                    editable: true,
+                    accentColor: _cyan,
                   ),
                   const SizedBox(height: 14),
 
