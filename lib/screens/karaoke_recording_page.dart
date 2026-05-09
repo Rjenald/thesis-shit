@@ -396,8 +396,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
             _buildWaveformBox(),
             _buildVideoWithSubtitles(),
             _buildSongInfoRow(),
-            if (_isRecording && _currentPitch != null)
-              _buildPitchBar(_currentPitch!),
+            if (_isRecording)
+              _buildTuner(_currentPitch),
             const Spacer(),
             _buildControls(),
           ],
@@ -688,99 +688,210 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  // ── Real-time pitch bar ────────────────────────────────────────────────────
+  // ── Chromatic tuner widget ─────────────────────────────────────────────────
+  // Shows like a real guitar/vocal tuner:
+  //   • Full-width needle meter (−50¢ … 0 … +50¢)
+  //   • Note name + octave in the centre
+  //   • Colour: green = in-tune, red = sharp/flat, grey = no signal
+  // Always visible while the mic is on so the singer never wonders if
+  // their mic is working.
 
-  Widget _buildPitchBar(NoteResult pitch) {
-    Color    barColor;
-    String   statusLabel;
-    IconData icon;
+  Widget _buildTuner(NoteResult? pitch) {
+    // Decide colour & status from pitch feedback
+    final bool hasSignal = pitch != null &&
+        pitch.feedback != PitchFeedback.noSignal &&
+        pitch.frequency > 0;
 
-    switch (pitch.feedback) {
-      case PitchFeedback.correct:
-        barColor = _colorInTune;  statusLabel = 'In Tune';    icon = Icons.check_circle_outline; break;
-      case PitchFeedback.tooHigh:
-        barColor = _colorOffTune; statusLabel = 'Too High ↑'; icon = Icons.arrow_upward;         break;
-      case PitchFeedback.tooLow:
-        barColor = _colorOffTune; statusLabel = 'Too Low ↓';  icon = Icons.arrow_downward;       break;
-      case PitchFeedback.noSignal:
-        barColor = _colorSilent;  statusLabel = 'No Signal';  icon = Icons.mic_off;              break;
+    final Color tunerColor;
+    final String noteLabel;
+    final String statusLabel;
+    final double cents;
+
+    if (!hasSignal) {
+      tunerColor  = _colorSilent;
+      noteLabel   = '—';
+      statusLabel = 'Listening…';
+      cents       = 0.0;
+    } else {
+      cents = pitch.cents;
+      switch (pitch.feedback) {
+        case PitchFeedback.correct:
+          tunerColor  = _colorInTune;
+          statusLabel = 'In Tune ✓';
+        case PitchFeedback.tooHigh:
+          tunerColor  = _colorOffTune;
+          statusLabel = 'Too High ↑';
+        case PitchFeedback.tooLow:
+          tunerColor  = _colorOffTune;
+          statusLabel = 'Too Low ↓';
+        case PitchFeedback.noSignal:
+          tunerColor  = _colorSilent;
+          statusLabel = 'Listening…';
+      }
+      noteLabel = pitch.fullName; // e.g. "A4"
     }
 
-    final centsStr =
-        '${pitch.cents >= 0 ? '+' : ''}${pitch.cents.toStringAsFixed(0)}¢';
+    final centsStr = hasSignal
+        ? '${cents >= 0 ? '+' : ''}${cents.toStringAsFixed(0)}¢'
+        : '';
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 120),
-      margin: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      duration: const Duration(milliseconds: 100),
+      margin: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
       decoration: BoxDecoration(
-        color:        barColor.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(10),
-        border:       Border.all(color: barColor.withValues(alpha: 0.35)),
+        color:        tunerColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border:       Border.all(color: tunerColor.withValues(alpha: 0.30), width: 1),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: barColor, size: 15),
-          const SizedBox(width: 8),
-          Text(pitch.fullName,
-              style: TextStyle(
-                  color: barColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto')),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Container(
-                width: 1, height: 18, color: barColor.withValues(alpha: 0.3)),
+          // ── Top row: ♭  note  cents  ♯ ─────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Flat indicator
+              Text('♭',
+                  style: TextStyle(
+                      color: (!hasSignal || cents >= -10)
+                          ? Colors.white12
+                          : tunerColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+
+              // Centre: note name + cents
+              Column(
+                children: [
+                  Text(
+                    noteLabel,
+                    style: TextStyle(
+                        color: tunerColor,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Roboto',
+                        letterSpacing: 1),
+                  ),
+                  if (centsStr.isNotEmpty)
+                    Text(centsStr,
+                        style: TextStyle(
+                            color: tunerColor.withValues(alpha: 0.7),
+                            fontSize: 11,
+                            fontFamily: 'Roboto')),
+                ],
+              ),
+
+              // Sharp indicator
+              Text('♯',
+                  style: TextStyle(
+                      color: (!hasSignal || cents <= 10)
+                          ? Colors.white12
+                          : tunerColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+            ],
           ),
-          Text(statusLabel,
-              style: TextStyle(
-                  color: barColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto')),
-          const SizedBox(width: 10),
-          Text(centsStr,
-              style: TextStyle(
-                  color: barColor.withValues(alpha: 0.65),
-                  fontSize: 11,
-                  fontFamily: 'Roboto')),
-          const SizedBox(width: 10),
-          _buildCentsMeter(pitch.cents, barColor),
+
+          const SizedBox(height: 8),
+
+          // ── Needle meter ────────────────────────────────────────────────
+          _buildNeedle(cents, tunerColor, hasSignal),
+
+          const SizedBox(height: 6),
+
+          // ── Status label ────────────────────────────────────────────────
+          Text(
+            statusLabel,
+            style: TextStyle(
+                color: tunerColor.withValues(alpha: 0.80),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+                letterSpacing: 0.5),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCentsMeter(double cents, Color color) {
-    final fraction = (cents.clamp(-50.0, 50.0) + 50.0) / 100.0;
-    return SizedBox(
-      width: 60,
-      height: 10,
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(2),
+  /// Horizontal needle meter — range −50¢ (left) … 0 (centre) … +50¢ (right).
+  Widget _buildNeedle(double cents, Color color, bool active) {
+    // Map cents −50…+50 to fraction 0.0…1.0
+    final fraction = active
+        ? ((cents.clamp(-50.0, 50.0) + 50.0) / 100.0)
+        : 0.5; // needle rests in the centre when silent
+
+    return LayoutBuilder(builder: (_, constraints) {
+      final w = constraints.maxWidth;
+      // Needle position in pixels (leave 8px margin each side for the knob)
+      final needleX = 8.0 + fraction * (w - 16.0);
+
+      return SizedBox(
+        height: 24,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // ── Track ──────────────────────────────────────────────────────
+            Positioned(
+              top: 10,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _colorOffTune.withValues(alpha: 0.4),
+                      _colorInTune.withValues(alpha: 0.5),
+                      _colorOffTune.withValues(alpha: 0.4),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
-          ),
-          Center(child: Container(width: 1, height: 10, color: Colors.white24)),
-          Positioned(
-            left: (fraction * 57).clamp(0.0, 54.0),
-            child: Container(
-              width: 6,
-              height: 10,
-              decoration: BoxDecoration(
-                  color: color, borderRadius: BorderRadius.circular(3)),
+
+            // ── Centre mark ────────────────────────────────────────────────
+            Positioned(
+              top: 5,
+              left: w / 2 - 1,
+              child: Container(width: 2, height: 14, color: Colors.white24),
             ),
-          ),
-        ],
-      ),
-    );
+
+            // ── Tick marks (−25, +25) ──────────────────────────────────────
+            Positioned(
+              top: 8,
+              left: w * 0.25 - 1,
+              child: Container(width: 1, height: 8, color: Colors.white12),
+            ),
+            Positioned(
+              top: 8,
+              left: w * 0.75 - 1,
+              child: Container(width: 1, height: 8, color: Colors.white12),
+            ),
+
+            // ── Animated needle knob ───────────────────────────────────────
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 80),
+              curve:    Curves.easeOut,
+              top: 2,
+              left: needleX - 10,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color:  active ? color : _colorSilent,
+                  shape:  BoxShape.circle,
+                  boxShadow: active
+                      ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6)]
+                      : [],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   // ── Controls ───────────────────────────────────────────────────────────────

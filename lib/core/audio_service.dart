@@ -31,8 +31,9 @@ class AudioService {
   // ── Tuning constants ────────────────────────────────────────────────────────
 
   /// Time to wait for the first WebSocket message before falling back to
-  /// local detection. Raised from 800 ms → 1 500 ms for slow connections.
-  static const Duration _wsFallbackDelay = Duration(milliseconds: 1500);
+  /// local detection.  250 ms is enough to detect a live server; any longer
+  /// just delays the start of on-device detection when no server is running.
+  static const Duration _wsFallbackDelay = Duration(milliseconds: 250);
 
   /// Minimum CREPE confidence to accept a result.
   /// Readings below this are noise / vowel transitions — discard them.
