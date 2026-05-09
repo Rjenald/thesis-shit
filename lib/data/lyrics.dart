@@ -4,7 +4,9 @@ library;
 class LyricLine {
   final String text;
   final int durationSeconds;
-  const LyricLine(this.text, this.durationSeconds);
+  /// Milliseconds from the start of the song (0 = unknown / plain lyrics).
+  final int startMs;
+  const LyricLine(this.text, this.durationSeconds, {this.startMs = 0});
 }
 
 class SongLyrics {

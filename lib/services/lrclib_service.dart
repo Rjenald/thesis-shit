@@ -127,10 +127,14 @@ class LrcLibService {
 
     // ── Intro padding ──────────────────────────────────────────────────────
     // If the first lyric starts after 3 s (e.g. [00:15.00]) add a silent
-    // placeholder so the timer waits for the music intro before lyrics appear.
+    // placeholder so the position-based sync waits through the intro.
     final firstLineStart = parsed.first.time.inMilliseconds / 1000.0;
     if (firstLineStart > 3) {
-      result.add(LyricLine('', firstLineStart.round().clamp(1, 120)));
+      result.add(LyricLine(
+        '',
+        firstLineStart.round().clamp(1, 120),
+        startMs: 0, // intro starts at position 0
+      ));
     }
 
     for (int i = 0; i < parsed.length; i++) {
@@ -145,7 +149,12 @@ class LrcLibService {
         durSeconds = 4; // last line
       }
 
-      result.add(LyricLine(current.text, durSeconds));
+      // Store the exact LRC timestamp so the player can sync to video position.
+      result.add(LyricLine(
+        current.text,
+        durSeconds,
+        startMs: current.time.inMilliseconds,
+      ));
     }
 
     return result;
