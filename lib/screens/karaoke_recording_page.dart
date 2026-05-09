@@ -281,15 +281,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       // Start a 100ms fallback timer.  It drives lyrics while the video is
       // buffering or if the YT API failed completely.  _onYTUpdate() cancels
       // it as soon as real position data starts arriving.
-      if (_posTimer == null) {
-        _posTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      _posTimer ??= Timer.periodic(const Duration(milliseconds: 100), (_) {
           if (!mounted || !_isPlaying) return;
           // Only use the timer if YT is NOT driving position.
           if (!_ytPositionActive) {
             _syncToPosition(_posMs + 100);
           }
         });
-      }
     }
   }
 
@@ -396,9 +394,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           children: [
             _buildHeader(),
             _buildWaveformBox(),
-            _buildVideoBox(),
+            _buildVideoWithSubtitles(),
             _buildSongInfoRow(),
-            Expanded(child: _buildLyricsArea()),
+            if (_isRecording && _currentPitch != null)
+              _buildPitchBar(_currentPitch!),
+            const Spacer(),
             _buildControls(),
           ],
         ),
@@ -471,11 +471,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  // ── YouTube video box ──────────────────────────────────────────────────────
+  // ── Video + subtitle overlay ───────────────────────────────────────────────
 
-  Widget _buildVideoBox() {
+  Widget _buildVideoWithSubtitles() {
+    // Build the video layer
+    Widget videoContent;
     if (_ytVideoId == null) {
-      return _videoShell(child: const Column(
+      videoContent = _videoPlaceholder(child: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
@@ -484,10 +486,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               style: TextStyle(color: Colors.white30, fontSize: 12)),
         ],
       ));
-    }
-
-    if (_ytVideoId!.isEmpty || _ytController == null) {
-      return _videoShell(child: const Column(
+    } else if (_ytVideoId!.isEmpty || _ytController == null) {
+      videoContent = _videoPlaceholder(child: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
@@ -496,77 +496,173 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               style: TextStyle(color: Colors.white24, fontSize: 11)),
         ],
       ));
+    } else {
+      videoContent = YoutubePlayer(
+        controller: _ytController!,
+        showVideoProgressIndicator: true,
+        progressIndicatorColor: Colors.red,
+        progressColors: const ProgressBarColors(
+          playedColor:     Colors.red,
+          handleColor:     Colors.redAccent,
+          bufferedColor:   Colors.white24,
+          backgroundColor: Colors.white12,
+        ),
+        topActions: const [],
+        bottomActions: const [
+          CurrentPosition(),
+          ProgressBar(isExpanded: true),
+          RemainingDuration(),
+        ],
+      );
     }
+
+    // Subtitle text data
+    final currentText = _currentLineIndex < _lyrics.length
+        ? _lyrics[_currentLineIndex].text
+        : '';
+    final prevText = (_currentLineIndex > 0 &&
+            _lyrics[_currentLineIndex - 1].text.isNotEmpty)
+        ? _lyrics[_currentLineIndex - 1].text
+        : null;
+    final nextText = (_currentLineIndex + 1 < _lyrics.length &&
+            _lyrics[_currentLineIndex + 1].text.isNotEmpty)
+        ? _lyrics[_currentLineIndex + 1].text
+        : null;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(6),
-        child: YoutubePlayer(
-          controller: _ytController!,
-          showVideoProgressIndicator: true,
-          progressIndicatorColor: Colors.red,
-          progressColors: const ProgressBarColors(
-            playedColor:     Colors.red,
-            handleColor:     Colors.redAccent,
-            bufferedColor:   Colors.white24,
-            backgroundColor: Colors.white12,
-          ),
-          topActions: const [],
-          bottomActions: const [
-            CurrentPosition(),
-            ProgressBar(isExpanded: true),
-            RemainingDuration(),
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            videoContent,
+            // Subtitle overlay — sits just above the YT progress bar
+            if (!_lyricsLoading)
+              Positioned(
+                bottom: 34,
+                left: 8,
+                right: 8,
+                child: _buildSubtitleOverlay(prevText, currentText, nextText),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _videoShell({required Widget child}) => Padding(
-    padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-    child: AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.white12, width: 0.5),
-        ),
-        child: Center(child: child),
+  Widget _videoPlaceholder({required Widget child}) => AspectRatio(
+    aspectRatio: 16 / 9,
+    child: Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white12, width: 0.5),
       ),
+      child: Center(child: child),
     ),
   );
+
+  // ── Subtitle overlay ───────────────────────────────────────────────────────
+
+  Widget _buildSubtitleOverlay(String? prev, String current, String? next) {
+    final isGap = current.isEmpty;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      transitionBuilder: (child, anim) =>
+          FadeTransition(opacity: anim, child: child),
+      child: Column(
+        key: ValueKey(_currentLineIndex),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Previous line — ghost
+          if (prev != null)
+            _subtitleText(prev, opacity: 0.45, fontSize: 13),
+
+          // Current line — hero
+          _subtitleText(
+            isGap
+                ? (_isPlaying ? '♪  Instrumental  ♪' : '')
+                : current,
+            opacity: isGap ? 0.55 : 1.0,
+            fontSize: 17,
+            bold: !isGap,
+            italic: isGap,
+          ),
+
+          // Next line — preview
+          if (next != null)
+            _subtitleText(next, opacity: 0.45, fontSize: 13),
+        ],
+      ),
+    );
+  }
+
+  Widget _subtitleText(
+    String text, {
+    double opacity = 1.0,
+    double fontSize = 16,
+    bool bold = false,
+    bool italic = false,
+  }) {
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.58),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: opacity),
+          fontSize: fontSize,
+          fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+          fontStyle: italic ? FontStyle.italic : FontStyle.normal,
+          fontFamily: 'Roboto',
+          shadows: const [
+            Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 1)),
+          ],
+        ),
+      ),
+    );
+  }
 
   // ── Song info row ──────────────────────────────────────────────────────────
 
   Widget _buildSongInfoRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
       child: Row(
         children: [
+          const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 14),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Title: ${widget.songTitle}',
+              widget.songTitle,
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   fontFamily: 'Roboto'),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
-            'Artist: ${widget.songArtist}',
+            widget.songArtist,
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 12,
                 fontFamily: 'Roboto'),
+            overflow: TextOverflow.ellipsis,
           ),
           if (_isRecording) ...[
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
@@ -575,12 +671,12 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.circle, color: Colors.red, size: 6),
-                  SizedBox(width: 4),
+                  Icon(Icons.circle, color: Colors.red, size: 5),
+                  SizedBox(width: 3),
                   Text('REC',
                       style: TextStyle(
                           color: Colors.red,
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Roboto')),
                 ],
@@ -589,132 +685,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           ],
         ],
       ),
-    );
-  }
-
-  // ── Lyrics area ────────────────────────────────────────────────────────────
-
-  Widget _buildLyricsArea() {
-    if (_lyricsLoading) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(
-                color: AppColors.primaryCyan, strokeWidth: 2),
-            const SizedBox(height: 16),
-            Text('Loading lyrics…',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.6),
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
-          ],
-        ),
-      );
-    }
-
-    const colStyle = TextStyle(
-      color: Colors.white38,
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      fontFamily: 'Roboto',
-      letterSpacing: 0.4,
-    );
-
-    final currentText = _currentLineIndex < _lyrics.length
-        ? _lyrics[_currentLineIndex].text
-        : '';
-    final isGap = currentText.isEmpty;
-
-    return Column(
-      children: [
-        // ── Active lyric line ──────────────────────────────────────────────
-        Container(
-          width: double.infinity,
-          color: const Color(0xFF111111),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: isGap
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.music_note,
-                        color: Colors.white24, size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      _isPlaying
-                          ? '♪  Intro / Instrumental  ♪'
-                          : 'Press ▶ to start',
-                      style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 15,
-                          fontStyle: FontStyle.italic,
-                          fontFamily: 'Roboto'),
-                    ),
-                  ],
-                )
-              : Text(
-                  currentText,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Roboto'),
-                  textAlign: TextAlign.center,
-                ),
-        ),
-
-        // ── Live pitch bar ─────────────────────────────────────────────────
-        if (_isRecording && !isGap && _currentPitch != null)
-          _buildPitchBar(_currentPitch!),
-
-        // ── Table header ───────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: Row(
-            children: const [
-              SizedBox(width: 28, child: Text('#',         style: colStyle)),
-              SizedBox(width: 56, child: Text('Time',      style: colStyle)),
-              Expanded(           child: Text('Pitch',     style: colStyle)),
-              SizedBox(width: 80,
-                  child: Text('Direction', style: colStyle,
-                      textAlign: TextAlign.right)),
-            ],
-          ),
-        ),
-        const Divider(color: Colors.white10, height: 1),
-
-        // ── Completed lines ────────────────────────────────────────────────
-        Expanded(
-          child: _completedLines.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.mic_none, color: Colors.white24, size: 36),
-                      const SizedBox(height: 8),
-                      Text(
-                        _isPlaying
-                            ? 'Sing along — results appear here'
-                            : 'Press ▶ to start',
-                        style: const TextStyle(
-                            color: Colors.white38,
-                            fontSize: 13,
-                            fontFamily: 'Roboto'),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(top: 4),
-                  itemCount: _completedLines.length,
-                  itemBuilder: (_, i) => _buildLiveRow(
-                    i + 1,
-                    i < _lineTimestamps.length ? _lineTimestamps[i] : 0,
-                    _completedLines[i],
-                  ),
-                ),
-        ),
-      ],
     );
   }
 
@@ -807,69 +777,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               decoration: BoxDecoration(
                   color: color, borderRadius: BorderRadius.circular(3)),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Completed-line row ─────────────────────────────────────────────────────
-
-  Widget _buildLiveRow(int num, int seconds, LyricPitchData line) {
-    final m  = seconds ~/ 60;
-    final s  = seconds % 60;
-    final ts = '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-
-    String pitch, direction;
-    Color  color;
-    switch (line.status) {
-      case LineStatus.correct:
-        pitch = 'In Tune';   direction = '—';        color = _colorInTune;  break;
-      case LineStatus.flat:
-        pitch = 'Flat';      direction = 'Too Low';  color = _colorOffTune; break;
-      case LineStatus.sharp:
-        pitch = 'Sharp';     direction = 'Too High'; color = _colorOffTune; break;
-      case LineStatus.noSignal:
-        pitch = 'No Signal'; direction = '—';        color = _colorSilent;  break;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text('$num.',
-                style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
-          ),
-          SizedBox(
-            width: 56,
-            child: Text(ts,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Roboto')),
-          ),
-          Expanded(
-            child: Text(pitch,
-                style: TextStyle(
-                    color: color,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto')),
-          ),
-          SizedBox(
-            width: 80,
-            child: Text(direction,
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                    color: color.withValues(alpha: 0.75),
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
           ),
         ],
       ),
