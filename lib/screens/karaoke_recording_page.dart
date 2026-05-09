@@ -14,11 +14,16 @@ class KaraokeRecordingPage extends StatefulWidget {
   final String songArtist;
   final String songImage;
 
+  /// When true the results page shows [Try Again | Submit] instead of
+  /// [Try Again | Listen | Save].
+  final bool isAssignment;
+
   const KaraokeRecordingPage({
     super.key,
     this.songTitle = 'Dadalhin',
     this.songArtist = 'Regine Velasquez',
     this.songImage = '',
+    this.isAssignment = false,
   });
 
   @override
@@ -212,7 +217,12 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => ResultsPage(session: session)),
+      MaterialPageRoute(
+        builder: (_) => ResultsPage(
+          session: session,
+          isAssignment: widget.isAssignment,
+        ),
+      ),
     );
   }
 

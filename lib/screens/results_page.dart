@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../models/session_result.dart';
 import '../services/session_storage_service.dart';
-import 'karaoke_home_page.dart';
 import 'karaoke_recording_page.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
 
-  const ResultsPage({super.key, required this.session});
+  /// Set to true when reached from a class assignment.
+  /// Changes the action buttons to "Try Again" | "Submit".
+  final bool isAssignment;
+
+  const ResultsPage({
+    super.key,
+    required this.session,
+    this.isAssignment = false,
+  });
 
   @override
   State<ResultsPage> createState() => _ResultsPageState();
@@ -384,100 +391,145 @@ class _ResultsPageState extends State<ResultsPage> {
       borderRadius: BorderRadius.circular(10),
     );
 
+    // ── Try Again button (shared) ────────────────────────────────────────────
+    final tryAgainBtn = Expanded(
+      child: OutlinedButton(
+        onPressed: () => Navigator.pop(context),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white24),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: btnShape,
+        ),
+        child: const Text(
+          'Try Again',
+          style: TextStyle(
+            fontSize: 14,
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Row(
-        children: [
-          // ── Try Again ────────────────────────────────────────────────────
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white24),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: btnShape,
-              ),
-              child: const Text(
-                'Try Again',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // ── Listen — replay the same song ─────────────────────────────────
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => KaraokeRecordingPage(
-                    songTitle: s.songTitle,
-                    songArtist: s.songArtist,
-                    songImage: s.songImage,
+        children: widget.isAssignment
+            ? [
+                // ── Assignment mode: [Try Again | Submit] ──────────────────
+                tryAgainBtn,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _saving
+                        ? null
+                        : () async {
+                            final nav = Navigator.of(context);
+                            await _saveSession();
+                            if (!mounted) return;
+                            // Pop all the way back to the classroom
+                            nav.popUntil((r) => r.isFirst || r.settings.name == '/');
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _saved
+                          ? _onTuneColor
+                          : AppColors.primaryCyan,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: btnShape,
+                      elevation: 0,
+                    ),
+                    child: _saving
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        : Text(
+                            _saved ? 'Submitted ✓' : 'Submit',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryCyan,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: btnShape,
-                elevation: 0,
-              ),
-              child: const Text(
-                'Listen',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
+              ]
+            : [
+                // ── Free-play mode: [Try Again | Listen | Save] ────────────
+                tryAgainBtn,
+                const SizedBox(width: 8),
 
-          // ── Save ──────────────────────────────────────────────────────────
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _saving ? null : _saveSession,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _saved
-                    ? _onTuneColor
-                    : const Color(0xFF2A2A2A),
-                foregroundColor: _saved ? Colors.black : Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: btnShape,
-                elevation: 0,
-              ),
-              child: _saving
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                // Listen — replay the same song
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => KaraokeRecordingPage(
+                          songTitle: s.songTitle,
+                          songArtist: s.songArtist,
+                          songImage: s.songImage,
+                        ),
                       ),
-                    )
-                  : Text(
-                      _saved ? 'Saved ✓' : 'Save',
-                      style: const TextStyle(
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryCyan,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: btnShape,
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Listen',
+                      style: TextStyle(
                         fontSize: 14,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-            ),
-          ),
-        ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Save
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : _saveSession,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _saved
+                          ? _onTuneColor
+                          : const Color(0xFF2A2A2A),
+                      foregroundColor: _saved ? Colors.black : Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: btnShape,
+                      elevation: 0,
+                    ),
+                    child: _saving
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            _saved ? 'Saved ✓' : 'Save',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
       ),
     );
   }

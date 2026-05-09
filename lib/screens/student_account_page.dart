@@ -786,13 +786,42 @@ class StudentLessonDetailPage extends StatelessWidget {
         );
         break;
       case 'Karaoke Practice':
+        // ── Look up the actual assigned song from the teacher's notification ─
+        final notifSvc = context.read<ClassNotificationsService>();
+        final assignments = notifSvc.notifications
+            .where((n) =>
+                n.type == NotificationType.activityAssignment &&
+                !n.isDeclined &&
+                n.activityName != null)
+            .toList()
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+        // Defaults (shown when no assignment exists yet)
+        String songTitle  = 'Dadalhin';
+        String songArtist = 'Regine Velasquez';
+        DateTime? dueDate;
+
+        if (assignments.isNotEmpty) {
+          final latest = assignments.first;
+          songTitle = latest.activityName!;
+          dueDate   = latest.deadline;
+
+          // Find the matching artist from the song database
+          final match = TagalogBisayaSongs.songs.where(
+            (s) => s.title.toLowerCase() == songTitle.toLowerCase(),
+          );
+          if (match.isNotEmpty) {
+            songArtist = match.first.artist;
+          }
+        }
+
         page = KaraokePracticeModePage(
-          classData: classData,
-          songTitle: 'Dadalhin',
-          songArtist: 'Regine Velasquez',
-          songImage: '',
-          dueDate: DateTime(2024, 3, 21),
-          maxScore: 100,
+          classData:  classData,
+          songTitle:  songTitle,
+          songArtist: songArtist,
+          songImage:  '',
+          dueDate:    dueDate,
+          maxScore:   100,
         );
         break;
     }
