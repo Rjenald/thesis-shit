@@ -39,7 +39,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
   int _elapsedSeconds = 0;
   Timer? _sessionTimer;
 
-
   // ── Audio & pitch ──────────────────────────────────────────────────────────
   final AudioService _audioService = AudioService();
   StreamSubscription<NoteResult?>? _audioSub;
@@ -60,6 +59,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
 
   // ── YouTube video ──────────────────────────────────────────────────────────
   YoutubePlayerController? _ytController;
+
   /// null = still loading  |  '' = search failed  |  'abc123' = loaded OK
   String? _ytVideoId;
 
@@ -406,8 +406,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.play_circle_outline,
-                      color: Colors.white24, size: 48),
+                  Icon(
+                    Icons.play_circle_outline,
+                    color: Colors.white24,
+                    size: 48,
+                  ),
                   SizedBox(height: 8),
                   Text(
                     'Add YouTube API key to load video',
@@ -490,12 +493,15 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
                 children: [
                   Icon(Icons.circle, color: Colors.red, size: 6),
                   SizedBox(width: 4),
-                  Text('REC',
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto')),
+                  Text(
+                    'REC',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -564,11 +570,17 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
           child: Row(
             children: const [
-              SizedBox(width: 28, child: Text('#',       style: colStyle)),
-              SizedBox(width: 56, child: Text('Time',    style: colStyle)),
-              Expanded(          child: Text('Pitch',   style: colStyle)),
-              SizedBox(width: 80, child: Text('Direction', style: colStyle,
-                  textAlign: TextAlign.right)),
+              SizedBox(width: 28, child: Text('#', style: colStyle)),
+              SizedBox(width: 56, child: Text('Time', style: colStyle)),
+              Expanded(child: Text('Pitch', style: colStyle)),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  'Direction',
+                  style: colStyle,
+                  textAlign: TextAlign.right,
+                ),
+              ),
             ],
           ),
         ),
@@ -581,8 +593,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.mic_none,
-                          color: Colors.white24, size: 36),
+                      Icon(Icons.mic_none, color: Colors.white24, size: 36),
                       const SizedBox(height: 8),
                       Text(
                         _isPlaying
@@ -615,27 +626,32 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
   // ── Single live-result row ─────────────────────────────────────────────────
 
   Widget _buildLiveRow(int num, int seconds, LyricPitchData line) {
-    final m   = seconds ~/ 60;
-    final s   = seconds % 60;
-    final ts  = '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    final ts =
+        '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
     String pitch, direction;
-    Color  color;
+    Color color;
     switch (line.status) {
       case LineStatus.correct:
-        pitch = 'In Tune'; direction = '—';
+        pitch = 'In Tune';
+        direction = '—';
         color = const Color(0xFF4CAF50);
         break;
       case LineStatus.flat:
-        pitch = 'Flat';   direction = 'Too Low';
+        pitch = 'Flat';
+        direction = 'Too Low';
         color = const Color(0xFFF44336);
         break;
       case LineStatus.sharp:
-        pitch = 'Sharp';  direction = 'Too High';
+        pitch = 'Sharp';
+        direction = 'Too High';
         color = const Color(0xFFF44336);
         break;
       case LineStatus.noSignal:
-        pitch = 'No Signal'; direction = '—';
+        pitch = 'No Signal';
+        direction = '—';
         color = Colors.grey;
         break;
     }
@@ -646,37 +662,49 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
         children: [
           SizedBox(
             width: 28,
-            child: Text('$num.',
-                style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
+            child: Text(
+              '$num.',
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 13,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ),
           SizedBox(
             width: 56,
-            child: Text(ts,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500)),
+            child: Text(
+              ts,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
           Expanded(
-            child: Text(pitch,
-                style: TextStyle(
-                    color: color,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto')),
+            child: Text(
+              pitch,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ),
           SizedBox(
             width: 80,
-            child: Text(direction,
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                    color: color.withValues(alpha: 0.75),
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
+            child: Text(
+              direction,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: color.withValues(alpha: 0.75),
+                fontSize: 13,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ),
         ],
       ),
@@ -714,9 +742,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: _lyricsLoading
-                      ? Colors.white24
-                      : Colors.white,
+                  color: _lyricsLoading ? Colors.white24 : Colors.white,
                   width: 2,
                 ),
               ),
