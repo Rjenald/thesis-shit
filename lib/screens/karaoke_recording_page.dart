@@ -641,7 +641,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
             child: Container(
               width: 52, height: 52,
               decoration: BoxDecoration(
-                shape:  BoxShape.circle,
+                shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
               child: Icon(
@@ -652,7 +652,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 
           const SizedBox(width: 24),
 
-          // 🎤  Mic toggle (tap to start, tap again to stop)
+          // 🔴  Mic toggle
           GestureDetector(
             onTap: () async {
               if (_isRecording) {
@@ -661,22 +661,14 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
                 await _startRecording();
               }
             },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 68, height: 68,
+            child: Container(
+              width: 64, height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _isRecording ? Colors.red[700] : Colors.red,
-                boxShadow: _isRecording
-                    ? [const BoxShadow(
-                        color: Colors.red,
-                        blurRadius: 18,
-                        spreadRadius: 2,
-                      )]
-                    : [],
               ),
               child: Icon(
-                  _isRecording ? Icons.mic_off : Icons.mic,
+                  _isRecording ? Icons.stop_rounded : Icons.mic,
                   color: Colors.white, size: 30),
             ),
           ),
