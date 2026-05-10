@@ -8,13 +8,19 @@ import '../models/session_result.dart';
 import '../services/youtube_service.dart';
 import 'results_page.dart';
 
-// ── Number of segments the pitch history is bucketed into for the results ──────
+// ── How many pitch segments appear in the results heatmap ─────────────────────
 const int _kResultSegments = 30;
+
+// ── How many audio readings between heatmap repaints (reduces GPU work) ───────
+const int _kHeatmapThrottle = 5;
 
 class KaraokeRecordingPage extends StatefulWidget {
   final String songTitle;
   final String songArtist;
   final String songImage;
+
+  /// When provided the page skips the YouTube search and uses this ID directly.
+  final String? youtubeVideoId;
 
   /// When true the results page shows [Try Again | Submit] instead of
   /// [Try Again | Listen | Save].
@@ -22,10 +28,11 @@ class KaraokeRecordingPage extends StatefulWidget {
 
   const KaraokeRecordingPage({
     super.key,
-    this.songTitle  = 'Dadalhin',
-    this.songArtist = 'Regine Velasquez',
-    this.songImage  = '',
-    this.isAssignment = false,
+    this.songTitle     = 'Dadalhin',
+    this.songArtist    = 'Regine Velasquez',
+    this.songImage     = '',
+    this.youtubeVideoId,
+    this.isAssignment  = false,
   });
 
   @override
@@ -33,31 +40,36 @@ class KaraokeRecordingPage extends StatefulWidget {
 }
 
 class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
-  // ── Playback ───────────────────────────────────────────────────────────────
-  bool _isPlaying    = false;
-  bool _isRecording  = false;
-  /// True when the user pressed play before the video finished loading.
-  /// The button shows a spinner and playback starts automatically once ready.
-  bool _pendingPlay  = false;
+  // ── Coarse state — only these trigger a full-tree rebuild ──────────────────
+  bool _isPlaying   = false;
+  bool _isRecording = false;
+  /// True when user pressed play before video finished loading.
+  bool _pendingPlay = false;
 
-  // ── Position (ms) ─────────────────────────────────────────────────────────
-  int    _posMs = 0;
-  Timer? _posTimer;
+  // ── Fine-grained notifiers — rebuild only the widgets that need it ─────────
+  /// Current pitch reading. Rebuilt: note badge + status row only.
+  final ValueNotifier<NoteResult?> _pitchNotifier = ValueNotifier(null);
+  /// Increments every [_kHeatmapThrottle] readings. Rebuilt: heatmap only.
+  final ValueNotifier<int> _heatmapVersion = ValueNotifier(0);
+  /// Position in milliseconds. Rebuilt: timer label only.
+  final ValueNotifier<int> _posNotifier = ValueNotifier(0);
 
-  // ── Audio / pitch ──────────────────────────────────────────────────────────
-  final AudioService             _audioService = AudioService();
-  StreamSubscription<NoteResult?>? _audioSub;
-  NoteResult? _currentPitch;
+  // ── Counters (no notifier needed) ─────────────────────────────────────────
+  int _heatmapCounter = 0;
 
-  // ── Pitch sample history (accumulated over the whole recording session) ────
-  // One entry per audio callback; Hz = 0 means silence / no signal.
+  // ── Pitch history (raw, never triggers rebuilds directly) ─────────────────
   final List<double> _rawHz    = [];
   final List<double> _rawCents = [];
 
+  // ── Audio ──────────────────────────────────────────────────────────────────
+  final AudioService               _audioService = AudioService();
+  StreamSubscription<NoteResult?>? _audioSub;
+
   // ── YouTube ────────────────────────────────────────────────────────────────
   YoutubePlayerController? _ytController;
-  String? _ytVideoId;       // null = searching | '' = not found | id = ready
+  String? _ytVideoId;        // null = loading | '' = not found | id = ready
   bool    _ytPositionActive = false;
+  Timer?  _posTimer;         // fallback position ticker
 
   // ── Pitch colours ──────────────────────────────────────────────────────────
   static const _colorInTune  = Color(0xFF4CAF50);
@@ -72,6 +84,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   void initState() {
     super.initState();
     _loadYouTubeVideo();
+    // Mic is NOT auto-started — user presses the mic button when ready to sing.
   }
 
   @override
@@ -81,6 +94,9 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     _audioService.dispose();
     _ytController?.removeListener(_onYTUpdate);
     _ytController?.dispose();
+    _pitchNotifier.dispose();
+    _heatmapVersion.dispose();
+    _posNotifier.dispose();
     super.dispose();
   }
 
@@ -89,17 +105,20 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _loadYouTubeVideo() async {
-    final videoId = await YouTubeService.searchVideoId(
-      title:  widget.songTitle,
-      artist: widget.songArtist,
-    );
+    // Use the pre-supplied ID if available, otherwise search the API.
+    final videoId = widget.youtubeVideoId?.isNotEmpty == true
+        ? widget.youtubeVideoId
+        : await YouTubeService.searchVideoId(
+            title:  widget.songTitle,
+            artist: widget.songArtist,
+          );
     if (!mounted) return;
 
     if (videoId != null && videoId.isNotEmpty) {
       final ctrl = YoutubePlayerController(
         initialVideoId: videoId,
         flags: YoutubePlayerFlags(
-          autoPlay:        _pendingPlay, // honour queued play request
+          autoPlay:        _pendingPlay,
           mute:            false,
           disableDragSeek: false,
           hideControls:    false,
@@ -127,7 +146,10 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     if (!mounted || _ytController == null) return;
     final v = _ytController!.value;
 
-    if (_isPlaying != v.isPlaying) setState(() => _isPlaying = v.isPlaying);
+    // Only setState for play-state changes (infrequent).
+    if (_isPlaying != v.isPlaying) {
+      setState(() => _isPlaying = v.isPlaying);
+    }
 
     if (v.isPlaying && !_ytPositionActive) {
       _ytPositionActive = true;
@@ -135,24 +157,22 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       _posTimer = null;
     }
 
+    // Position: update notifier — does NOT rebuild the main tree.
     if (v.isPlaying || v.position.inMilliseconds > 0) {
-      final posMs = v.position.inMilliseconds;
-      if (posMs != _posMs) setState(() => _posMs = posMs);
+      final ms = v.position.inMilliseconds;
+      if (ms != _posNotifier.value) _posNotifier.value = ms;
     }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Play / pause  —  video only; mic is independent
+  // Play / pause
   // ══════════════════════════════════════════════════════════════════════════
 
   void _togglePlayPause() {
-    // ── Video not loaded yet — queue the play request ──────────────────────
     if (_ytController == null) {
       setState(() => _pendingPlay = !_pendingPlay);
       return;
     }
-
-    // ── Video ready ────────────────────────────────────────────────────────
     final ytPlaying = _ytController!.value.isPlaying;
     if (ytPlaying) {
       _ytController!.pause();
@@ -162,15 +182,16 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     } else {
       _ytController!.play();
       setState(() => _isPlaying = true);
-      _posTimer ??= Timer.periodic(const Duration(milliseconds: 100), (_) {
+      _posTimer ??= Timer.periodic(const Duration(milliseconds: 200), (_) {
         if (!mounted || !_isPlaying) return;
-        if (!_ytPositionActive) setState(() => _posMs += 100);
+        // Update notifier — no setState needed.
+        if (!_ytPositionActive) _posNotifier.value += 200;
       });
     }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Microphone — toggling mic NEVER touches the video
+  // Microphone — never touches the video
   // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _startRecording() async {
@@ -186,14 +207,25 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 
     _audioSub = _audioService.results.listen((result) {
       if (!mounted) return;
-      setState(() {
-        _currentPitch = result;
-        // Accumulate pitch samples for the live heatmap + results
-        _rawHz   .add(result?.frequency ?? 0);
-        _rawCents.add(result?.cents     ?? 0);
-      });
+
+      // ── Accumulate raw data — O(1), no rebuild ────────────────────────
+      _rawHz   .add(result?.frequency ?? 0);
+      _rawCents.add(result?.cents     ?? 0);
+
+      // ── Pitch notifier — only rebuilds badge + status row ─────────────
+      _pitchNotifier.value = result;
+
+      // ── Throttled heatmap repaint — every N readings ──────────────────
+      _heatmapCounter++;
+      if (_heatmapCounter >= _kHeatmapThrottle) {
+        _heatmapCounter = 0;
+        _heatmapVersion.value++;
+      }
+      // ─────────────────────────────────────────────────────────────────
+      // NO setState here — main widget tree is NOT rebuilt.
     });
 
+    // One setState to flip the recording button.
     setState(() => _isRecording = true);
   }
 
@@ -201,13 +233,12 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     await _audioSub?.cancel();
     _audioSub = null;
     await _audioService.stop();
-    // Keep _rawHz / _rawCents — accumulated data is preserved across
-    // start/stop cycles so the full session heatmap is accurate.
-    if (mounted) setState(() { _isRecording = false; _currentPitch = null; });
+    _pitchNotifier.value = null;
+    if (mounted) setState(() => _isRecording = false);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Finish — build results and navigate
+  // Finish
   // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _finishAndShowResults() async {
@@ -222,7 +253,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       songImage:       widget.songImage,
       completedAt:     DateTime.now(),
       lyricResults:    _buildLyricResults(),
-      durationSeconds: _posMs ~/ 1000,
+      durationSeconds: _posNotifier.value ~/ 1000,
     );
 
     if (!mounted) return;
@@ -237,21 +268,17 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  /// Buckets all raw pitch samples into [_kResultSegments] LyricPitchData
-  /// entries so the results heatmap & table reflect real performance.
   List<LyricPitchData> _buildLyricResults() {
     final total = _rawHz.length;
     if (total == 0) return [];
-
     final n       = _kResultSegments.clamp(1, total);
     final segSize = (total / n).ceil();
-
     return List.generate(n, (i) {
       final start = i * segSize;
       final end   = (start + segSize).clamp(0, total);
       if (start >= total) return null;
       return LyricPitchData(
-        lyricText:     'seg${i + 1}',            // non-empty → visible in heatmap
+        lyricText:     'seg${i + 1}',
         pitchReadings: _rawHz   .sublist(start, end),
         centsReadings: _rawCents.sublist(start, end),
       );
@@ -259,7 +286,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Build
+  // Build — rebuilt only when _isPlaying / _isRecording / _ytVideoId changes
   // ══════════════════════════════════════════════════════════════════════════
 
   @override
@@ -271,9 +298,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           children: [
             _buildHeader(),
             _buildSongInfoRow(),
-            // Video takes all remaining space minus controls
             Expanded(child: _buildVideoBox()),
-            // Live pitch status shown while recording
             if (_isRecording) _buildLivePitchRow(),
             _buildControls(),
           ],
@@ -285,7 +310,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   // ── Header ─────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
-    final s = _posMs ~/ 1000;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
@@ -307,16 +331,24 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
             ),
           ),
           const Spacer(),
+
+          // ── Elapsed timer — rebuilt by notifier, NOT by setState ──────
           if (_isPlaying || _isRecording)
-            Text(
-              '${(s ~/ 60).toString().padLeft(2, '0')}:'
-              '${(s % 60).toString().padLeft(2, '0')}',
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.55),
-                  fontSize: 12,
-                  fontFamily: 'Roboto',
-                  letterSpacing: 1.2),
+            ValueListenableBuilder<int>(
+              valueListenable: _posNotifier,
+              builder: (ctx2, ms, child2) {
+                final s  = ms ~/ 1000;
+                final mm = (s ~/ 60).toString().padLeft(2, '0');
+                final ss = (s  % 60).toString().padLeft(2, '0');
+                return Text('$mm:$ss',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 12,
+                        fontFamily: 'Roboto',
+                        letterSpacing: 1.2));
+              },
             ),
+
           const SizedBox(width: 8),
           const Icon(Icons.more_horiz, color: Colors.white, size: 22),
         ],
@@ -334,24 +366,20 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 14),
           const SizedBox(width: 6),
           Expanded(
-            child: Text(
-              widget.songTitle,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+            child: Text(widget.songTitle,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Roboto'),
+                overflow: TextOverflow.ellipsis),
+          ),
+          Text(widget.songArtist,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 12,
                   fontFamily: 'Roboto'),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Text(
-            widget.songArtist,
-            style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 12,
-                fontFamily: 'Roboto'),
-            overflow: TextOverflow.ellipsis,
-          ),
+              overflow: TextOverflow.ellipsis),
           if (_isRecording) ...[
             const SizedBox(width: 8),
             Container(
@@ -381,36 +409,32 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  // ── Video with live heatmap overlay ───────────────────────────────────────
+  // ── Video + live heatmap overlay ───────────────────────────────────────────
 
   Widget _buildVideoBox() {
     if (_ytVideoId == null) {
-      return _videoShell(
-        child: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(
-                color: AppColors.primaryCyan, strokeWidth: 2),
-            SizedBox(height: 10),
-            Text('Loading video…',
-                style: TextStyle(color: Colors.white30, fontSize: 12)),
-          ],
-        ),
-      );
+      return _videoShell(child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+              color: AppColors.primaryCyan, strokeWidth: 2),
+          SizedBox(height: 10),
+          Text('Loading video…',
+              style: TextStyle(color: Colors.white30, fontSize: 12)),
+        ],
+      ));
     }
 
     if (_ytVideoId!.isEmpty || _ytController == null) {
-      return _videoShell(
-        child: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
-            SizedBox(height: 8),
-            Text('No video found',
-                style: TextStyle(color: Colors.white24, fontSize: 11)),
-          ],
-        ),
-      );
+      return _videoShell(child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
+          SizedBox(height: 8),
+          Text('No video found',
+              style: TextStyle(color: Colors.white24, fontSize: 11)),
+        ],
+      ));
     }
 
     return Padding(
@@ -419,49 +443,58 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         borderRadius: BorderRadius.circular(6),
         child: Stack(
           children: [
-            // ── YouTube player ─────────────────────────────────────────
-            YoutubePlayer(
-              controller: _ytController!,
-              showVideoProgressIndicator: true,
-              progressIndicatorColor: Colors.red,
-              progressColors: const ProgressBarColors(
-                playedColor:     Colors.red,
-                handleColor:     Colors.redAccent,
-                bufferedColor:   Colors.white24,
-                backgroundColor: Colors.white12,
+            // ── YouTube player isolated in its own repaint subtree ─────
+            RepaintBoundary(
+              child: YoutubePlayer(
+                controller:                    _ytController!,
+                showVideoProgressIndicator:    true,
+                progressIndicatorColor:        Colors.red,
+                progressColors: const ProgressBarColors(
+                  playedColor:     Colors.red,
+                  handleColor:     Colors.redAccent,
+                  bufferedColor:   Colors.white24,
+                  backgroundColor: Colors.white12,
+                ),
+                topActions:    const [],
+                bottomActions: const [
+                  CurrentPosition(),
+                  ProgressBar(isExpanded: true),
+                  RemainingDuration(),
+                ],
               ),
-              topActions:    const [],
-              bottomActions: const [
-                CurrentPosition(),
-                ProgressBar(isExpanded: true),
-                RemainingDuration(),
-              ],
             ),
 
-            // ── Live heatmap strip — overlaid at top of video ──────────
-            if (_rawHz.isNotEmpty)
-              Positioned(
-                top:   0,
-                left:  0,
-                right: 0,
-                child: SizedBox(
+            // ── Live heatmap — only repaints every N readings ─────────
+            Positioned(
+              top: 0, left: 0, right: 0,
+              child: ValueListenableBuilder<int>(
+                valueListenable: _heatmapVersion,
+                builder: (ctx2, version, child2) => SizedBox(
                   height: 12,
-                  child: CustomPaint(
-                    painter: _LiveHeatmapPainter(
-                      rawHz:    List<double>.from(_rawHz),
-                      rawCents: List<double>.from(_rawCents),
-                    ),
-                    size: Size.infinite,
-                  ),
+                  child: _rawHz.isEmpty
+                      ? const SizedBox.shrink()
+                      : CustomPaint(
+                          painter: _LiveHeatmapPainter(
+                            rawHz:    _rawHz,
+                            rawCents: _rawCents,
+                            version:  version,
+                          ),
+                          size: Size.infinite,
+                        ),
                 ),
               ),
+            ),
 
-            // ── Current note badge — bottom-right of video while mic on ─
-            if (_isRecording && _currentPitch != null)
+            // ── Current note badge — shown while mic is on ────────────
+            if (_isRecording)
               Positioned(
-                bottom: 36, // above progress bar
+                bottom: 36,
                 right:  10,
-                child: _buildNoteBadge(_currentPitch!),
+                child: ValueListenableBuilder<NoteResult?>(
+                  valueListenable: _pitchNotifier,
+                  builder: (ctx2, pitch, child2) =>
+                      pitch == null ? const SizedBox.shrink() : _buildNoteBadge(pitch),
+                ),
               ),
           ],
         ),
@@ -475,21 +508,20 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           aspectRatio: 16 / 9,
           child: Container(
             decoration: BoxDecoration(
-              color:         const Color(0xFF1A1A1A),
-              borderRadius:  BorderRadius.circular(6),
-              border:        Border.all(color: Colors.white12, width: 0.5),
+              color:        const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(6),
+              border:       Border.all(color: Colors.white12, width: 0.5),
             ),
             child: Center(child: child),
           ),
         ),
       );
 
-  // ── Note badge (shown on video while mic active) ──────────────────────────
+  // ── Note badge ─────────────────────────────────────────────────────────────
 
   Widget _buildNoteBadge(NoteResult pitch) {
     final bool active = pitch.frequency > 0 &&
         pitch.feedback != PitchFeedback.noSignal;
-
     final Color color;
     final String label;
     if (!active) {
@@ -515,7 +547,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           break;
       }
     }
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -523,94 +554,98 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         borderRadius: BorderRadius.circular(8),
         border:       Border.all(color: color.withValues(alpha: 0.6)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-            color: color,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Roboto',
-            letterSpacing: 0.5),
-      ),
+      child: Text(label,
+          style: TextStyle(
+              color:       color,
+              fontSize:    13,
+              fontWeight:  FontWeight.w700,
+              fontFamily:  'Roboto',
+              letterSpacing: 0.5)),
     );
   }
 
-  // ── Live pitch status row (below video while recording) ───────────────────
+  // ── Live pitch status row — only rebuilt via ValueListenableBuilder ─────────
 
   Widget _buildLivePitchRow() {
-    final pitch = _currentPitch;
-    final bool active = pitch != null &&
-        pitch.frequency > 0 &&
-        pitch.feedback != PitchFeedback.noSignal;
+    return ValueListenableBuilder<NoteResult?>(
+      valueListenable: _pitchNotifier,
+      builder: (ctx2, pitch, child2) {
+        final bool active = pitch != null &&
+            pitch.frequency > 0 &&
+            pitch.feedback != PitchFeedback.noSignal;
 
-    final Color color;
-    final String statusText;
-    final String noteText;
-    final String centsText;
+        final Color  color;
+        final String statusText;
+        final String noteText;
+        final String centsText;
 
-    if (!active) {
-      color      = _colorSilent;
-      statusText = 'Listening…';
-      noteText   = '';
-      centsText  = '';
-    } else {
-      noteText  = pitch.fullName;
-      centsText = '${pitch.cents >= 0 ? '+' : ''}${pitch.cents.toStringAsFixed(0)}¢';
-      switch (pitch.feedback) {
-        case PitchFeedback.correct:
-          color      = _colorInTune;
-          statusText = 'In Tune ✓';
-          break;
-        case PitchFeedback.tooHigh:
-          color      = _colorOffTune;
-          statusText = 'Too High ↑';
-          break;
-        case PitchFeedback.tooLow:
-          color      = _colorOffTune;
-          statusText = 'Too Low ↓';
-          break;
-        case PitchFeedback.noSignal:
+        if (!active) {
           color      = _colorSilent;
           statusText = 'Listening…';
-          break;
-      }
-    }
+          noteText   = '';
+          centsText  = '';
+        } else {
+          noteText  = pitch.fullName;
+          centsText =
+              '${pitch.cents >= 0 ? '+' : ''}${pitch.cents.toStringAsFixed(0)}¢';
+          switch (pitch.feedback) {
+            case PitchFeedback.correct:
+              color      = _colorInTune;
+              statusText = 'In Tune ✓';
+              break;
+            case PitchFeedback.tooHigh:
+              color      = _colorOffTune;
+              statusText = 'Too High ↑';
+              break;
+            case PitchFeedback.tooLow:
+              color      = _colorOffTune;
+              statusText = 'Too Low ↓';
+              break;
+            case PitchFeedback.noSignal:
+              color      = _colorSilent;
+              statusText = 'Listening…';
+              break;
+          }
+        }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      color: color.withValues(alpha: 0.07),
-      child: Row(
-        children: [
-          Container(
-            width: 8, height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        // Plain Container — no AnimatedContainer (saves layout passes)
+        return Container(
+          color: color.withValues(alpha: 0.07),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 8, height: 8,
+                decoration: BoxDecoration(
+                    color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 10),
+              if (noteText.isNotEmpty) ...[
+                Text(noteText,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto')),
+                const SizedBox(width: 8),
+              ],
+              Text(statusText,
+                  style: TextStyle(
+                      color:      color,
+                      fontSize:   13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto')),
+              const Spacer(),
+              if (centsText.isNotEmpty)
+                Text(centsText,
+                    style: TextStyle(
+                        color:     color.withValues(alpha: 0.75),
+                        fontSize:  12,
+                        fontFamily: 'Roboto')),
+            ],
           ),
-          const SizedBox(width: 10),
-          if (noteText.isNotEmpty) ...[
-            Text(noteText,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto')),
-            const SizedBox(width: 8),
-          ],
-          Text(statusText,
-              style: TextStyle(
-                  color: color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto')),
-          const Spacer(),
-          if (centsText.isNotEmpty)
-            Text(centsText,
-                style: TextStyle(
-                    color: color.withValues(alpha: 0.75),
-                    fontSize: 12,
-                    fontFamily: 'Roboto')),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -622,7 +657,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ▶ / ❚❚  Play-pause (video only)
+          // ▶ / ❚❚  Play-pause
           GestureDetector(
             onTap: _togglePlayPause,
             child: Container(
@@ -632,26 +667,22 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
                 border: Border.all(color: Colors.white, width: 2),
               ),
               child: _pendingPlay
-                  // Queued-play spinner — video is still loading
                   ? const Padding(
                       padding: EdgeInsets.all(14),
                       child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
+                          color: Colors.white, strokeWidth: 2),
                     )
                   : Icon(
                       _isPlaying
                           ? Icons.pause_rounded
                           : Icons.play_arrow_rounded,
-                      color: Colors.white, size: 28,
-                    ),
+                      color: Colors.white, size: 28),
             ),
           ),
 
           const SizedBox(width: 24),
 
-          // 🔴  Mic toggle — video keeps playing
+          // 🔴  Mic toggle — start/stop recording, video never pauses
           GestureDetector(
             onTap: () async {
               if (_isRecording) {
@@ -668,23 +699,23 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
               ),
               child: Icon(
                 _isRecording ? Icons.stop_rounded : Icons.mic,
-                color: Colors.white, size: 30,
-              ),
+                color: Colors.white, size: 30),
             ),
           ),
 
           const SizedBox(width: 24),
 
-          // ⬜  Finish → navigate to results
+          // ⬜  Finish → results
           GestureDetector(
             onTap: _finishAndShowResults,
             child: Container(
               width: 52, height: 52,
               decoration: BoxDecoration(
-                color:         Colors.white,
-                borderRadius:  BorderRadius.circular(12),
+                color:        Colors.white,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.stop_rounded, color: Colors.black, size: 28),
+              child: const Icon(Icons.stop_rounded,
+                  color: Colors.black, size: 28),
             ),
           ),
         ],
@@ -696,43 +727,44 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 // ══════════════════════════════════════════════════════════════════════════════
 // Live heatmap painter
 //
-// Renders a horizontal color strip where each sample is coloured:
-//   green  = in tune  (|cents| ≤ 25)
-//   red    = off tune (|cents| > 25)
-//   grey   = silence  (hz == 0)
+// • Receives direct list references — no copy allocation.
+// • shouldRepaint checks [version] so it only runs every N audio readings.
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _LiveHeatmapPainter extends CustomPainter {
   final List<double> rawHz;
   final List<double> rawCents;
+  final int version;
 
-  const _LiveHeatmapPainter({required this.rawHz, required this.rawCents});
+  const _LiveHeatmapPainter({
+    required this.rawHz,
+    required this.rawCents,
+    required this.version,
+  });
 
   static const _inTune  = Color(0xFF4CAF50);
   static const _offTune = Color(0xFFF44336);
   static const _silent  = Color(0xFF616161);
 
-  Color _colorFor(int i) {
-    final hz    = rawHz[i];
-    final cents = rawCents[i];
-    if (hz <= 0) return _silent;
-    return cents.abs() <= 25 ? _inTune : _offTune;
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
-    if (rawHz.isEmpty) return;
-    final n    = rawHz.length;
+    final n = rawHz.length;
+    if (n == 0) return;
     final segW = size.width / n;
     for (int i = 0; i < n; i++) {
+      final hz    = rawHz[i];
+      final cents = rawCents[i];
+      final color = hz <= 0
+          ? _silent
+          : (cents.abs() <= 25 ? _inTune : _offTune);
       canvas.drawRect(
         Rect.fromLTWH(i * segW, 0, segW - 0.3, size.height),
-        Paint()..color = _colorFor(i),
+        Paint()..color = color,
       );
     }
   }
 
+  /// Only repaint when [version] changes (throttled by [_kHeatmapThrottle]).
   @override
-  bool shouldRepaint(_LiveHeatmapPainter old) =>
-      old.rawHz.length != rawHz.length;
+  bool shouldRepaint(_LiveHeatmapPainter old) => old.version != version;
 }

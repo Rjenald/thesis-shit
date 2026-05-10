@@ -7,6 +7,7 @@ import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
 import '../widgets/profile_avatar.dart';
 import 'class_detail_page.dart';
+import 'karaoke_home_page.dart';
 import 'start_page.dart';
 
 /// Teacher main page — Classroom view matching Figma design.
@@ -341,6 +342,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
         children: [
           _navItem(Icons.notifications_outlined, 0),
           _navItem(Icons.home_outlined, 1),
+          _navItem(Icons.mic_none, 3),          // Karaoke — navigates separately
           _navItem(Icons.person_outline, 2),
         ],
       ),
@@ -353,6 +355,14 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
       onTap: () {
         if (index == 2) {
           _showProfileSheet();
+          return;
+        }
+        if (index == 3) {
+          // Karaoke — open YouTube karaoke search
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
+          );
           return;
         }
         setState(() => _navIndex = index);

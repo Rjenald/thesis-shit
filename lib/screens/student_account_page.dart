@@ -6,6 +6,7 @@ import '../services/class_notifications_service.dart';
 import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
 import '../widgets/profile_avatar.dart';
+import 'karaoke_home_page.dart';
 import 'karaoke_recording_page.dart';
 import 'practice_solfege_page.dart';
 import 'karaoke_practice_mode_page.dart';
@@ -29,6 +30,14 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
+    if (index == 1) {
+      // Karaoke Mode → open the YouTube karaoke search as a new route
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
+      );
+      return;
+    }
     setState(() => _selectedIndex = index);
   }
 

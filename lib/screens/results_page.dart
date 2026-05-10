@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../constants/app_colors.dart';
+import '../data/tagalog_bisaya_songs.dart';
 import '../models/session_result.dart';
+import '../services/downloads_service.dart';
 import '../services/session_storage_service.dart';
-import 'karaoke_recording_page.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
@@ -22,8 +24,65 @@ class ResultsPage extends StatefulWidget {
 }
 
 class _ResultsPageState extends State<ResultsPage> {
-  bool _saved = false;
-  bool _saving = false;
+  bool _saved       = false;
+  bool _saving      = false;
+  bool _downloaded  = false;   // true once song is in DownloadsService
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-save song to downloads as soon as the results page opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _autoDownload());
+  }
+
+  /// Saves the song metadata to DownloadsService and shows a brief snackbar.
+  Future<void> _autoDownload() async {
+    final s = widget.session;
+    // Look up language from the song catalog.
+    final match = TagalogBisayaSongs.songs.cast<KaraokeSong?>().firstWhere(
+      (song) =>
+          song!.title.toLowerCase() == s.songTitle.toLowerCase() &&
+          song.artist.toLowerCase() == s.songArtist.toLowerCase(),
+      orElse: () => null,
+    );
+    final language = match?.language ?? 'Unknown';
+
+    await DownloadsService.download(s.songTitle, s.songArtist, language);
+    if (!mounted) return;
+    setState(() => _downloaded = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.download_done_rounded, color: Color(0xFF4CAF50), size: 18),
+            SizedBox(width: 8),
+            Text('Song saved to Downloads',
+                style: TextStyle(color: Colors.white, fontFamily: 'Roboto')),
+          ],
+        ),
+        backgroundColor: AppColors.cardBg,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Share song info + score via native share sheet.
+  void _shareSong() {
+    final s        = widget.session;
+    final scoreInt = s.score.round();
+    final text =
+        '🎤 I just sang "${s.songTitle}" by ${s.songArtist} on Huni Karaoke!\n'
+        '🏆 Score: $scoreInt% — ${_feedbackLabel(scoreInt)}\n\n'
+        'Search on YouTube: https://www.youtube.com/results?search_query='
+        '${Uri.encodeComponent('${s.songTitle} ${s.songArtist} karaoke')}\n\n'
+        'Try it on Huni Karaoke App 🎵';
+    Share.share(text, subject: '${s.songTitle} – My Karaoke Score');
+  }
 
   // ── Color palette ──────────────────────────────────────────────────────────
   static const _onTuneColor  = Color(0xFF4CAF50); // green  — correct
@@ -133,7 +192,7 @@ class _ResultsPageState extends State<ResultsPage> {
                 Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
                 SizedBox(width: 6),
                 Text(
-                  'Record',
+                  'Results',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -142,6 +201,48 @@ class _ResultsPageState extends State<ResultsPage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const Spacer(),
+
+          // Download indicator
+          if (_downloaded)
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.4)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.download_done_rounded,
+                      color: Color(0xFF4CAF50), size: 14),
+                  SizedBox(width: 4),
+                  Text('Downloaded',
+                      style: TextStyle(
+                          color: Color(0xFF4CAF50),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Roboto')),
+                ],
+              ),
+            ),
+
+          // Share button
+          GestureDetector(
+            onTap: _shareSong,
+            child: Container(
+              width: 36, height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.07),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.share_outlined,
+                  color: Colors.white, size: 18),
             ),
           ),
         ],
@@ -461,51 +562,61 @@ class _ResultsPageState extends State<ResultsPage> {
                 ),
               ]
             : [
-                // ── Free-play mode: [Try Again | Listen | Save] ────────────
+                // ── Free-play mode: [Try Again | Download | Share | Save] ───
                 tryAgainBtn,
                 const SizedBox(width: 8),
 
-                // Listen — replay the same song
-                Expanded(
+                // Download
+                SizedBox(
+                  width: 46,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => KaraokeRecordingPage(
-                          songTitle: s.songTitle,
-                          songArtist: s.songArtist,
-                          songImage: s.songImage,
-                        ),
-                      ),
-                    ),
+                    onPressed: _downloaded ? null : _autoDownload,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryCyan,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: _downloaded
+                          ? _onTuneColor.withValues(alpha: 0.15)
+                          : const Color(0xFF2A2A2A),
+                      foregroundColor:
+                          _downloaded ? _onTuneColor : Colors.white,
+                      padding: EdgeInsets.zero,
                       shape: btnShape,
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Listen',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Icon(
+                      _downloaded
+                          ? Icons.download_done_rounded
+                          : Icons.download_outlined,
+                      size: 20,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
 
-                // Save
+                // Share
+                SizedBox(
+                  width: 46,
+                  child: ElevatedButton(
+                    onPressed: _shareSong,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2A2A2A),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.zero,
+                      shape: btnShape,
+                      elevation: 0,
+                    ),
+                    child: const Icon(Icons.share_outlined, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Save to Library
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _saving ? null : _saveSession,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _saved
                           ? _onTuneColor
-                          : const Color(0xFF2A2A2A),
-                      foregroundColor: _saved ? Colors.black : Colors.white,
+                          : AppColors.primaryCyan,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: btnShape,
                       elevation: 0,
@@ -516,7 +627,7 @@ class _ResultsPageState extends State<ResultsPage> {
                             width: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: Colors.black,
                             ),
                           )
                         : Text(

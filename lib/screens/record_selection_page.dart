@@ -2,7 +2,7 @@ import 'package:final_thesis_ui/screens/without_karaoke_recording_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'home_page.dart';
+import 'karaoke_home_page.dart';
 
 class RecordSelectionPage extends StatelessWidget {
   const RecordSelectionPage({super.key});
@@ -68,8 +68,7 @@ class RecordSelectionPage extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const HomePage(showBackButton: true),
+                                builder: (_) => const KaraokeHomePage(),
                               ),
                             );
                           },

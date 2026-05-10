@@ -8,11 +8,10 @@ import '../services/class_notifications_service.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'favorites_page.dart';
 import 'library_page.dart';
-import 'record_selection_page.dart';
+import 'karaoke_home_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
 import 'start_page.dart';
-import 'karaoke_recording_page.dart';
 import '../widgets/profile_avatar.dart';
 import 'notifications_page.dart';
 
@@ -95,7 +94,7 @@ class _HomePageState extends State<HomePage> {
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const RecordSelectionPage()),
+        MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
       );
     } else if (index == 3) {
       Navigator.push(
@@ -491,13 +490,7 @@ class _HomePageState extends State<HomePage> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => KaraokeRecordingPage(
-                songTitle: song['title']!,
-                songArtist: song['artist']!,
-                songImage: song['image'] ?? '',
-              ),
-            ),
+            MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
           );
         },
         child: Container(
