@@ -7,8 +7,8 @@ import '../services/enrollment_service.dart';
 import '../services/session_storage_service.dart';
 import '../widgets/profile_avatar.dart';
 import 'class_detail_page.dart';
-import 'karaoke_home_page.dart';
 import 'start_page.dart';
+import 'submissions_page.dart';
 
 /// Teacher main page — Classroom view matching Figma design.
 class TeacherAccountPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   bool _loading = true;
   String _searchQuery = '';
   String _username = 'Teacher';
-  int _navIndex = 1;
+  int _navIndex = 2; // 0=Notification 1=Submissions 2=Home 3=CreateStudent 4=Message
 
   // Keep a reference so we can remove the listener in dispose().
   EnrollmentService? _enrollmentService;
@@ -77,11 +77,28 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    // ── Karaoke tab: embed karaoke content inline ──────────────────────────
-    if (_navIndex == 3) {
+    // ── Non-classroom tabs ─────────────────────────────────────────────────
+    if (_navIndex != 2) {
+      Widget tabBody;
+      Color bgColor = AppColors.bgDark;
+
+      switch (_navIndex) {
+        case 0: // Notification
+          tabBody = _buildPlaceholderTab(Icons.notifications_outlined, 'Notifications');
+          break;
+        case 1: // Submissions
+          tabBody = const SubmissionsPage();
+          break;
+        case 4: // Profile
+          tabBody = _buildProfileTab();
+          break;
+        default:
+          tabBody = const SizedBox.shrink();
+      }
+
       return Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(child: const KaraokeHomePage(embedded: true)),
+        backgroundColor: bgColor,
+        body: SafeArea(child: tabBody),
         bottomNavigationBar: _buildBottomNav(),
       );
     }
@@ -92,17 +109,27 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── "Classroom" title ──────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 20, 24, 0),
-              child: Text(
-                'Classroom',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Roboto',
-                ),
+            // ── "Classroom" title + logout ─────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Classroom',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: AppColors.errorRed, size: 22),
+                    tooltip: 'Logout',
+                    onPressed: _logout,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -344,76 +371,107 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   // ── Bottom nav ────────────────────────────────────────────────────────────
   Widget _buildBottomNav() {
     return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navItem(Icons.notifications_outlined, 0),
-          _navItem(Icons.home_outlined, 1),
-          _navItem(Icons.mic_none, 3),          // Karaoke — navigates separately
-          _navItem(Icons.person_outline, 2),
+      decoration: BoxDecoration(
+        color: AppColors.bottomNavBg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _navItem(IconData icon, int index) {
-    final selected = _navIndex == index;
-    return GestureDetector(
-      onTap: () {
-        if (index == 2) {
-          _showProfileSheet();
-          return;
-        }
-        setState(() => _navIndex = index);
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: selected
-              ? AppColors.primaryCyan
-              : AppColors.grey.withValues(alpha: 0.5),
-          size: 26,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(Icons.notifications_outlined, 0, 'Notification'),
+              _navItem(Icons.play_circle_outline, 1, 'Submissions'),
+              _navItem(Icons.home_outlined, 2, 'Home'),
+              _navItem(Icons.add_circle_outline, 3, 'Create\nStudent Account'),
+              _navItem(Icons.person_outline, 4, 'Profile'),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ── Profile bottom sheet ──────────────────────────────────────────────────
-  void _showProfileSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.cardBg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  Widget _navItem(IconData icon, int index, String label) {
+    final selected = _navIndex == index;
+    return GestureDetector(
+      onTap: () {
+        // "Create Student Account" → show add-student dialog (pick first class)
+        if (index == 3) {
+          if (_classes.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Create a class first before adding students.'),
+              ),
+            );
+            return;
+          }
+          _showAddStudentDialog(_classes.first['name'] as String? ?? '');
+          return;
+        }
+        setState(() => _navIndex = index);
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: selected
+                ? AppColors.primaryCyan
+                : Colors.white.withValues(alpha: 0.7),
+            size: 26,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: selected
+                  ? AppColors.primaryCyan
+                  : Colors.white.withValues(alpha: 0.7),
+              fontSize: 10,
+              fontFamily: 'Roboto',
+            ),
+          ),
+        ],
       ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+    );
+  }
+
+  // ── Profile tab ───────────────────────────────────────────────────────────
+  Widget _buildProfileTab() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Profile picture (tap to change)
             ProfileAvatar(
               username: _username,
-              radius: 42,
+              radius: 48,
               editable: true,
               accentColor: AppColors.primaryCyan,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               _username,
               style: const TextStyle(
                 color: AppColors.white,
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Roboto',
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
               decoration: BoxDecoration(
                 color: AppColors.primaryCyan.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
@@ -421,13 +479,13 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.school, size: 11, color: AppColors.primaryCyan),
-                  SizedBox(width: 4),
+                  Icon(Icons.school, size: 13, color: AppColors.primaryCyan),
+                  SizedBox(width: 6),
                   Text(
                     'Teacher Account',
                     style: TextStyle(
                       color: AppColors.primaryCyan,
-                      fontSize: 11,
+                      fontSize: 13,
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w500,
                     ),
@@ -435,24 +493,49 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 36),
             const Divider(color: AppColors.inputBg),
-            ListTile(
-              leading: const Icon(Icons.logout, color: AppColors.errorRed),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
-                  color: AppColors.errorRed,
-                  fontFamily: 'Roboto',
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _logout,
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text('Logout',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontFamily: 'Roboto')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.errorRed,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _logout();
-              },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Placeholder tab body ───────────────────────────────────────────────────
+  Widget _buildPlaceholderTab(IconData icon, String label) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.grey.withValues(alpha: 0.3), size: 56),
+          const SizedBox(height: 14),
+          Text(
+            '$label coming soon',
+            style: TextStyle(
+              color: AppColors.grey.withValues(alpha: 0.5),
+              fontSize: 15,
+              fontFamily: 'Roboto',
+            ),
+          ),
+        ],
       ),
     );
   }

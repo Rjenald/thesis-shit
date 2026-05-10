@@ -14,6 +14,8 @@ import 'library_page.dart';
 import 'recently_deleted_page.dart';
 import 'settings_page.dart';
 import 'start_page.dart';
+import 'student_account_page.dart';
+import 'teacher_account_page.dart';
 
 class KaraokeHomePage extends StatefulWidget {
   /// When true — home screen for normal user:
@@ -631,6 +633,14 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                   _menuItem(Icons.delete_outline, 'Recently Deleted', () =>
                       Navigator.push(context, MaterialPageRoute(
                           builder: (_) => const RecentlyDeletedPage()))),
+                  _menuItem(Icons.switch_account_outlined, 'Proceed to Student Mode', () =>
+                      Navigator.pushAndRemoveUntil(context,
+                          MaterialPageRoute(builder: (_) => const StudentAccountPage()),
+                          (r) => false)),
+                  _menuItem(Icons.school_outlined, 'Proceed to Teacher Mode', () =>
+                      Navigator.pushAndRemoveUntil(context,
+                          MaterialPageRoute(builder: (_) => const TeacherAccountPage()),
+                          (r) => false)),
                   _menuItem(Icons.logout, 'Logout', () async {
                     await SessionStorageService.saveUsername('');
                     await SessionStorageService.saveRole('');

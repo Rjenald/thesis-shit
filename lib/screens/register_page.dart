@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'home_page.dart';
 import 'teacher_account_page.dart';
-import 'student_account_page.dart';
 import '../constants/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/session_storage_service.dart';
@@ -56,7 +55,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final TextEditingController lastName = TextEditingController();
   final TextEditingController firstName = TextEditingController();
-  final TextEditingController studentId = TextEditingController();
   final TextEditingController teacherId = TextEditingController();
   final TextEditingController username = TextEditingController();
   final TextEditingController email = TextEditingController();
@@ -84,7 +82,6 @@ class _RegisterPageState extends State<RegisterPage> {
     _timer?.cancel();
     lastName.dispose();
     firstName.dispose();
-    studentId.dispose();
     teacherId.dispose();
     username.dispose();
     email.dispose();
@@ -144,8 +141,6 @@ class _RegisterPageState extends State<RegisterPage> {
         Widget destination;
         if (_selectedRole == 'teacher') {
           destination = const TeacherAccountPage();
-        } else if (_selectedRole == 'student') {
-          destination = const StudentAccountPage();
         } else {
           destination = const HomePage();
         }
@@ -234,11 +229,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 4),
                   if (_selectedRole != '')
                     Text(
-                      _selectedRole == 'student'
-                          ? 'as Student'
-                          : _selectedRole == 'teacher'
-                          ? 'as Teacher'
-                          : 'as Normal User',
+                      _selectedRole == 'teacher' ? 'as Teacher' : 'as Normal User',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -299,31 +290,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 16),
                     const Divider(color: Colors.white24, thickness: 1),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () => setState(() {
-                          _selectedRole = 'student';
-                        }),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryCyan,
-                          side: const BorderSide(color: Colors.white54),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          'as Student',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
@@ -459,24 +425,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    if (_selectedRole == 'student')
-                      TextField(
-                        controller: studentId,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Student ID',
-                          hintStyle: TextStyle(
-                            color: AppColors.grey.withValues(alpha: 0.6),
-                            fontFamily: 'Roboto',
-                          ),
-                          filled: true,
-                          fillColor: AppColors.inputBg,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
                     if (_selectedRole == 'teacher')
                       TextField(
                         controller: teacherId,
@@ -495,8 +443,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                    if (_selectedRole == 'student' ||
-                        _selectedRole == 'teacher')
+                    if (_selectedRole == 'teacher')
                       const SizedBox(height: 12),
                     Text(
                       'Login Information',
