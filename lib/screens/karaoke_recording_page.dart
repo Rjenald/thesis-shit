@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../constants/app_colors.dart';
@@ -8,6 +7,9 @@ import '../core/note_utils.dart';
 import '../models/session_result.dart';
 import '../services/youtube_service.dart';
 import 'results_page.dart';
+
+// ── Number of segments the pitch history is bucketed into for the results ──────
+const int _kResultSegments = 30;
 
 class KaraokeRecordingPage extends StatefulWidget {
   final String songTitle;
@@ -20,9 +22,9 @@ class KaraokeRecordingPage extends StatefulWidget {
 
   const KaraokeRecordingPage({
     super.key,
-    this.songTitle = 'Dadalhin',
+    this.songTitle  = 'Dadalhin',
     this.songArtist = 'Regine Velasquez',
-    this.songImage = '',
+    this.songImage  = '',
     this.isAssignment = false,
   });
 
@@ -32,32 +34,35 @@ class KaraokeRecordingPage extends StatefulWidget {
 
 class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   // ── Playback ───────────────────────────────────────────────────────────────
-  bool _isPlaying   = false;
-  bool _isRecording = false;
+  bool _isPlaying    = false;
+  bool _isRecording  = false;
+  /// True when the user pressed play before the video finished loading.
+  /// The button shows a spinner and playback starts automatically once ready.
+  bool _pendingPlay  = false;
 
-  // ── Position (ms) — drives the elapsed timer display ──────────────────────
-  int   _posMs = 0;
+  // ── Position (ms) ─────────────────────────────────────────────────────────
+  int    _posMs = 0;
   Timer? _posTimer;
 
   // ── Audio / pitch ──────────────────────────────────────────────────────────
-  final AudioService _audioService = AudioService();
+  final AudioService             _audioService = AudioService();
   StreamSubscription<NoteResult?>? _audioSub;
   NoteResult? _currentPitch;
 
-  // ── Pitch history for the waveform strip (last 80 samples) ────────────────
-  final List<double> _pitchHistory = [];
-  static const int _maxPitchHistory = 80;
+  // ── Pitch sample history (accumulated over the whole recording session) ────
+  // One entry per audio callback; Hz = 0 means silence / no signal.
+  final List<double> _rawHz    = [];
+  final List<double> _rawCents = [];
 
   // ── YouTube ────────────────────────────────────────────────────────────────
   YoutubePlayerController? _ytController;
-  /// null = searching  |  '' = not found  |  videoId = ready
-  String? _ytVideoId;
-  bool _ytPositionActive = false;
+  String? _ytVideoId;       // null = searching | '' = not found | id = ready
+  bool    _ytPositionActive = false;
 
-  // ── Tuner colours ──────────────────────────────────────────────────────────
+  // ── Pitch colours ──────────────────────────────────────────────────────────
   static const _colorInTune  = Color(0xFF4CAF50);
   static const _colorOffTune = Color(0xFFF44336);
-  static const _colorSilent  = Color(0xFF9E9E9E);
+  static const _colorSilent  = Color(0xFF757575);
 
   // ══════════════════════════════════════════════════════════════════════════
   // Lifecycle
@@ -93,8 +98,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     if (videoId != null && videoId.isNotEmpty) {
       final ctrl = YoutubePlayerController(
         initialVideoId: videoId,
-        flags: const YoutubePlayerFlags(
-          autoPlay:        false,
+        flags: YoutubePlayerFlags(
+          autoPlay:        _pendingPlay, // honour queued play request
           mute:            false,
           disableDragSeek: false,
           hideControls:    false,
@@ -105,23 +110,24 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       setState(() {
         _ytVideoId    = videoId;
         _ytController = ctrl;
+        if (_pendingPlay) {
+          _isPlaying   = true;
+          _pendingPlay = false;
+        }
       });
     } else {
-      setState(() => _ytVideoId = '');
+      setState(() {
+        _ytVideoId   = '';
+        _pendingPlay = false;
+      });
     }
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // YouTube position listener — keeps the elapsed timer in sync
-  // ══════════════════════════════════════════════════════════════════════════
 
   void _onYTUpdate() {
     if (!mounted || _ytController == null) return;
     final v = _ytController!.value;
 
-    if (_isPlaying != v.isPlaying) {
-      setState(() => _isPlaying = v.isPlaying);
-    }
+    if (_isPlaying != v.isPlaying) setState(() => _isPlaying = v.isPlaying);
 
     if (v.isPlaying && !_ytPositionActive) {
       _ytPositionActive = true;
@@ -136,22 +142,26 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Play / pause
+  // Play / pause  —  video only; mic is independent
   // ══════════════════════════════════════════════════════════════════════════
 
   void _togglePlayPause() {
-    final ytPlaying = _ytController?.value.isPlaying ?? false;
+    // ── Video not loaded yet — queue the play request ──────────────────────
+    if (_ytController == null) {
+      setState(() => _pendingPlay = !_pendingPlay);
+      return;
+    }
 
+    // ── Video ready ────────────────────────────────────────────────────────
+    final ytPlaying = _ytController!.value.isPlaying;
     if (ytPlaying) {
-      _ytController?.pause();
+      _ytController!.pause();
       _posTimer?.cancel();
       _posTimer = null;
       setState(() => _isPlaying = false);
     } else {
-      _ytController?.play();
+      _ytController!.play();
       setState(() => _isPlaying = true);
-
-      // Fallback timer — increments _posMs when YT position isn't firing yet.
       _posTimer ??= Timer.periodic(const Duration(milliseconds: 100), (_) {
         if (!mounted || !_isPlaying) return;
         if (!_ytPositionActive) setState(() => _posMs += 100);
@@ -160,7 +170,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Microphone / recording
+  // Microphone — toggling mic NEVER touches the video
   // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _startRecording() async {
@@ -177,11 +187,10 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     _audioSub = _audioService.results.listen((result) {
       if (!mounted) return;
       setState(() {
-        _pitchHistory.add(result?.frequency ?? 0);
-        if (_pitchHistory.length > _maxPitchHistory) {
-          _pitchHistory.removeAt(0);
-        }
         _currentPitch = result;
+        // Accumulate pitch samples for the live heatmap + results
+        _rawHz   .add(result?.frequency ?? 0);
+        _rawCents.add(result?.cents     ?? 0);
       });
     });
 
@@ -192,11 +201,13 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     await _audioSub?.cancel();
     _audioSub = null;
     await _audioService.stop();
+    // Keep _rawHz / _rawCents — accumulated data is preserved across
+    // start/stop cycles so the full session heatmap is accurate.
     if (mounted) setState(() { _isRecording = false; _currentPitch = null; });
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Finish
+  // Finish — build results and navigate
   // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _finishAndShowResults() async {
@@ -210,7 +221,7 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       songArtist:      widget.songArtist,
       songImage:       widget.songImage,
       completedAt:     DateTime.now(),
-      lyricResults:    const [],
+      lyricResults:    _buildLyricResults(),
       durationSeconds: _posMs ~/ 1000,
     );
 
@@ -219,11 +230,32 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       context,
       MaterialPageRoute(
         builder: (_) => ResultsPage(
-          session: session,
+          session:      session,
           isAssignment: widget.isAssignment,
         ),
       ),
     );
+  }
+
+  /// Buckets all raw pitch samples into [_kResultSegments] LyricPitchData
+  /// entries so the results heatmap & table reflect real performance.
+  List<LyricPitchData> _buildLyricResults() {
+    final total = _rawHz.length;
+    if (total == 0) return [];
+
+    final n       = _kResultSegments.clamp(1, total);
+    final segSize = (total / n).ceil();
+
+    return List.generate(n, (i) {
+      final start = i * segSize;
+      final end   = (start + segSize).clamp(0, total);
+      if (start >= total) return null;
+      return LyricPitchData(
+        lyricText:     'seg${i + 1}',            // non-empty → visible in heatmap
+        pitchReadings: _rawHz   .sublist(start, end),
+        centsReadings: _rawCents.sublist(start, end),
+      );
+    }).whereType<LyricPitchData>().toList();
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -238,11 +270,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         child: Column(
           children: [
             _buildHeader(),
-            _buildWaveform(),
-            _buildVideoBox(),
             _buildSongInfoRow(),
-            if (_isRecording) _buildTuner(_currentPitch),
-            const Spacer(),
+            // Video takes all remaining space minus controls
+            Expanded(child: _buildVideoBox()),
+            // Live pitch status shown while recording
+            if (_isRecording) _buildLivePitchRow(),
             _buildControls(),
           ],
         ),
@@ -292,101 +324,11 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  // ── Waveform strip ─────────────────────────────────────────────────────────
-
-  Widget _buildWaveform() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-      child: SizedBox(
-        height: 52,
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF141414),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: CustomPaint(
-              painter: _PitchGraphPainter(List<double>.from(_pitchHistory)),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── YouTube video box ──────────────────────────────────────────────────────
-
-  Widget _buildVideoBox() {
-    Widget content;
-    if (_ytVideoId == null) {
-      content = _videoShell(child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
-          SizedBox(height: 10),
-          Text('Loading video…',
-              style: TextStyle(color: Colors.white30, fontSize: 12)),
-        ],
-      ));
-    } else if (_ytVideoId!.isEmpty || _ytController == null) {
-      content = _videoShell(child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
-          SizedBox(height: 8),
-          Text('No video found',
-              style: TextStyle(color: Colors.white24, fontSize: 11)),
-        ],
-      ));
-    } else {
-      content = Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: YoutubePlayer(
-            controller: _ytController!,
-            showVideoProgressIndicator: true,
-            progressIndicatorColor: Colors.red,
-            progressColors: const ProgressBarColors(
-              playedColor:     Colors.red,
-              handleColor:     Colors.redAccent,
-              bufferedColor:   Colors.white24,
-              backgroundColor: Colors.white12,
-            ),
-            topActions: const [],
-            bottomActions: const [
-              CurrentPosition(),
-              ProgressBar(isExpanded: true),
-              RemainingDuration(),
-            ],
-          ),
-        ),
-      );
-    }
-    return content;
-  }
-
-  Widget _videoShell({required Widget child}) => Padding(
-    padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-    child: AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.white12, width: 0.5),
-        ),
-        child: Center(child: child),
-      ),
-    ),
-  );
-
   // ── Song info row ──────────────────────────────────────────────────────────
 
   Widget _buildSongInfoRow() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
       child: Row(
         children: [
           const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 14),
@@ -439,202 +381,237 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // Chromatic tuner — always shown while mic is active
-  // ══════════════════════════════════════════════════════════════════════════
+  // ── Video with live heatmap overlay ───────────────────────────────────────
 
-  Widget _buildTuner(NoteResult? pitch) {
-    final bool hasSignal = pitch != null &&
-        pitch.feedback != PitchFeedback.noSignal &&
-        pitch.frequency > 0;
-
-    final Color tunerColor;
-    final String noteLabel;
-    final String statusLabel;
-    final double cents;
-
-    if (!hasSignal) {
-      tunerColor  = _colorSilent;
-      noteLabel   = '—';
-      statusLabel = 'Listening…';
-      cents       = 0.0;
-    } else {
-      cents = pitch.cents;
-      switch (pitch.feedback) {
-        case PitchFeedback.correct:
-          tunerColor  = _colorInTune;
-          statusLabel = 'In Tune ✓';
-        case PitchFeedback.tooHigh:
-          tunerColor  = _colorOffTune;
-          statusLabel = 'Too High ↑';
-        case PitchFeedback.tooLow:
-          tunerColor  = _colorOffTune;
-          statusLabel = 'Too Low ↓';
-        case PitchFeedback.noSignal:
-          tunerColor  = _colorSilent;
-          statusLabel = 'Listening…';
-      }
-      noteLabel = pitch.fullName; // e.g. "A4", "C#3"
+  Widget _buildVideoBox() {
+    if (_ytVideoId == null) {
+      return _videoShell(
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+                color: AppColors.primaryCyan, strokeWidth: 2),
+            SizedBox(height: 10),
+            Text('Loading video…',
+                style: TextStyle(color: Colors.white30, fontSize: 12)),
+          ],
+        ),
+      );
     }
 
-    final centsStr = hasSignal
-        ? '${cents >= 0 ? '+' : ''}${cents.toStringAsFixed(0)}¢'
-        : '';
+    if (_ytVideoId!.isEmpty || _ytController == null) {
+      return _videoShell(
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
+            SizedBox(height: 8),
+            Text('No video found',
+                style: TextStyle(color: Colors.white24, fontSize: 11)),
+          ],
+        ),
+      );
+    }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-      decoration: BoxDecoration(
-        color:        tunerColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border:       Border.all(color: tunerColor.withValues(alpha: 0.30)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── ♭  Note  ♯ row ──────────────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Flat indicator — lights up when voice is flat (cents < −10)
-              Text('♭',
-                  style: TextStyle(
-                      color: (hasSignal && cents < -10)
-                          ? tunerColor
-                          : Colors.white12,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold)),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Stack(
+          children: [
+            // ── YouTube player ─────────────────────────────────────────
+            YoutubePlayer(
+              controller: _ytController!,
+              showVideoProgressIndicator: true,
+              progressIndicatorColor: Colors.red,
+              progressColors: const ProgressBarColors(
+                playedColor:     Colors.red,
+                handleColor:     Colors.redAccent,
+                bufferedColor:   Colors.white24,
+                backgroundColor: Colors.white12,
+              ),
+              topActions:    const [],
+              bottomActions: const [
+                CurrentPosition(),
+                ProgressBar(isExpanded: true),
+                RemainingDuration(),
+              ],
+            ),
 
-              // Note name + cents deviation
-              Column(
-                children: [
-                  Text(
-                    noteLabel,
-                    style: TextStyle(
-                        color: tunerColor,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        fontFamily: 'Roboto',
-                        letterSpacing: 1.5),
+            // ── Live heatmap strip — overlaid at top of video ──────────
+            if (_rawHz.isNotEmpty)
+              Positioned(
+                top:   0,
+                left:  0,
+                right: 0,
+                child: SizedBox(
+                  height: 12,
+                  child: CustomPaint(
+                    painter: _LiveHeatmapPainter(
+                      rawHz:    List<double>.from(_rawHz),
+                      rawCents: List<double>.from(_rawCents),
+                    ),
+                    size: Size.infinite,
                   ),
-                  if (centsStr.isNotEmpty)
-                    Text(centsStr,
-                        style: TextStyle(
-                            color: tunerColor.withValues(alpha: 0.75),
-                            fontSize: 12,
-                            fontFamily: 'Roboto')),
-                ],
+                ),
               ),
 
-              // Sharp indicator — lights up when voice is sharp (cents > +10)
-              Text('♯',
-                  style: TextStyle(
-                      color: (hasSignal && cents > 10)
-                          ? tunerColor
-                          : Colors.white12,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold)),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          // ── Needle meter ─────────────────────────────────────────────────
-          _buildNeedle(cents, tunerColor, hasSignal),
-
-          const SizedBox(height: 8),
-
-          // ── Status text ──────────────────────────────────────────────────
-          Text(
-            statusLabel,
-            style: TextStyle(
-                color: tunerColor.withValues(alpha: 0.85),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
-                letterSpacing: 0.5),
-          ),
-        ],
+            // ── Current note badge — bottom-right of video while mic on ─
+            if (_isRecording && _currentPitch != null)
+              Positioned(
+                bottom: 36, // above progress bar
+                right:  10,
+                child: _buildNoteBadge(_currentPitch!),
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  // ── Needle meter: −50¢ ←── ●──→ +50¢ ────────────────────────────────────
-
-  Widget _buildNeedle(double cents, Color color, bool active) {
-    final fraction = active
-        ? (cents.clamp(-50.0, 50.0) + 50.0) / 100.0
-        : 0.5;
-
-    return LayoutBuilder(builder: (_, c) {
-      final w = c.maxWidth;
-      final needleX = 8.0 + fraction * (w - 16.0);
-
-      return SizedBox(
-        height: 28,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Track gradient: red ── green ── red
-            Positioned(
-              top: 12,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    _colorOffTune.withValues(alpha: 0.45),
-                    _colorInTune.withValues(alpha: 0.55),
-                    _colorOffTune.withValues(alpha: 0.45),
-                  ]),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+  Widget _videoShell({required Widget child}) => Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(
+            decoration: BoxDecoration(
+              color:         const Color(0xFF1A1A1A),
+              borderRadius:  BorderRadius.circular(6),
+              border:        Border.all(color: Colors.white12, width: 0.5),
             ),
-            // Centre tick
-            Positioned(
-              top: 6,
-              left: w / 2 - 1,
-              child: Container(width: 2, height: 16, color: Colors.white30),
-            ),
-            // ±25¢ ticks
-            Positioned(
-              top: 9,
-              left: w * 0.25 - 1,
-              child: Container(width: 1, height: 10, color: Colors.white12),
-            ),
-            Positioned(
-              top: 9,
-              left: w * 0.75 - 1,
-              child: Container(width: 1, height: 10, color: Colors.white12),
-            ),
-            // Animated needle knob
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 80),
-              curve:    Curves.easeOut,
-              top: 4,
-              left: (needleX - 10).clamp(0.0, w - 20),
-              child: Container(
-                width:  20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color:  active ? color : _colorSilent,
-                  shape:  BoxShape.circle,
-                  boxShadow: active
-                      ? [BoxShadow(
-                          color:     color.withValues(alpha: 0.55),
-                          blurRadius: 8,
-                        )]
-                      : [],
-                ),
-              ),
-            ),
-          ],
+            child: Center(child: child),
+          ),
         ),
       );
-    });
+
+  // ── Note badge (shown on video while mic active) ──────────────────────────
+
+  Widget _buildNoteBadge(NoteResult pitch) {
+    final bool active = pitch.frequency > 0 &&
+        pitch.feedback != PitchFeedback.noSignal;
+
+    final Color color;
+    final String label;
+    if (!active) {
+      color = _colorSilent;
+      label = '•••';
+    } else {
+      switch (pitch.feedback) {
+        case PitchFeedback.correct:
+          color = _colorInTune;
+          label = pitch.fullName;
+          break;
+        case PitchFeedback.tooHigh:
+          color = _colorOffTune;
+          label = '${pitch.fullName} ↑';
+          break;
+        case PitchFeedback.tooLow:
+          color = _colorOffTune;
+          label = '${pitch.fullName} ↓';
+          break;
+        case PitchFeedback.noSignal:
+          color = _colorSilent;
+          label = '•••';
+          break;
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color:        Colors.black.withValues(alpha: 0.70),
+        borderRadius: BorderRadius.circular(8),
+        border:       Border.all(color: color.withValues(alpha: 0.6)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Roboto',
+            letterSpacing: 0.5),
+      ),
+    );
+  }
+
+  // ── Live pitch status row (below video while recording) ───────────────────
+
+  Widget _buildLivePitchRow() {
+    final pitch = _currentPitch;
+    final bool active = pitch != null &&
+        pitch.frequency > 0 &&
+        pitch.feedback != PitchFeedback.noSignal;
+
+    final Color color;
+    final String statusText;
+    final String noteText;
+    final String centsText;
+
+    if (!active) {
+      color      = _colorSilent;
+      statusText = 'Listening…';
+      noteText   = '';
+      centsText  = '';
+    } else {
+      noteText  = pitch.fullName;
+      centsText = '${pitch.cents >= 0 ? '+' : ''}${pitch.cents.toStringAsFixed(0)}¢';
+      switch (pitch.feedback) {
+        case PitchFeedback.correct:
+          color      = _colorInTune;
+          statusText = 'In Tune ✓';
+          break;
+        case PitchFeedback.tooHigh:
+          color      = _colorOffTune;
+          statusText = 'Too High ↑';
+          break;
+        case PitchFeedback.tooLow:
+          color      = _colorOffTune;
+          statusText = 'Too Low ↓';
+          break;
+        case PitchFeedback.noSignal:
+          color      = _colorSilent;
+          statusText = 'Listening…';
+          break;
+      }
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      color: color.withValues(alpha: 0.07),
+      child: Row(
+        children: [
+          Container(
+            width: 8, height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          if (noteText.isNotEmpty) ...[
+            Text(noteText,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto')),
+            const SizedBox(width: 8),
+          ],
+          Text(statusText,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto')),
+          const Spacer(),
+          if (centsText.isNotEmpty)
+            Text(centsText,
+                style: TextStyle(
+                    color: color.withValues(alpha: 0.75),
+                    fontSize: 12,
+                    fontFamily: 'Roboto')),
+        ],
+      ),
+    );
   }
 
   // ── Controls ───────────────────────────────────────────────────────────────
@@ -645,24 +622,36 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ▶ / ❚❚  Play-pause
+          // ▶ / ❚❚  Play-pause (video only)
           GestureDetector(
             onTap: _togglePlayPause,
             child: Container(
               width: 52, height: 52,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                shape:  BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              child: Icon(
-                  _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  color: Colors.white, size: 28),
+              child: _pendingPlay
+                  // Queued-play spinner — video is still loading
+                  ? const Padding(
+                      padding: EdgeInsets.all(14),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Icon(
+                      _isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      color: Colors.white, size: 28,
+                    ),
             ),
           ),
 
           const SizedBox(width: 24),
 
-          // 🔴  Mic toggle
+          // 🔴  Mic toggle — video keeps playing
           GestureDetector(
             onTap: () async {
               if (_isRecording) {
@@ -678,21 +667,23 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
                 color: _isRecording ? Colors.red[700] : Colors.red,
               ),
               child: Icon(
-                  _isRecording ? Icons.stop_rounded : Icons.mic,
-                  color: Colors.white, size: 30),
+                _isRecording ? Icons.stop_rounded : Icons.mic,
+                color: Colors.white, size: 30,
+              ),
             ),
           ),
 
           const SizedBox(width: 24),
 
-          // ⬜  Finish / stop
+          // ⬜  Finish → navigate to results
           GestureDetector(
             onTap: _finishAndShowResults,
             child: Container(
               width: 52, height: 52,
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12)),
+                color:         Colors.white,
+                borderRadius:  BorderRadius.circular(12),
+              ),
               child: const Icon(Icons.stop_rounded, color: Colors.black, size: 28),
             ),
           ),
@@ -703,85 +694,45 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Pitch waveform painter
+// Live heatmap painter
+//
+// Renders a horizontal color strip where each sample is coloured:
+//   green  = in tune  (|cents| ≤ 25)
+//   red    = off tune (|cents| > 25)
+//   grey   = silence  (hz == 0)
 // ══════════════════════════════════════════════════════════════════════════════
 
-class _PitchGraphPainter extends CustomPainter {
-  final List<double> data;
-  const _PitchGraphPainter(this.data);
+class _LiveHeatmapPainter extends CustomPainter {
+  final List<double> rawHz;
+  final List<double> rawCents;
 
-  double _hzToY(double hz, double h) {
-    const minHz = 80.0;
-    const maxHz = 1100.0;
-    if (hz <= 0) return h;
-    final logMin = math.log(minHz);
-    final logMax = math.log(maxHz);
-    return h - ((math.log(hz.clamp(minHz, maxHz)) - logMin) / (logMax - logMin)) * h;
+  const _LiveHeatmapPainter({required this.rawHz, required this.rawCents});
+
+  static const _inTune  = Color(0xFF4CAF50);
+  static const _offTune = Color(0xFFF44336);
+  static const _silent  = Color(0xFF616161);
+
+  Color _colorFor(int i) {
+    final hz    = rawHz[i];
+    final cents = rawCents[i];
+    if (hz <= 0) return _silent;
+    return cents.abs() <= 25 ? _inTune : _offTune;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    // Reference lines (C3, C4, C5)
-    final refPaint = Paint()
-      ..color       = Colors.white.withValues(alpha: 0.07)
-      ..strokeWidth = 1;
-    for (final hz in [130.81, 261.63, 523.25]) {
-      final y = _hzToY(hz, h);
-      canvas.drawLine(Offset(0, y), Offset(w, y), refPaint);
-    }
-
-    if (data.isEmpty) return;
-
-    final count = data.length;
-    final step  = count > 1 ? w / (count - 1) : w;
-    final pts = [
-      for (int i = 0; i < count; i++) Offset(i * step, _hzToY(data[i], h)),
-    ];
-
-    if (pts.length > 1) {
-      // Fill under curve
-      final fill = Path()..moveTo(pts.first.dx, h);
-      for (final p in pts) { fill.lineTo(p.dx, p.dy); }
-      fill.lineTo(pts.last.dx, h);
-      fill.close();
-      canvas.drawPath(
-        fill,
-        Paint()
-          ..shader = const LinearGradient(
-            begin:  Alignment.topCenter,
-            end:    Alignment.bottomCenter,
-            colors: [Color(0x4000E0FF), Color(0x0000E0FF)],
-          ).createShader(Rect.fromLTWH(0, 0, w, h)),
+    if (rawHz.isEmpty) return;
+    final n    = rawHz.length;
+    final segW = size.width / n;
+    for (int i = 0; i < n; i++) {
+      canvas.drawRect(
+        Rect.fromLTWH(i * segW, 0, segW - 0.3, size.height),
+        Paint()..color = _colorFor(i),
       );
-
-      // Curve line
-      final line = Path()..moveTo(pts.first.dx, pts.first.dy);
-      for (int i = 1; i < pts.length; i++) { line.lineTo(pts[i].dx, pts[i].dy); }
-      canvas.drawPath(
-        line,
-        Paint()
-          ..color       = AppColors.primaryCyan
-          ..strokeWidth = 2.0
-          ..strokeCap   = StrokeCap.round
-          ..strokeJoin  = StrokeJoin.round
-          ..style       = PaintingStyle.stroke,
-      );
-    }
-
-    // Live dot
-    if (pts.isNotEmpty && data.last > 0) {
-      final p = pts.last;
-      canvas.drawCircle(p, 6,
-          Paint()..color = AppColors.primaryCyan.withValues(alpha: 0.22));
-      canvas.drawCircle(p, 2.8, Paint()..color = AppColors.primaryCyan);
     }
   }
 
   @override
-  bool shouldRepaint(_PitchGraphPainter old) =>
-      old.data.length != data.length ||
-      (data.isNotEmpty && old.data.isNotEmpty && old.data.last != data.last);
+  bool shouldRepaint(_LiveHeatmapPainter old) =>
+      old.rawHz.length != rawHz.length;
 }

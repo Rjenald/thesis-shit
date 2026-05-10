@@ -1368,8 +1368,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Consumer<ClassNotificationsService>(
       builder: (context, notifSvc, _) {
         final events = _eventsFromService(notifSvc);
-        final todayEvents =
-            events.where((e) => _isSameDay(e['date'] as DateTime, _today)).toList();
 
         return Scaffold(
           backgroundColor: _dark,
@@ -1764,7 +1762,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     color: color,
                     fontSize: 13,
                     fontWeight: FontWeight.w500))),
-        if (trailing != null) trailing!,
+        ?trailing,
       ]);
 }
 
