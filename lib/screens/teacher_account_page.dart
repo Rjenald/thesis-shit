@@ -77,6 +77,15 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    // ── Karaoke tab: embed karaoke content inline ──────────────────────────
+    if (_navIndex == 3) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(child: const KaraokeHomePage(embedded: true)),
+        bottomNavigationBar: _buildBottomNav(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.bgDark,
       body: SafeArea(
@@ -355,14 +364,6 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
       onTap: () {
         if (index == 2) {
           _showProfileSheet();
-          return;
-        }
-        if (index == 3) {
-          // Karaoke — open YouTube karaoke search
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
-          );
           return;
         }
         setState(() => _navIndex = index);

@@ -1,6 +1,6 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
-import 'home_page.dart';
+import 'karaoke_home_page.dart';
 import 'register_page.dart';
 import 'teacher_account_page.dart';
 import 'student_account_page.dart';
@@ -109,7 +109,8 @@ class _LoginPageState extends State<LoginPage> {
         } else if (role == 'student') {
           destination = const StudentAccountPage();
         } else {
-          destination = const HomePage();
+          // Normal user → land directly on the YouTube karaoke search
+          destination = const KaraokeHomePage(isRoot: true);
         }
 
         Navigator.pushAndRemoveUntil(

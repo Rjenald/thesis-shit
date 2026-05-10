@@ -2,45 +2,72 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../constants/app_colors.dart';
-import '../services/downloads_service.dart';
+import '../models/session_result.dart';
+import '../services/session_storage_service.dart';
 import '../services/youtube_service.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/profile_avatar.dart';
+import 'education_mode_page.dart';
+import 'favorites_page.dart';
 import 'karaoke_recording_page.dart';
+import 'library_page.dart';
+import 'recently_deleted_page.dart';
+import 'settings_page.dart';
+import 'start_page.dart';
 
 class KaraokeHomePage extends StatefulWidget {
-  const KaraokeHomePage({super.key});
+  /// When true — home screen for normal user:
+  ///   • No back button, profile avatar top-right with dropdown menu
+  ///   • Bottom nav Home tab is highlighted (index 0), tabs actually navigate
+  /// When false (default) — sub-page pushed from student / teacher nav:
+  ///   • Back button shown top-left
+  ///   • Bottom nav is decorative only
+  /// When embedded — shown inside another page's Scaffold (student/teacher tab):
+  ///   • No Scaffold / bottom nav wrapper — returns plain Column content only
+  ///   • Simple "Karaoke" heading, search bar, recently visited / YouTube results
+  final bool isRoot;
+  final bool embedded;
+
+  const KaraokeHomePage({super.key, this.isRoot = false, this.embedded = false});
 
   @override
   State<KaraokeHomePage> createState() => _KaraokeHomePageState();
 }
 
 class _KaraokeHomePageState extends State<KaraokeHomePage> {
+  // ── Profile (root mode) ────────────────────────────────────────────────────
+  String _username   = 'User';
+  bool   _isMenuOpen = false;
+
+  // ── Search ─────────────────────────────────────────────────────────────────
   final TextEditingController _searchCtrl = TextEditingController();
+  List<Map<String, String>> _ytResults  = [];
+  bool _searching = false;
+  Timer? _debounce;
 
-  // ── View mode ──────────────────────────────────────────────────────────────
-  /// 'search' = YouTube results  |  'downloaded' = saved songs
-  String _mode = 'search';
+  // ── Recent sessions ────────────────────────────────────────────────────────
+  List<SessionResult> _recent = [];
 
-  // ── YouTube search state ───────────────────────────────────────────────────
-  List<Map<String, String>> _results   = [];
-  bool                      _searching = false;
-  bool                      _searched  = false;   // true once user hit Search
-  Timer?                    _debounce;
-
-  // ── Downloaded songs ───────────────────────────────────────────────────────
-  List<Map<String, String>> _downloads = [];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   @override
   void initState() {
     super.initState();
-    _loadDownloads();
+    _loadRecent();
+    if (widget.isRoot) _loadUsername();
   }
 
-  Future<void> _loadDownloads() async {
-    final list = await DownloadsService.loadAll();
-    if (mounted) setState(() => _downloads = list);
+  Future<void> _loadUsername() async {
+    final name = await SessionStorageService.loadUsername();
+    if (mounted && name != null && name.isNotEmpty) {
+      setState(() => _username = name);
+    }
+  }
+
+  Future<void> _loadRecent() async {
+    final sessions = await SessionStorageService.loadSessions();
+    if (mounted) setState(() => _recent = sessions.reversed.toList());
   }
 
   @override
@@ -50,19 +77,16 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
     super.dispose();
   }
 
-  // ── Search ─────────────────────────────────────────────────────────────────
+  // ── Search logic ───────────────────────────────────────────────────────────
 
   void _onSearchChanged(String value) {
+    setState(() {}); // refresh clear X
     _debounce?.cancel();
     if (value.trim().isEmpty) {
-      setState(() {
-        _results  = [];
-        _searched = false;
-      });
+      setState(() { _ytResults = []; _searching = false; });
       return;
     }
-    // Auto-search after 700 ms of no typing
-    _debounce = Timer(const Duration(milliseconds: 700), () => _runSearch(value));
+    _debounce = Timer(const Duration(milliseconds: 600), () => _runSearch(value));
   }
 
   Future<void> _runSearch(String query) async {
@@ -70,82 +94,109 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
     setState(() => _searching = true);
     final results = await YouTubeService.searchKaraokeVideos(query: query.trim());
     if (!mounted) return;
-    setState(() {
-      _results   = results;
-      _searching = false;
-      _searched  = true;
-    });
+    setState(() { _ytResults = results; _searching = false; });
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────────
+  bool get _isSearching => _searchCtrl.text.trim().isNotEmpty;
 
-  void _launchKaraoke(Map<String, String> video) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => KaraokeRecordingPage(
-          songTitle:      video['title']   ?? '',
-          songArtist:     video['channel'] ?? '',
-          songImage:      video['thumbnail'] ?? '',
-          youtubeVideoId: video['videoId'] ?? '',
-        ),
+  // ── Navigation ─────────────────────────────────────────────────────────────
+
+  void _openVideo(Map<String, String> video) {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => KaraokeRecordingPage(
+        songTitle:      video['title']   ?? '',
+        songArtist:     video['channel'] ?? '',
+        songImage:      video['thumbnail'] ?? '',
+        youtubeVideoId: video['videoId'] ?? '',
       ),
-    );
+    ));
   }
 
-  void _launchDownloaded(Map<String, String> song) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => KaraokeRecordingPage(
-          songTitle:  song['title']  ?? '',
-          songArtist: song['artist'] ?? '',
-          songImage:  '',
-        ),
+  void _openSession(SessionResult s) {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => KaraokeRecordingPage(
+        songTitle:  s.songTitle,
+        songArtist: s.songArtist,
+        songImage:  s.songImage,
       ),
-    );
+    ));
+  }
+
+  Future<void> _deleteSession(SessionResult s) async {
+    final sessions = await SessionStorageService.loadSessions();
+    final idx = sessions.indexWhere((e) =>
+        e.songTitle == s.songTitle &&
+        e.songArtist == s.songArtist &&
+        e.completedAt == s.completedAt);
+    if (idx >= 0) await SessionStorageService.deleteSession(idx);
+    _loadRecent();
   }
 
   void _shareVideo(Map<String, String> video) {
     final text =
-        '🎤 "${video['title']}" on Huni Karaoke!\n'
+        '🎤 "${video['title']}" — Karaoke\n'
         'Watch: https://www.youtube.com/watch?v=${video['videoId']}\n\n'
-        'Shared via Huni Karaoke App 🎵';
+        'Shared via Huni Karaoke 🎵';
     Share.share(text, subject: video['title'] ?? 'Karaoke Song');
   }
 
-  Future<void> _removeDownload(Map<String, String> song) async {
-    await DownloadsService.remove(song['title'] ?? '', song['artist'] ?? '');
-    _loadDownloads();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${song['title']}" removed from downloads'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.cardBg,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+  void _onRootNavTap(int index) {
+    if (index == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const LibraryPage()));
+    if (index == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const EducationModePage()));
   }
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    // ── Embedded mode: plain Column, no Scaffold / bottom nav ─────────────
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Simple "Karaoke" heading
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 18, 20, 8),
+            child: Text(
+              'Karaoke',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ),
+          _buildSearchBar(),
+          Expanded(
+            child: _isSearching ? _buildSearchBody() : _buildRecentBody(),
+          ),
+        ],
+      );
+    }
+
+    // ── Full-page mode ─────────────────────────────────────────────────────
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildHeader(),
-            _buildSearchBar(),
-            _buildModeTabs(),
-            Expanded(child: _buildBody()),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                _buildSearchBar(),
+                Expanded(child: _isSearching ? _buildSearchBody() : _buildRecentBody()),
+              ],
+            ),
+            if (widget.isRoot && _isMenuOpen) _buildMenuOverlay(),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 2, onTap: (_) {}),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: widget.isRoot ? 0 : 2,
+        onTap: widget.isRoot ? _onRootNavTap : (_) {},
+      ),
     );
   }
 
@@ -153,22 +204,55 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios,
-                color: AppColors.white, size: 22),
-            onPressed: () => Navigator.pop(context),
+          Row(
+            children: [
+              if (!widget.isRoot) ...[
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.arrow_back_ios,
+                      color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 8),
+              ],
+              const Text(
+                'Karaoke',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ],
           ),
-          const Text(
-            'Karaoke',
-            style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.white,
-                fontFamily: 'Roboto'),
-          ),
+
+          // Profile icon — only shown in root mode
+          if (widget.isRoot)
+            GestureDetector(
+              onTap: () => setState(() => _isMenuOpen = !_isMenuOpen),
+              child: Container(
+                width: 42, height: 42,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    _username.isNotEmpty ? _username[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -178,128 +262,47 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.inputBg,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextField(
-                controller: _searchCtrl,
-                style: const TextStyle(
-                    color: AppColors.white, fontFamily: 'Roboto'),
-                textInputAction: TextInputAction.search,
-                onChanged: (v) {
-                  setState(() {}); // refresh clear button
-                  _onSearchChanged(v);
-                },
-                onSubmitted: (v) => _runSearch(v),
-                decoration: InputDecoration(
-                  hintText: 'Search karaoke songs...',
-                  hintStyle: TextStyle(
-                      color: AppColors.grey.withValues(alpha: 0.6),
-                      fontFamily: 'Roboto'),
-                  prefixIcon: Icon(Icons.search,
-                      color: AppColors.grey.withValues(alpha: 0.6)),
-                  suffixIcon: _searchCtrl.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () {
-                            _searchCtrl.clear();
-                            setState(() {
-                              _results  = [];
-                              _searched = false;
-                            });
-                          },
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _runSearch(_searchCtrl.text),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.primaryCyan,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.search, color: Colors.black, size: 22),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Mode tabs ──────────────────────────────────────────────────────────────
-
-  Widget _buildModeTabs() {
-    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Row(
-        children: [
-          _modeTab('search',     Icons.youtube_searched_for, 'Search'),
-          const SizedBox(width: 8),
-          _modeTab('downloaded', Icons.download_done_rounded, 'Downloaded'),
-        ],
-      ),
-    );
-  }
-
-  Widget _modeTab(String mode, IconData icon, String label) {
-    final selected = _mode == mode;
-    return GestureDetector(
-      onTap: () {
-        setState(() => _mode = mode);
-        if (mode == 'downloaded') _loadDownloads();
-      },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primaryCyan : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? AppColors.primaryCyan
-                : Colors.grey.withValues(alpha: 0.3),
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white12, width: 0.5),
+        ),
+        child: TextField(
+          controller: _searchCtrl,
+          style: const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+          textInputAction: TextInputAction.search,
+          onChanged: _onSearchChanged,
+          onSubmitted: _runSearch,
+          decoration: InputDecoration(
+            hintText: 'Search for songs, artist...',
+            hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35),
+                fontFamily: 'Roboto',
+                fontSize: 14),
+            prefixIcon: Icon(Icons.search,
+                color: Colors.white.withValues(alpha: 0.4), size: 20),
+            suffixIcon: _searchCtrl.text.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.clear,
+                        color: Colors.white.withValues(alpha: 0.4), size: 18),
+                    onPressed: () {
+                      _searchCtrl.clear();
+                      setState(() { _ytResults = []; _searching = false; });
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon,
-                size: 14,
-                color: selected ? Colors.black : AppColors.white),
-            const SizedBox(width: 5),
-            Text(label,
-                style: TextStyle(
-                    color: selected ? Colors.black : AppColors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto')),
-          ],
-        ),
       ),
     );
   }
 
-  // ── Body ───────────────────────────────────────────────────────────────────
-
-  Widget _buildBody() {
-    if (_mode == 'downloaded') return _buildDownloadedList();
-    return _buildSearchBody();
-  }
-
-  // ── Search results ─────────────────────────────────────────────────────────
+  // ── Search results body ────────────────────────────────────────────────────
 
   Widget _buildSearchBody() {
     if (_searching) {
@@ -307,96 +310,65 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
-                color: AppColors.primaryCyan, strokeWidth: 2),
+            CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
             SizedBox(height: 14),
             Text('Searching YouTube…',
-                style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
+                style: TextStyle(color: Colors.white38, fontSize: 13,
                     fontFamily: 'Roboto')),
           ],
         ),
       );
     }
 
-    if (!_searched) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.mic_external_on_outlined,
-                color: AppColors.grey.withValues(alpha: 0.3), size: 64),
-            const SizedBox(height: 16),
-            Text('Search for a karaoke song',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.6),
-                    fontSize: 15,
-                    fontFamily: 'Roboto')),
-            const SizedBox(height: 6),
-            Text('Type a song name or artist above',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.4),
-                    fontSize: 12,
-                    fontFamily: 'Roboto')),
-          ],
-        ),
-      );
-    }
-
-    if (_results.isEmpty) {
+    if (_ytResults.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off,
-                color: AppColors.grey.withValues(alpha: 0.3), size: 48),
+                color: Colors.white.withValues(alpha: 0.2), size: 48),
             const SizedBox(height: 12),
             Text('No karaoke videos found',
                 style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.6),
-                    fontSize: 14,
-                    fontFamily: 'Roboto')),
+                    color: Colors.white.withValues(alpha: 0.45),
+                    fontSize: 14, fontFamily: 'Roboto')),
           ],
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: _results.length,
-      itemBuilder: (context, i) => _buildVideoCard(_results[i]),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      itemCount: _ytResults.length,
+      itemBuilder: (ctx, i) => _buildYtCard(_ytResults[i]),
     );
   }
 
-  Widget _buildVideoCard(Map<String, String> video) {
+  Widget _buildYtCard(Map<String, String> video) {
     final thumb = video['thumbnail'] ?? '';
     return GestureDetector(
-      onTap: () => _launchKaraoke(video),
+      onTap: () => _openVideo(video),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: AppColors.inputBg,
+          color: const Color(0xFF111111),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10, width: 0.5),
         ),
         child: Row(
           children: [
-            // ── Thumbnail ──────────────────────────────────────────────
+            // Thumbnail
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(12)),
               child: thumb.isNotEmpty
-                  ? Image.network(
-                      thumb,
-                      width: 110,
-                      height: 72,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, st) => _thumbPlaceholder(),
-                    )
-                  : _thumbPlaceholder(),
+                  ? Image.network(thumb,
+                      width: 110, height: 70, fit: BoxFit.cover,
+                      errorBuilder: (_, err, st) => _ytThumbPlaceholder())
+                  : _ytThumbPlaceholder(),
             ),
 
-            // ── Info ───────────────────────────────────────────────────
+            // Info
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -404,47 +376,40 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      video['title'] ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Roboto'),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      video['channel'] ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.7),
-                          fontSize: 11,
-                          fontFamily: 'Roboto'),
-                    ),
+                    Text(video['title'] ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Roboto')),
+                    const SizedBox(height: 3),
+                    Text(video['channel'] ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 11,
+                            fontFamily: 'Roboto')),
                   ],
                 ),
               ),
             ),
 
-            // ── Actions ────────────────────────────────────────────────
+            // Actions
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Play / sing
                 IconButton(
                   icon: const Icon(Icons.mic,
-                      color: AppColors.primaryCyan, size: 22),
+                      color: AppColors.primaryCyan, size: 20),
                   tooltip: 'Sing',
-                  onPressed: () => _launchKaraoke(video),
+                  onPressed: () => _openVideo(video),
                 ),
-                // Share
                 IconButton(
                   icon: Icon(Icons.share_outlined,
-                      color: AppColors.grey.withValues(alpha: 0.6),
-                      size: 18),
+                      color: Colors.white.withValues(alpha: 0.4), size: 17),
                   tooltip: 'Share',
                   onPressed: () => _shareVideo(video),
                 ),
@@ -457,95 +422,125 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
     );
   }
 
-  Widget _thumbPlaceholder() => Container(
-        width: 110,
-        height: 72,
-        color: AppColors.cardBg,
+  Widget _ytThumbPlaceholder() => Container(
+        width: 110, height: 70,
+        color: const Color(0xFF1E1E1E),
         child: const Icon(Icons.music_video_outlined,
-            color: AppColors.primaryCyan, size: 28),
+            color: AppColors.primaryCyan, size: 26),
       );
 
-  // ── Downloaded list ────────────────────────────────────────────────────────
+  // ── Recently visited body ──────────────────────────────────────────────────
 
-  Widget _buildDownloadedList() {
-    if (_downloads.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.download_outlined,
-                color: AppColors.grey.withValues(alpha: 0.3), size: 56),
-            const SizedBox(height: 16),
-            Text('No downloaded songs yet',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.6),
-                    fontSize: 15,
-                    fontFamily: 'Roboto')),
-            const SizedBox(height: 6),
-            Text('Songs auto-save here after you finish singing',
-                style: TextStyle(
-                    color: AppColors.grey.withValues(alpha: 0.4),
-                    fontSize: 12,
-                    fontFamily: 'Roboto')),
-          ],
+  Widget _buildRecentBody() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Recently Visited',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto')),
+              if (_recent.isNotEmpty)
+                Text('${_recent.length} sessions',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 12,
+                        fontFamily: 'Roboto')),
+            ],
+          ),
         ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: _downloads.length,
-      itemBuilder: (context, i) => _buildDownloadedRow(_downloads[i]),
+        Expanded(
+          child: _recent.isEmpty
+              ? _buildEmptyRecent()
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _recent.length,
+                  itemBuilder: (ctx, i) => _buildRecentRow(_recent[i]),
+                ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDownloadedRow(Map<String, String> song) {
+  Widget _buildEmptyRecent() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.history,
+              color: Colors.white.withValues(alpha: 0.15), size: 56),
+          const SizedBox(height: 14),
+          Text('No recent sessions yet',
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 15, fontFamily: 'Roboto')),
+          const SizedBox(height: 6),
+          Text('Search a song above and start singing!',
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontSize: 12, fontFamily: 'Roboto')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentRow(SessionResult s) {
+    final date = '${s.completedAt.month.toString().padLeft(2, '0')}-'
+        '${s.completedAt.day.toString().padLeft(2, '0')}-'
+        '${s.completedAt.year.toString().substring(2)}';
+
     return GestureDetector(
-      onTap: () => _launchDownloaded(song),
+      onTap: () => _openSession(s),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
-        decoration: BoxDecoration(
-          color: AppColors.inputBg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: const Color(0xFF4CAF50).withValues(alpha: 0.25),
-              width: 0.5),
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
         ),
         child: Row(
           children: [
-            // Icon
+            // Artist image / placeholder
             Container(
-              width: 44, height: 44,
+              width: 48, height: 48,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: LinearGradient(colors: [
-                  AppColors.primaryCyan.withValues(alpha: 0.3),
-                  AppColors.primaryCyan.withValues(alpha: 0.1),
-                ]),
+                shape: BoxShape.circle,
+                color: const Color(0xFF1E1E1E),
+                image: s.songImage.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(s.songImage),
+                        fit: BoxFit.cover)
+                    : null,
               ),
-              child: const Icon(Icons.music_note,
-                  color: AppColors.primaryCyan, size: 20),
+              child: s.songImage.isEmpty
+                  ? const Icon(Icons.music_note,
+                      color: AppColors.primaryCyan, size: 22)
+                  : null,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
 
-            // Title + Artist
+            // Title + artist
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(song['title'] ?? '',
+                  Text(s.songTitle,
                       style: const TextStyle(
-                          color: AppColors.white,
+                          color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Roboto'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
-                  Text(song['artist'] ?? '',
+                  Text(s.songArtist,
                       style: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.8),
+                          color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 12,
                           fontFamily: 'Roboto'),
                       maxLines: 1,
@@ -554,41 +549,19 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
               ),
             ),
 
-            // Language badge
-            if ((song['language'] ?? '').isNotEmpty)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryCyan.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  _langLabel(song['language'] ?? ''),
-                  style: const TextStyle(
-                      color: AppColors.primaryCyan,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-            const SizedBox(width: 4),
+            // Date
+            Text(date,
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    fontSize: 11,
+                    fontFamily: 'Roboto')),
+            const SizedBox(width: 8),
 
-            // Remove download
-            IconButton(
-              padding: EdgeInsets.zero,
-              icon: Icon(Icons.delete_outline,
-                  color: Colors.red.withValues(alpha: 0.7), size: 20),
-              tooltip: 'Remove',
-              onPressed: () => _removeDownload(song),
-            ),
-
-            // Play/sing
-            IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.mic,
-                  color: AppColors.primaryCyan, size: 22),
-              tooltip: 'Sing',
-              onPressed: () => _launchDownloaded(song),
+            // Delete
+            GestureDetector(
+              onTap: () => _deleteSession(s),
+              child: Icon(Icons.delete_outline,
+                  color: Colors.white.withValues(alpha: 0.4), size: 20),
             ),
           ],
         ),
@@ -596,11 +569,98 @@ class _KaraokeHomePageState extends State<KaraokeHomePage> {
     );
   }
 
-  String _langLabel(String language) {
-    switch (language) {
-      case 'Tagalog': return 'TGL';
-      case 'Bisaya':  return 'BIS';
-      default:        return 'ENG';
-    }
+  // ── Profile menu overlay (root mode) ───────────────────────────────────────
+
+  Widget _buildMenuOverlay() {
+    return GestureDetector(
+      onTap: () => setState(() => _isMenuOpen = false),
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.55),
+        child: Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 72, right: 16),
+            child: Container(
+              width: 210,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12, width: 0.5),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 12, offset: const Offset(0, 6))
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        ProfileAvatar(username: _username, radius: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(_username,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Roboto')),
+                              Text('View Profile',
+                                  style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.5),
+                                      fontSize: 12,
+                                      fontFamily: 'Roboto')),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
+                  _menuItem(Icons.favorite_border, 'Favorites', () =>
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => const FavoritesPage()))),
+                  _menuItem(Icons.settings_outlined, 'Settings', () =>
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => const SettingsPage()))),
+                  _menuItem(Icons.delete_outline, 'Recently Deleted', () =>
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => const RecentlyDeletedPage()))),
+                  _menuItem(Icons.logout, 'Logout', () async {
+                    await SessionStorageService.saveUsername('');
+                    await SessionStorageService.saveRole('');
+                    if (!mounted) return;
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const StartPage()),
+                      (r) => false,
+                    );
+                  }, isLogout: true),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _menuItem(IconData icon, String label, VoidCallback onTap,
+      {bool isLogout = false}) {
+    return ListTile(
+      leading: Icon(icon,
+          color: isLogout ? Colors.red : Colors.white, size: 20),
+      title: Text(label,
+          style: TextStyle(
+              color: isLogout ? Colors.red : Colors.white,
+              fontSize: 14, fontFamily: 'Roboto')),
+      dense: true,
+      onTap: () { setState(() => _isMenuOpen = false); onTap(); },
+    );
   }
 }

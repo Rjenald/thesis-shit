@@ -30,14 +30,6 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    if (index == 1) {
-      // Karaoke Mode → open the YouTube karaoke search as a new route
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const KaraokeHomePage()),
-      );
-      return;
-    }
     setState(() => _selectedIndex = index);
   }
 
@@ -52,7 +44,7 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
       case 0:
         return NotificationScreen(onEnrollmentConfirmed: _onEnrollmentConfirmed);
       case 1:
-        return const StudentKaraokeModeScreen();
+        return const KaraokeHomePage(embedded: true);
       case 2:
         return ClassroomScreen(
           isEnrolled: enrollment.isEnrolled,
