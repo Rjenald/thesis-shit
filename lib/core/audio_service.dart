@@ -9,7 +9,6 @@ library;
 
 import 'dart:async';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
@@ -33,14 +32,7 @@ class AudioService {
 
   // ── Tuning constants ────────────────────────────────────────────────────────
 
-<<<<<<< HEAD
-  /// Time to wait for the first WebSocket message before falling back to
-  /// local detection.  250 ms is enough to detect a live server; any longer
-  /// just delays the start of on-device detection when no server is running.
-  static const Duration _wsFallbackDelay = Duration(milliseconds: 250);
 
-=======
->>>>>>> origin/yosef
   /// Minimum CREPE confidence to accept a result.
   /// Below this = noise, silence, or uncertain — discard.
   static const double _minConfidence = 0.55;
