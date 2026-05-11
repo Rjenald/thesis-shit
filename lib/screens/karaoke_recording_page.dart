@@ -6,13 +6,11 @@ import '../core/audio_service.dart';
 import '../core/note_utils.dart';
 import '../models/session_result.dart';
 import '../services/youtube_service.dart';
+import '../services/lyrics_service.dart';
 import 'results_page.dart';
 
 // ── How many pitch segments appear in the results heatmap ─────────────────────
 const int _kResultSegments = 30;
-
-// ── How many audio readings between heatmap repaints (reduces GPU work) ───────
-const int _kHeatmapThrottle = 5;
 
 class KaraokeRecordingPage extends StatefulWidget {
   final String songTitle;
@@ -47,15 +45,10 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   bool _pendingPlay = false;
 
   // ── Fine-grained notifiers — rebuild only the widgets that need it ─────────
-  /// Current pitch reading. Rebuilt: note badge + status row only.
+  /// Current pitch reading. Rebuilt: status row only.
   final ValueNotifier<NoteResult?> _pitchNotifier = ValueNotifier(null);
-  /// Increments every [_kHeatmapThrottle] readings. Rebuilt: heatmap only.
-  final ValueNotifier<int> _heatmapVersion = ValueNotifier(0);
   /// Position in milliseconds. Rebuilt: timer label only.
   final ValueNotifier<int> _posNotifier = ValueNotifier(0);
-
-  // ── Counters (no notifier needed) ─────────────────────────────────────────
-  int _heatmapCounter = 0;
 
   // ── Pitch history (raw, never triggers rebuilds directly) ─────────────────
   final List<double> _rawHz    = [];
@@ -67,9 +60,15 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
 
   // ── YouTube ────────────────────────────────────────────────────────────────
   YoutubePlayerController? _ytController;
-  String? _ytVideoId;        // null = loading | '' = not found | id = ready
-  bool    _ytPositionActive = false;
+  bool _ytPositionActive = false;
   Timer?  _posTimer;         // fallback position ticker
+
+  // ── Lyrics ─────────────────────────────────────────────────────────────────
+  List<LrcLine> _lyrics      = [];
+  bool _lyricsLoading        = true;
+  final ValueNotifier<int> _lyricIdxNotifier = ValueNotifier(0);
+  final ScrollController    _lyricsScroll    = ScrollController();
+  static const double _lyricRowHeight        = 56.0;
 
   // ── Pitch colours ──────────────────────────────────────────────────────────
   static const _colorInTune  = Color(0xFF4CAF50);
@@ -84,6 +83,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   void initState() {
     super.initState();
     _loadYouTubeVideo();
+    _loadLyrics();
+    _posNotifier.addListener(_updateCurrentLyric);
     // Mic is NOT auto-started — user presses the mic button when ready to sing.
   }
 
@@ -95,8 +96,10 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     _ytController?.removeListener(_onYTUpdate);
     _ytController?.dispose();
     _pitchNotifier.dispose();
-    _heatmapVersion.dispose();
+    _posNotifier.removeListener(_updateCurrentLyric);
     _posNotifier.dispose();
+    _lyricIdxNotifier.dispose();
+    _lyricsScroll.dispose();
     super.dispose();
   }
 
@@ -127,7 +130,6 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       );
       ctrl.addListener(_onYTUpdate);
       setState(() {
-        _ytVideoId    = videoId;
         _ytController = ctrl;
         if (_pendingPlay) {
           _isPlaying   = true;
@@ -135,11 +137,55 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
         }
       });
     } else {
-      setState(() {
-        _ytVideoId   = '';
-        _pendingPlay = false;
-      });
+      setState(() => _pendingPlay = false);
     }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Lyrics
+  // ══════════════════════════════════════════════════════════════════════════
+
+  Future<void> _loadLyrics() async {
+    final lines = await LyricsService.fetchLyrics(
+      title:  widget.songTitle,
+      artist: widget.songArtist,
+    );
+    if (!mounted) return;
+    setState(() {
+      _lyrics        = lines;
+      _lyricsLoading = false;
+    });
+  }
+
+  /// Called every time _posNotifier changes — O(log n) binary search.
+  void _updateCurrentLyric() {
+    if (_lyrics.isEmpty) return;
+    final ms = _posNotifier.value;
+    int lo = 0, hi = _lyrics.length - 1, idx = 0;
+    while (lo <= hi) {
+      final mid = (lo + hi) >> 1;
+      if (_lyrics[mid].timestamp.inMilliseconds <= ms) {
+        idx = mid;
+        lo  = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    if (idx != _lyricIdxNotifier.value) {
+      _lyricIdxNotifier.value = idx;
+      _scrollToLyric(idx);
+    }
+  }
+
+  void _scrollToLyric(int idx) {
+    if (!_lyricsScroll.hasClients) return;
+    final offset = (idx * _lyricRowHeight) -
+        (_lyricsScroll.position.viewportDimension / 2 - _lyricRowHeight / 2);
+    _lyricsScroll.animateTo(
+      offset.clamp(0.0, _lyricsScroll.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 300),
+      curve:    Curves.easeInOut,
+    );
   }
 
   void _onYTUpdate() {
@@ -212,16 +258,8 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       _rawHz   .add(result?.frequency ?? 0);
       _rawCents.add(result?.cents     ?? 0);
 
-      // ── Pitch notifier — only rebuilds badge + status row ─────────────
+      // ── Pitch notifier — only rebuilds status row ────────────────────
       _pitchNotifier.value = result;
-
-      // ── Throttled heatmap repaint — every N readings ──────────────────
-      _heatmapCounter++;
-      if (_heatmapCounter >= _kHeatmapThrottle) {
-        _heatmapCounter = 0;
-        _heatmapVersion.value++;
-      }
-      // ─────────────────────────────────────────────────────────────────
       // NO setState here — main widget tree is NOT rebuilt.
     });
 
@@ -298,7 +336,12 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
           children: [
             _buildHeader(),
             _buildSongInfoRow(),
-            Expanded(child: _buildVideoBox()),
+            // YouTube player hidden but alive so audio keeps playing
+            // Small video strip at top
+            SizedBox(height: 180, child: _buildVideoBox()),
+            // Scrolling lyrics — main content
+            Expanded(child: _buildLyricsPanel()),
+            // Real-time pitch bar while mic is on
             if (_isRecording) _buildLivePitchRow(),
             _buildControls(),
           ],
@@ -306,6 +349,64 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
       ),
     );
   }
+
+  // ── Video box ──────────────────────────────────────────────────────────────
+
+  Widget _buildVideoBox() {
+    if (_ytController == null) {
+      return _videoShell(child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+              color: AppColors.primaryCyan, strokeWidth: 2),
+          SizedBox(height: 10),
+          Text('Loading video…',
+              style: TextStyle(color: Colors.white30, fontSize: 12)),
+        ],
+      ));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: RepaintBoundary(
+          child: YoutubePlayer(
+            controller:                 _ytController!,
+            showVideoProgressIndicator: true,
+            progressIndicatorColor:     Colors.red,
+            progressColors: const ProgressBarColors(
+              playedColor:     Colors.red,
+              handleColor:     Colors.redAccent,
+              bufferedColor:   Colors.white24,
+              backgroundColor: Colors.white12,
+            ),
+            topActions:    const [],
+            bottomActions: const [
+              CurrentPosition(),
+              ProgressBar(isExpanded: true),
+              RemainingDuration(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _videoShell({required Widget child}) => Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(
+            decoration: BoxDecoration(
+              color:        const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(6),
+              border:       Border.all(color: Colors.white12, width: 0.5),
+            ),
+            child: Center(child: child),
+          ),
+        ),
+      );
 
   // ── Header ─────────────────────────────────────────────────────────────────
 
@@ -409,158 +510,116 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
     );
   }
 
-  // ── Video + live heatmap overlay ───────────────────────────────────────────
+  // ── Lyrics panel (WeSing-style scrolling) ─────────────────────────────────
 
-  Widget _buildVideoBox() {
-    if (_ytVideoId == null) {
-      return _videoShell(child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(
-              color: AppColors.primaryCyan, strokeWidth: 2),
-          SizedBox(height: 10),
-          Text('Loading video…',
-              style: TextStyle(color: Colors.white30, fontSize: 12)),
-        ],
-      ));
-    }
-
-    if (_ytVideoId!.isEmpty || _ytController == null) {
-      return _videoShell(child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.play_circle_outline, color: Colors.white24, size: 48),
-          SizedBox(height: 8),
-          Text('No video found',
-              style: TextStyle(color: Colors.white24, fontSize: 11)),
-        ],
-      ));
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: Stack(
+  Widget _buildLyricsPanel() {
+    if (_lyricsLoading) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // ── YouTube player isolated in its own repaint subtree ─────
-            RepaintBoundary(
-              child: YoutubePlayer(
-                controller:                    _ytController!,
-                showVideoProgressIndicator:    true,
-                progressIndicatorColor:        Colors.red,
-                progressColors: const ProgressBarColors(
-                  playedColor:     Colors.red,
-                  handleColor:     Colors.redAccent,
-                  bufferedColor:   Colors.white24,
-                  backgroundColor: Colors.white12,
-                ),
-                topActions:    const [],
-                bottomActions: const [
-                  CurrentPosition(),
-                  ProgressBar(isExpanded: true),
-                  RemainingDuration(),
-                ],
-              ),
-            ),
-
-            // ── Live heatmap — only repaints every N readings ─────────
-            Positioned(
-              top: 0, left: 0, right: 0,
-              child: ValueListenableBuilder<int>(
-                valueListenable: _heatmapVersion,
-                builder: (ctx2, version, child2) => SizedBox(
-                  height: 12,
-                  child: _rawHz.isEmpty
-                      ? const SizedBox.shrink()
-                      : CustomPaint(
-                          painter: _LiveHeatmapPainter(
-                            rawHz:    _rawHz,
-                            rawCents: _rawCents,
-                            version:  version,
-                          ),
-                          size: Size.infinite,
-                        ),
-                ),
-              ),
-            ),
-
-            // ── Current note badge — shown while mic is on ────────────
-            if (_isRecording)
-              Positioned(
-                bottom: 36,
-                right:  10,
-                child: ValueListenableBuilder<NoteResult?>(
-                  valueListenable: _pitchNotifier,
-                  builder: (ctx2, pitch, child2) =>
-                      pitch == null ? const SizedBox.shrink() : _buildNoteBadge(pitch),
-                ),
-              ),
+            CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
+            SizedBox(height: 10),
+            Text('Loading lyrics…',
+                style: TextStyle(color: Colors.white38, fontSize: 13,
+                    fontFamily: 'Roboto')),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _videoShell({required Widget child}) => Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: Container(
-            decoration: BoxDecoration(
-              color:        const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(6),
-              border:       Border.all(color: Colors.white12, width: 0.5),
-            ),
-            child: Center(child: child),
-          ),
+    if (_lyrics.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.lyrics_outlined,
+                color: Colors.white.withValues(alpha: 0.2), size: 48),
+            const SizedBox(height: 12),
+            Text('No synced lyrics found',
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    fontSize: 14, fontFamily: 'Roboto')),
+            const SizedBox(height: 4),
+            Text('Sing along with the video above',
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    fontSize: 12, fontFamily: 'Roboto')),
+          ],
         ),
       );
-
-  // ── Note badge ─────────────────────────────────────────────────────────────
-
-  Widget _buildNoteBadge(NoteResult pitch) {
-    final bool active = pitch.frequency > 0 &&
-        pitch.feedback != PitchFeedback.noSignal;
-    final Color color;
-    final String label;
-    if (!active) {
-      color = _colorSilent;
-      label = '•••';
-    } else {
-      switch (pitch.feedback) {
-        case PitchFeedback.correct:
-          color = _colorInTune;
-          label = pitch.fullName;
-          break;
-        case PitchFeedback.tooHigh:
-          color = _colorOffTune;
-          label = '${pitch.fullName} ↑';
-          break;
-        case PitchFeedback.tooLow:
-          color = _colorOffTune;
-          label = '${pitch.fullName} ↓';
-          break;
-        case PitchFeedback.noSignal:
-          color = _colorSilent;
-          label = '•••';
-          break;
-      }
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color:        Colors.black.withValues(alpha: 0.70),
-        borderRadius: BorderRadius.circular(8),
-        border:       Border.all(color: color.withValues(alpha: 0.6)),
-      ),
-      child: Text(label,
-          style: TextStyle(
-              color:       color,
-              fontSize:    13,
-              fontWeight:  FontWeight.w700,
-              fontFamily:  'Roboto',
-              letterSpacing: 0.5)),
+
+    return ValueListenableBuilder<int>(
+      valueListenable: _lyricIdxNotifier,
+      builder: (ctx, currentIdx, _) {
+        return ValueListenableBuilder<NoteResult?>(
+          valueListenable: _pitchNotifier,
+          builder: (ctx2, pitch, _) {
+            // Determine pitch color for current line highlight
+            Color lineColor = Colors.white.withValues(alpha: 0.15);
+            if (_isRecording && pitch != null && pitch.frequency > 0) {
+              switch (pitch.feedback) {
+                case PitchFeedback.correct:
+                  lineColor = _colorInTune.withValues(alpha: 0.25);
+                  break;
+                case PitchFeedback.tooHigh:
+                case PitchFeedback.tooLow:
+                  lineColor = _colorOffTune.withValues(alpha: 0.2);
+                  break;
+                case PitchFeedback.noSignal:
+                  lineColor = Colors.white.withValues(alpha: 0.15);
+                  break;
+              }
+            }
+
+            return ListView.builder(
+              controller:   _lyricsScroll,
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              itemCount:    _lyrics.length,
+              itemExtent:   _lyricRowHeight,
+              itemBuilder:  (ctx3, i) {
+                final isCurrent = i == currentIdx;
+                final isPast    = i < currentIdx;
+
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  alignment: Alignment.center,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  decoration: isCurrent
+                      ? BoxDecoration(
+                          color:        lineColor,
+                          borderRadius: BorderRadius.circular(10),
+                        )
+                      : null,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      _lyrics[i].text,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isCurrent
+                            ? Colors.white
+                            : isPast
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : Colors.white.withValues(alpha: 0.55),
+                        fontSize:   isCurrent ? 20 : 15,
+                        fontWeight: isCurrent
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        fontFamily: 'Roboto',
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 
@@ -724,47 +783,3 @@ class _KaraokeRecordingPageState extends State<KaraokeRecordingPage> {
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Live heatmap painter
-//
-// • Receives direct list references — no copy allocation.
-// • shouldRepaint checks [version] so it only runs every N audio readings.
-// ══════════════════════════════════════════════════════════════════════════════
-
-class _LiveHeatmapPainter extends CustomPainter {
-  final List<double> rawHz;
-  final List<double> rawCents;
-  final int version;
-
-  const _LiveHeatmapPainter({
-    required this.rawHz,
-    required this.rawCents,
-    required this.version,
-  });
-
-  static const _inTune  = Color(0xFF4CAF50);
-  static const _offTune = Color(0xFFF44336);
-  static const _silent  = Color(0xFF616161);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final n = rawHz.length;
-    if (n == 0) return;
-    final segW = size.width / n;
-    for (int i = 0; i < n; i++) {
-      final hz    = rawHz[i];
-      final cents = rawCents[i];
-      final color = hz <= 0
-          ? _silent
-          : (cents.abs() <= 25 ? _inTune : _offTune);
-      canvas.drawRect(
-        Rect.fromLTWH(i * segW, 0, segW - 0.3, size.height),
-        Paint()..color = color,
-      );
-    }
-  }
-
-  /// Only repaint when [version] changes (throttled by [_kHeatmapThrottle]).
-  @override
-  bool shouldRepaint(_LiveHeatmapPainter old) => old.version != version;
-}
