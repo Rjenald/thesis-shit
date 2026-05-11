@@ -17,23 +17,23 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
-  defaultConfig {
-    applicationId = "com.example.final_thesis_ui"
+    defaultConfig {
+        applicationId = "com.example.final_thesis_ui"
 
-    // Flutter-managed values
-    minSdk = flutter.minSdkVersion
-    targetSdk = flutter.targetSdkVersion
-    versionCode = flutter.versionCode
-    versionName = flutter.versionName
+        // Flutter-managed values
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
 
-    // Required for TensorFlow Lite native libraries
-    ndk {
-        abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        // Required for TensorFlow Lite native libraries
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
     }
-}
 
     buildTypes {
         release {
@@ -43,17 +43,12 @@ android {
         }
     }
 
-  aaptOptions {
-    noCompress += listOf("tflite", "lite")
-}
-
-
+    // Prevent compression of TFLite model files so they can be memory-mapped
+    androidResources {
+        noCompress += listOf("tflite", "lite")
+    }
 }
 
 flutter {
     source = "../.."
-}
-
-ndk {
-    abiFilters "armeabi-v7a", "arm64-v8a"
 }
