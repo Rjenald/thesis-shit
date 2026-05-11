@@ -264,7 +264,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final mm = dt.month.toString().padLeft(2, '0');
     final dd = dt.day.toString().padLeft(2, '0');
     final yy = (dt.year % 100).toString().padLeft(2, '0');
-    return '$mm.$dd.$yy';
+    final hh = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final min = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour < 12 ? 'AM' : 'PM';
+    return '$mm.$dd.$yy  $hh:$min $ampm';
   }
 }
 
@@ -1359,6 +1362,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
   bool _hasEvent(List<Map<String, dynamic>> events, DateTime d) =>
       events.any((e) => _isSameDay(e['date'] as DateTime, d));
 
+  String _fmtDatetime(DateTime d) {
+    final hh = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    final min = d.minute.toString().padLeft(2, '0');
+    final ampm = d.hour < 12 ? 'AM' : 'PM';
+    return '${d.month}/${d.day}/${d.year}  $hh:$min $ampm';
+  }
+
   static const _monthNames = [
     '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
@@ -1538,7 +1548,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
-                                    '${d.month}/${d.day}/${d.year}',
+                                    _fmtDatetime(d),
                                     style: const TextStyle(
                                         color: Colors.white54,
                                         fontSize: 11),

@@ -403,17 +403,9 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
     final selected = _navIndex == index;
     return GestureDetector(
       onTap: () {
-        // "Create Student Account" → show add-student dialog (pick first class)
+        // "Create Student Account" → opens the dedicated creation dialog
         if (index == 3) {
-          if (_classes.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Create a class first before adding students.'),
-              ),
-            );
-            return;
-          }
-          _showAddStudentDialog(_classes.first['name'] as String? ?? '');
+          _showCreateStudentAccountDialog();
           return;
         }
         setState(() => _navIndex = index);
@@ -699,6 +691,195 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
     );
   }
 
+  // ── Create Student Account dialog ─────────────────────────────────────────
+  void _showCreateStudentAccountDialog() {
+    if (_classes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Create a class first before adding students.')),
+      );
+      return;
+    }
+
+    String selectedClass = _classes.first['name'] as String? ?? '';
+    final usernameCtrl  = TextEditingController();
+    final passwordCtrl  = TextEditingController();
+    bool obscure = true;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          backgroundColor: AppColors.cardBg,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding:   const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          contentPadding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+          title: Row(children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryCyan.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.person_add_outlined,
+                  color: AppColors.primaryCyan, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Create Student Account',
+                  style: TextStyle(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontFamily: 'Roboto')),
+            ),
+          ]),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Class picker
+                _fLabel('Assign to Class'),
+                const SizedBox(height: 6),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.inputBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedClass,
+                      dropdownColor: AppColors.cardBg,
+                      style: const TextStyle(
+                          color: AppColors.white,
+                          fontSize: 13,
+                          fontFamily: 'Roboto'),
+                      isExpanded: true,
+                      items: _classes.map((c) {
+                        final n = c['name'] as String? ?? '';
+                        return DropdownMenuItem(value: n, child: Text(n));
+                      }).toList(),
+                      onChanged: (v) {
+                        if (v != null) setS(() => selectedClass = v);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Username
+                _fLabel('Student Username'),
+                const SizedBox(height: 6),
+                _fField(usernameCtrl, 'e.g. juan_delacruz'),
+                const SizedBox(height: 12),
+
+                // Password
+                _fLabel('Temporary Password'),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: passwordCtrl,
+                  obscureText: obscure,
+                  style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 13,
+                      fontFamily: 'Roboto'),
+                  decoration: InputDecoration(
+                    hintText: 'Set a login password',
+                    hintStyle: TextStyle(
+                        color: AppColors.grey.withValues(alpha: 0.4),
+                        fontSize: 12,
+                        fontFamily: 'Roboto'),
+                    filled: true,
+                    fillColor: AppColors.inputBg,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                            color: AppColors.primaryCyan, width: 1.5)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 11),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                          obscure ? Icons.visibility_off : Icons.visibility,
+                          color: AppColors.grey,
+                          size: 18),
+                      onPressed: () => setS(() => obscure = !obscure),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'The student uses these credentials to log in.\nAn enrollment invite will also be sent.',
+                  style: TextStyle(
+                      color: AppColors.grey.withValues(alpha: 0.55),
+                      fontSize: 11,
+                      fontFamily: 'Roboto'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel',
+                  style: TextStyle(
+                      color: AppColors.grey.withValues(alpha: 0.8),
+                      fontFamily: 'Roboto')),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final uname = usernameCtrl.text.trim();
+                final pass  = passwordCtrl.text.trim();
+                if (uname.isEmpty || pass.isEmpty) return;
+
+                // Save credentials locally
+                await SessionStorageService.saveStudentAccount({
+                  'username':  uname,
+                  'password':  pass,
+                  'className': selectedClass,
+                });
+
+                // Also send an enrollment invite via the service
+                // ignore: use_build_context_synchronously
+                context.read<EnrollmentService>().sendInvite(
+                      teacherName: _username,
+                      className:   selectedClass,
+                      studentName: uname,
+                    );
+
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        'Account created for $uname in $selectedClass',
+                        style: const TextStyle(fontFamily: 'Roboto')),
+                    backgroundColor: AppColors.primaryCyan,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 3),
+                  ));
+                }
+              },
+              icon: const Icon(Icons.check, size: 16),
+              label: const Text('Create Account',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryCyan,
+                foregroundColor: Colors.black,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Assign Activity dialog (Outlook-style) ────────────────────────────────
   /// Teacher selects an activity type, sets a title, optional description,
   /// and a deadline. On confirm, a [ClassNotification] of type
@@ -710,6 +891,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
     final titleCtrl = TextEditingController(text: 'Activity 1');
     final descCtrl = TextEditingController();
     DateTime deadline = DateTime.now().add(const Duration(days: 7));
+    TimeOfDay deadlineTime = const TimeOfDay(hour: 23, minute: 59);
 
     showDialog(
       context: context,
@@ -903,6 +1085,56 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 10),
+
+                  // Time picker
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: ctx,
+                        initialTime: deadlineTime,
+                        builder: (ctx2, child) => Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: AppColors.primaryCyan,
+                              surface: Color(0xFF2A2A2A),
+                            ),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (picked != null) setS(() => deadlineTime = picked);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color:
+                                AppColors.primaryCyan.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time_outlined,
+                              color: AppColors.primaryCyan, size: 18),
+                          const SizedBox(width: 10),
+                          Text(
+                            deadlineTime.format(ctx),
+                            style: const TextStyle(
+                                color: AppColors.white,
+                                fontFamily: 'Roboto',
+                                fontSize: 14),
+                          ),
+                          const Spacer(),
+                          Icon(Icons.arrow_drop_down,
+                              color:
+                                  AppColors.grey.withValues(alpha: 0.6)),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     'Students will be notified immediately.',
@@ -927,6 +1159,12 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                   final title = titleCtrl.text.trim();
                   if (title.isEmpty) return;
 
+                  // Merge date + time into a single DateTime
+                  final fullDeadline = DateTime(
+                    deadline.year, deadline.month, deadline.day,
+                    deadlineTime.hour, deadlineTime.minute,
+                  );
+
                   ClassNotificationsService().addNotification(
                     ClassNotification(
                       id: '${DateTime.now().millisecondsSinceEpoch}',
@@ -936,7 +1174,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                       timestamp: DateTime.now(),
                       type: NotificationType.activityAssignment,
                       activityName: title,
-                      deadline: deadline,
+                      deadline: fullDeadline,
                     ),
                   );
 

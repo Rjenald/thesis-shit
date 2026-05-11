@@ -267,9 +267,68 @@ class _HeaderCell extends StatelessWidget {
 
 // ── Submission detail page ────────────────────────────────────────────────────
 
-class SubmissionDetailPage extends StatelessWidget {
+class SubmissionDetailPage extends StatefulWidget {
   final Submission submission;
   const SubmissionDetailPage({super.key, required this.submission});
+
+  @override
+  State<SubmissionDetailPage> createState() => _SubmissionDetailPageState();
+}
+
+class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
+  final _scoreCtrl = TextEditingController();
+  String _savedScore = '';
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadScore();
+  }
+
+  Future<void> _loadScore() async {
+    final stored = await SessionStorageService.getScore(
+      widget.submission.studentName,
+      widget.submission.activity,
+    );
+    if (mounted) {
+      final display = stored ?? widget.submission.score;
+      setState(() => _savedScore = display);
+      _scoreCtrl.text = display;
+    }
+  }
+
+  Future<void> _saveScore() async {
+    final value = _scoreCtrl.text.trim();
+    if (value.isEmpty) return;
+    setState(() => _saving = true);
+    await SessionStorageService.saveScore(
+      studentName:  widget.submission.studentName,
+      activityName: widget.submission.activity,
+      score:        value,
+    );
+    if (mounted) {
+      setState(() {
+        _savedScore = value;
+        _saving     = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Score saved: $value',
+              style: const TextStyle(fontFamily: 'Roboto')),
+          backgroundColor: AppColors.primaryCyan,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scoreCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -291,7 +350,7 @@ class SubmissionDetailPage extends StatelessWidget {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    submission.studentName,
+                    widget.submission.studentName,
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 24,
@@ -306,33 +365,126 @@ class SubmissionDetailPage extends StatelessWidget {
 
           // ── Detail fields ────────────────────────────────────────────────
           Expanded(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
 
-                  // Score + Activity row
+                  // Activity + Subject
                   Row(
                     children: [
-                      Expanded(
-                        child: _infoBox('Score:', submission.score),
-                      ),
+                      Expanded(child: _infoBox('Activity:', widget.submission.activity)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _infoBox('Activity:', submission.activity),
-                      ),
+                      Expanded(child: _infoBox('Subject:', widget.submission.subject)),
                     ],
                   ),
                   const SizedBox(height: 12),
 
-                  // Subject
-                  _infoBox('Subject:', submission.subject),
-                  const SizedBox(height: 12),
-
                   // Submitted Date
-                  _infoBox('Submitted Date:', submission.date),
+                  _infoBox('Submitted Date:', widget.submission.date),
+                  const SizedBox(height: 20),
+
+                  // ── Score section ────────────────────────────────────────
+                  Text(
+                    'SET SCORE',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _scoreCtrl,
+                          keyboardType: TextInputType.text,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontFamily: 'Roboto'),
+                          decoration: InputDecoration(
+                            hintText: 'e.g. 10/10 or 95%',
+                            hintStyle: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.35),
+                                fontFamily: 'Roboto',
+                                fontSize: 13),
+                            filled: true,
+                            fillColor: const Color(0xFF2A2A2A),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  color: AppColors.primaryCyan, width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 13),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: _saving ? null : _saveScore,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryCyan,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                        child: _saving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.black))
+                            : const Text('Save',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Roboto')),
+                      ),
+                    ],
+                  ),
+
+                  if (_savedScore.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryCyan.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: AppColors.primaryCyan.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_outline,
+                              color: AppColors.primaryCyan, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Current score: $_savedScore',
+                            style: const TextStyle(
+                                color: AppColors.primaryCyan,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Roboto'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
