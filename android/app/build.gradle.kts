@@ -3,6 +3,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -19,16 +20,20 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.final_thesis_ui"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+  defaultConfig {
+    applicationId = "com.example.final_thesis_ui"
+
+    // Flutter-managed values
+    minSdk = flutter.minSdkVersion
+    targetSdk = flutter.targetSdkVersion
+    versionCode = flutter.versionCode
+    versionName = flutter.versionName
+
+    // Required for TensorFlow Lite native libraries
+    ndk {
+        abiFilters += listOf("armeabi-v7a", "arm64-v8a")
     }
+}
 
     buildTypes {
         release {
@@ -37,8 +42,18 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+  aaptOptions {
+    noCompress += listOf("tflite", "lite")
+}
+
+
 }
 
 flutter {
     source = "../.."
+}
+
+ndk {
+    abiFilters "armeabi-v7a", "arm64-v8a"
 }
