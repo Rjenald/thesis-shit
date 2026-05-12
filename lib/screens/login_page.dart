@@ -7,54 +7,54 @@ import 'student_account_page.dart';
 import '../constants/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/session_storage_service.dart';
-
+ 
 class CurvedBottomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.fill;
-
+ 
     final path = Path();
     path.moveTo(0, 50);
     path.cubicTo(size.width / 4, 0, (size.width * 3) / 4, 0, size.width, 50);
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
     path.close();
-
+ 
     canvas.drawPath(path, paint);
   }
-
+ 
   @override
   bool shouldRepaint(CurvedBottomPainter oldDelegate) => false;
 }
-
+ 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
+ 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-
+ 
 class _LoginPageState extends State<LoginPage> {
   bool obscurePassword = true;
   bool showUsernameError = false;
   bool showPasswordError = false;
   bool _isLoading = false;
-
+ 
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
-
+ 
   int _currentPage = 0;
   Timer? _timer;
-
+ 
   final List<String> _backgroundImages = [
     'https://images.unsplash.com/photo-1556848798-ee649b672584?q=80&w=627&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1600119692901-94e8b7d2eacd?q=80&w=1469&auto=format&fit=crop',
     'https://images.unsplash.com/flagged/photo-1564434369363-696a2e6d96f9?q=80&w=687&auto=format&fit=crop',
     'https://plus.unsplash.com/premium_photo-1682920140924-d8b5db318d97?q=80&w=692&auto=format&fit=crop',
   ];
-
+ 
   @override
   void initState() {
     super.initState();
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     });
   }
-
+ 
   @override
   void dispose() {
     _timer?.cancel();
@@ -78,22 +78,56 @@ class _LoginPageState extends State<LoginPage> {
     password.dispose();
     super.dispose();
   }
-
+ 
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: AppColors.errorRed,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+ 
   Future<void> _login() async {
+    // ── Reset visual error states ────────────────────────────────────────
     setState(() {
       showUsernameError = false;
       showPasswordError = false;
-      _isLoading = true;
     });
-
+ 
+    final u = username.text.trim();
+    final p = password.text;
+ 
+    // ── Client-side validation BEFORE calling the API ───────────────────
+    if (u.isEmpty && p.isEmpty) {
+      setState(() {
+        showUsernameError = true;
+        showPasswordError = true;
+      });
+      _showError('Please enter your username and password.');
+      return;
+    }
+    if (u.isEmpty) {
+      setState(() => showUsernameError = true);
+      _showError('Username is required.');
+      return;
+    }
+    if (p.isEmpty) {
+      setState(() => showPasswordError = true);
+      _showError('Password is required.');
+      return;
+    }
+ 
+    setState(() => _isLoading = true);
+ 
     try {
-      // ── 1. Check teacher-created student accounts first (local / offline) ──
-      final studentAccount = await SessionStorageService.authenticateStudent(
-        username.text.trim(),
-        password.text,
-      );
+      // ── 1. Check teacher-created student accounts first (offline) ──────
+      final studentAccount =
+          await SessionStorageService.authenticateStudent(u, p);
       if (studentAccount != null) {
-        await SessionStorageService.saveUsername(username.text.trim());
+        await SessionStorageService.saveUsername(u);
         await SessionStorageService.saveRole('student');
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
@@ -103,22 +137,32 @@ class _LoginPageState extends State<LoginPage> {
         );
         return;
       }
-
-      // ── 2. Fall through to API (teachers / normal users) ─────────────────
-      final loginData = await ApiService.login(
-        username.text.trim(),
-        password.text,
-      );
-
+ 
+      // ── 2. Fall through to API (teachers / normal users) ───────────────
+      final loginData = await ApiService.login(u, p);
       if (!mounted) return;
-
+ 
       if (loginData['success'] == true) {
-        await SessionStorageService.saveUsername(username.text.trim());
-
-        final role = loginData['role'] ?? 'student';
+        await SessionStorageService.saveUsername(u);
+ 
+        final role = (loginData['role'] as String?) ?? 'normal';
         await SessionStorageService.saveRole(role);
+ 
+        // Save teacher's user id if the response includes it.
+        final id = loginData['id'];
+        if (id != null) {
+          try {
+            // Tolerant of int or string from PHP json_encode.
+            final intId =
+                id is int ? id : int.tryParse(id.toString()) ?? 0;
+            if (intId > 0) {
+              await SessionStorageService.saveUserId(intId);
+            }
+          } catch (_) {}
+        }
+ 
         if (!mounted) return;
-
+ 
         Widget destination;
         if (role == 'teacher') {
           destination = const TeacherAccountPage();
@@ -127,31 +171,30 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           destination = const KaraokeHomePage(isRoot: true);
         }
-
+ 
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => destination),
           (route) => false,
         );
       } else {
-        final error = loginData['error'] ?? 'Login failed.';
-        if (error.toLowerCase().contains('username')) {
+        final error = (loginData['error'] as String?) ?? 'Login failed.';
+        final lower = error.toLowerCase();
+        if (lower.contains('username')) {
           setState(() => showUsernameError = true);
-        } else if (error.toLowerCase().contains('password')) {
+        } else if (lower.contains('password')) {
           setState(() => showPasswordError = true);
         }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error)));
+        _showError(error);
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Network error: $e')));
+      _showError('Network error: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,7 +238,8 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -236,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Padding(
                       padding: EdgeInsets.only(bottom: 4.0),
                       child: Text(
-                        'Invalid username',
+                        'Username is required or invalid',
                         style: TextStyle(
                           color: AppColors.errorRed,
                           fontSize: 12,
@@ -246,6 +290,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   TextField(
                     controller: username,
+                    textInputAction: TextInputAction.next,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Username',
@@ -259,6 +304,13 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: showUsernameError
+                            ? const BorderSide(
+                                color: AppColors.errorRed, width: 1.5)
+                            : BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -266,7 +318,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Padding(
                       padding: EdgeInsets.only(bottom: 4.0),
                       child: Text(
-                        'Invalid password',
+                        'Password is required or invalid',
                         style: TextStyle(
                           color: AppColors.errorRed,
                           fontSize: 12,
@@ -277,6 +329,8 @@ class _LoginPageState extends State<LoginPage> {
                   TextField(
                     controller: password,
                     obscureText: obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _isLoading ? null : _login(),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Password',
@@ -301,6 +355,13 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: showPasswordError
+                            ? const BorderSide(
+                                color: AppColors.errorRed, width: 1.5)
+                            : BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -311,6 +372,8 @@ class _LoginPageState extends State<LoginPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryCyan,
                         foregroundColor: Colors.black,
+                        disabledBackgroundColor:
+                            AppColors.primaryCyan.withValues(alpha: 0.5),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -339,7 +402,8 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const RegisterPage()),
                       );
                     },
                     child: Text.rich(
