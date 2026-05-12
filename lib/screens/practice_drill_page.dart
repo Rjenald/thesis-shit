@@ -4,11 +4,8 @@ import '../constants/app_colors.dart';
 import '../core/audio_service.dart';
 import '../core/note_utils.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared colour & message helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Shared helpers ───────────────────────────────────────────────────────────
 
-/// One colour per diatonic solfège syllable (matches kDoReMiSequence).
 const Map<String, Color> _noteColorMap = {
   'Do': Color(0xFFE53935),
   'Re': Color(0xFFFF7043),
@@ -48,14 +45,9 @@ String _fbMsg(PitchFeedback f) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PracticeDrillPage
-// ─────────────────────────────────────────────────────────────────────────────
+// ── PracticeDrillPage ───────────────────────────────────────────────────────
 
-/// Practice Drill Module — three student-friendly drills with
-/// CREPE AI real-time pitch detection.
 class PracticeDrillPage extends StatefulWidget {
-  /// Problem phrases handed in from a results page for Drill #3.
   final List<String> problemLines;
   const PracticeDrillPage({super.key, this.problemLines = const []});
 
@@ -89,8 +81,6 @@ class _PracticeDrillPageState extends State<PracticeDrillPage> {
       ),
     );
   }
-
-  // ── Header ────────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
@@ -140,8 +130,6 @@ class _PracticeDrillPageState extends State<PracticeDrillPage> {
       ),
     );
   }
-
-  // ── Tab bar ───────────────────────────────────────────────────────────────
 
   Widget _buildTabBar() {
     return Padding(
@@ -208,8 +196,6 @@ class _PracticeDrillPageState extends State<PracticeDrillPage> {
     );
   }
 
-  // ── Body ──────────────────────────────────────────────────────────────────
-
   Widget _buildBody() {
     switch (_tab) {
       case 0:
@@ -224,13 +210,10 @@ class _PracticeDrillPageState extends State<PracticeDrillPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared sub-widgets
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Shared widgets ──────────────────────────────────────────────────────────
 
-/// Horizontal pitch meter: blue (flat) | green (in tune) | orange (sharp).
 class _PitchMeter extends StatelessWidget {
-  final double cents; // −50 … +50
+  final double cents;
   final Color needleColor;
   const _PitchMeter({required this.cents, required this.needleColor});
 
@@ -243,7 +226,6 @@ class _PitchMeter extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           child: Stack(
             children: [
-              // Colour zones
               Row(
                 children: [
                   Expanded(
@@ -269,7 +251,6 @@ class _PitchMeter extends StatelessWidget {
                   ),
                 ],
               ),
-              // Needle
               Positioned.fill(
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
@@ -331,7 +312,6 @@ class _PitchMeter extends StatelessWidget {
   }
 }
 
-/// Animated "LIVE • Mic Active" badge shown when the mic is running.
 class _LiveBadge extends StatelessWidget {
   const _LiveBadge();
 
@@ -365,9 +345,7 @@ class _LiveBadge extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Drill #1 — Ascending Scale  (Do → Re → Mi → Fa → Sol → La → Ti → Do)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Drill #1 — Scale ─────────────────────────────────────────────────────────
 
 class _ScaleDrill extends StatefulWidget {
   const _ScaleDrill();
@@ -376,6 +354,7 @@ class _ScaleDrill extends StatefulWidget {
 }
 
 class _ScaleDrillState extends State<_ScaleDrill> {
+  // FIX: Fresh AudioService per drill
   final AudioService _audio = AudioService();
   StreamSubscription<NoteResult?>? _sub;
 
@@ -386,25 +365,22 @@ class _ScaleDrillState extends State<_ScaleDrill> {
   int _holdMs = 0;
   Timer? _holdTimer;
 
-  // Mic pulse
   bool _pulseTick = false;
   Timer? _pulseTimer;
 
-  static const _required = 1200; // ms in-tune to advance
+  static const _required = 1200;
   static final _scale = kDoReMiSequence;
-
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   @override
   void dispose() {
+    // FIX: Cancel stream first, then dispose AudioService fully
     _sub?.cancel();
+    _sub = null;
     _holdTimer?.cancel();
     _pulseTimer?.cancel();
-    _audio.dispose();
+    _audio.dispose(); // FULL DISPOSE — not just stop()
     super.dispose();
   }
-
-  // ── Pulse helpers ──────────────────────────────────────────────────────────
 
   void _startPulse() {
     _pulseTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
@@ -418,11 +394,10 @@ class _ScaleDrillState extends State<_ScaleDrill> {
     if (mounted) setState(() => _pulseTick = false);
   }
 
-  // ── Logic (unchanged from original) ───────────────────────────────────────
-
   Future<void> _toggle() async {
     if (_running) {
       await _sub?.cancel();
+      _sub = null;
       _holdTimer?.cancel();
       _holdTimer = null;
       _stopPulse();
@@ -434,6 +409,9 @@ class _ScaleDrillState extends State<_ScaleDrill> {
         _holdMs = 0;
       });
     } else {
+      // FIX: Preload CREPE before starting
+      await _audio.preloadCrepe();
+
       final ok = await _audio.start(targetFreq: _scale[_step].frequency);
       if (!ok) {
         if (mounted) {
@@ -479,6 +457,9 @@ class _ScaleDrillState extends State<_ScaleDrill> {
           _step++;
           _holdMs = 0;
         });
+
+        // FIX: Preload before restarting
+        await _audio.preloadCrepe();
         final ok = await _audio.start(targetFreq: _scale[_step].frequency);
         if (!ok || !mounted) return;
         _sub?.cancel();
@@ -508,9 +489,9 @@ class _ScaleDrillState extends State<_ScaleDrill> {
         });
       });
     } else {
-      // All steps complete
       _audio.stop();
       _sub?.cancel();
+      _sub = null;
       _stopPulse();
       setState(() {
         _running = false;
@@ -583,8 +564,6 @@ class _ScaleDrillState extends State<_ScaleDrill> {
     }
   }
 
-  // ── UI ─────────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final note = _scale[_step];
@@ -596,7 +575,6 @@ class _ScaleDrillState extends State<_ScaleDrill> {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       child: Column(
         children: [
-          // Instruction
           Text(
             'Sing each note and hold it in tune for 1.2 seconds',
             textAlign: TextAlign.center,
@@ -609,7 +587,7 @@ class _ScaleDrillState extends State<_ScaleDrill> {
           ),
           const SizedBox(height: 18),
 
-          // Step progress dots
+          // Step dots
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(_scale.length, (i) {
@@ -649,8 +627,6 @@ class _ScaleDrillState extends State<_ScaleDrill> {
             }),
           ),
           const SizedBox(height: 6),
-
-          // Solfège labels under dots
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(_scale.length, (i) {
@@ -673,7 +649,6 @@ class _ScaleDrillState extends State<_ScaleDrill> {
           ),
           const SizedBox(height: 22),
 
-          // Main note card
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             width: double.infinity,
@@ -697,13 +672,11 @@ class _ScaleDrillState extends State<_ScaleDrill> {
             ),
             child: Column(
               children: [
-                // Live badge
                 if (_running) ...[
                   const _LiveBadge(),
                   const SizedBox(height: 14),
                 ],
 
-                // Big solfège syllable
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 300),
                   style: TextStyle(
@@ -732,7 +705,6 @@ class _ScaleDrillState extends State<_ScaleDrill> {
                   ),
                 ),
 
-                // Running feedback
                 if (_running) ...[
                   const SizedBox(height: 18),
                   AnimatedSwitcher(
@@ -749,12 +721,9 @@ class _ScaleDrillState extends State<_ScaleDrill> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Pitch meter
                   _PitchMeter(cents: _liveCents, needleColor: fbColor),
                   const SizedBox(height: 18),
 
-                  // Hold progress bar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -791,9 +760,8 @@ class _ScaleDrillState extends State<_ScaleDrill> {
               ],
             ),
           ),
-          const SizedBox(height: 32),
 
-          // Mic button
+          const SizedBox(height: 32),
           _buildMicButton(fbColor),
           const SizedBox(height: 8),
           Text(
@@ -856,9 +824,7 @@ class _ScaleDrillState extends State<_ScaleDrill> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Drill #2 — Sustained Note (hold any note for 3 seconds)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Drill #2 — Sustain ───────────────────────────────────────────────────────
 
 class _SustainedNoteDrill extends StatefulWidget {
   const _SustainedNoteDrill();
@@ -867,6 +833,7 @@ class _SustainedNoteDrill extends StatefulWidget {
 }
 
 class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
+  // FIX: Fresh AudioService per drill
   final AudioService _audio = AudioService();
   StreamSubscription<NoteResult?>? _sub;
 
@@ -877,25 +844,23 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
   int _holdMs = 0;
   Timer? _holdTimer;
   int _passCount = 0;
-  int _targetIndex = 5; // A4 = La (index 5 in kDoReMiSequence)
+  int _targetIndex = 5;
 
   bool _pulseTick = false;
   Timer? _pulseTimer;
 
   static const _requiredMs = 3000;
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
-
   @override
   void dispose() {
+    // FIX: Cancel stream first, then dispose AudioService fully
     _sub?.cancel();
+    _sub = null;
     _holdTimer?.cancel();
     _pulseTimer?.cancel();
-    _audio.dispose();
+    _audio.dispose(); // FULL DISPOSE — not just stop()
     super.dispose();
   }
-
-  // ── Pulse helpers ──────────────────────────────────────────────────────────
 
   void _startPulse() {
     _pulseTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
@@ -909,11 +874,10 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
     if (mounted) setState(() => _pulseTick = false);
   }
 
-  // ── Logic (unchanged from original) ───────────────────────────────────────
-
   Future<void> _toggle() async {
     if (_running) {
       await _sub?.cancel();
+      _sub = null;
       _holdTimer?.cancel();
       _holdTimer = null;
       _stopPulse();
@@ -925,6 +889,10 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
       });
     } else {
       final target = kDoReMiSequence[_targetIndex];
+
+      // FIX: Preload CREPE before starting
+      await _audio.preloadCrepe();
+
       final ok = await _audio.start(targetFreq: target.frequency);
       if (!ok) {
         if (mounted) {
@@ -990,8 +958,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
     }
   }
 
-  // ── UI ─────────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final target = kDoReMiSequence[_targetIndex];
@@ -1016,7 +982,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
           ),
           const SizedBox(height: 16),
 
-          // Note picker (hidden while running)
           if (!_running) ...[
             const Text(
               'Pick a note to practise:',
@@ -1068,7 +1033,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
             const SizedBox(height: 20),
           ],
 
-          // Main card
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -1096,7 +1060,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
                   const SizedBox(height: 14),
                 ],
 
-                // Target note
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 300),
                   style: TextStyle(
@@ -1119,7 +1082,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
                 if (_running) ...[
                   const SizedBox(height: 18),
 
-                  // Live detected note
                   if (_noteDisplay.isNotEmpty)
                     Text(
                       _noteDisplay,
@@ -1145,12 +1107,9 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Pitch meter
                   _PitchMeter(cents: _liveCents, needleColor: fbColor),
                   const SizedBox(height: 18),
 
-                  // Hold progress
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1162,7 +1121,6 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
                           fontFamily: 'Roboto',
                         ),
                       ),
-                      // Star reps (up to 5 visible)
                       Row(
                         children: List.generate(
                           _passCount.clamp(0, 5),
@@ -1205,9 +1163,8 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
               ],
             ),
           ),
-          const SizedBox(height: 32),
 
-          // Mic button
+          const SizedBox(height: 32),
           Center(child: _buildMicButton()),
           const SizedBox(height: 8),
           Center(
@@ -1272,9 +1229,7 @@ class _SustainedNoteDrillState extends State<_SustainedNoteDrill> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Drill #3 — Phrase Loop  (sing → score → repeat)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Drill #3 — Phrase ────────────────────────────────────────────────────────
 
 class _PhraseLoopDrill extends StatefulWidget {
   final List<String> phrases;
@@ -1284,6 +1239,7 @@ class _PhraseLoopDrill extends StatefulWidget {
 }
 
 class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
+  // FIX: Fresh AudioService per drill
   final AudioService _audio = AudioService();
   StreamSubscription<NoteResult?>? _sub;
 
@@ -1293,21 +1249,16 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
   PitchFeedback _feedback = PitchFeedback.noSignal;
   String _liveNote = '';
 
-  // Accumulate readings for this rep
   final List<double> _repCents = [];
   int _repCount = 0;
   String _lastRepResult = '';
   Color _lastRepColor = AppColors.grey;
 
-  // Custom phrase
   final TextEditingController _customPhraseCtrl = TextEditingController();
   bool _useCustom = false;
 
-  // Pulse
   bool _pulseTick = false;
   Timer? _pulseTimer;
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   List<String> get _phrases {
     if (_useCustom && _customPhraseCtrl.text.trim().isNotEmpty) {
@@ -1318,18 +1269,16 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
 
   String get _currentPhrase => _phrases[_phraseIndex % _phrases.length];
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
-
   @override
   void dispose() {
+    // FIX: Cancel stream first, then dispose AudioService fully
     _sub?.cancel();
+    _sub = null;
     _pulseTimer?.cancel();
-    _audio.dispose();
+    _audio.dispose(); // FULL DISPOSE — not just stop()
     _customPhraseCtrl.dispose();
     super.dispose();
   }
-
-  // ── Pulse helpers ──────────────────────────────────────────────────────────
 
   void _startPulse() {
     _pulseTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
@@ -1343,8 +1292,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
     if (mounted) setState(() => _pulseTick = false);
   }
 
-  // ── Logic (unchanged from original) ───────────────────────────────────────
-
   Future<void> _toggle() async {
     if (_running) {
       await _endRep();
@@ -1355,6 +1302,10 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
 
   Future<void> _startRep() async {
     _repCents.clear();
+
+    // FIX: Preload CREPE before starting
+    await _audio.preloadCrepe();
+
     final ok = await _audio.start();
     if (!ok) {
       if (mounted) {
@@ -1411,7 +1362,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
         resultColor = Colors.orangeAccent;
       }
       _repCount++;
-      // Advance phrase every 3 reps
       if (_repCount % 3 == 0 && _phrases.length > 1) {
         _phraseIndex = (_phraseIndex + 1) % _phrases.length;
       }
@@ -1427,8 +1377,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
       _repCents.clear();
     });
   }
-
-  // ── UI ─────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -1451,7 +1399,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
           ),
           const SizedBox(height: 16),
 
-          // Custom phrase toggle
           Row(
             children: [
               Switch(
@@ -1496,7 +1443,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
           ],
           const SizedBox(height: 16),
 
-          // Phrase card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -1533,7 +1479,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
           ),
           const SizedBox(height: 16),
 
-          // Live feedback area
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             padding: _running ? const EdgeInsets.all(20) : EdgeInsets.zero,
@@ -1549,7 +1494,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
                     children: [
                       const _LiveBadge(),
                       const SizedBox(height: 12),
-                      // Live note display
                       Text(
                         _liveNote.isEmpty ? '—' : _liveNote,
                         style: TextStyle(
@@ -1580,7 +1524,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
                 : const SizedBox.shrink(),
           ),
 
-          // Last rep result
           if (_lastRepResult.isNotEmpty && !_running) ...[
             const SizedBox(height: 16),
             Container(
@@ -1620,7 +1563,6 @@ class _PhraseLoopDrillState extends State<_PhraseLoopDrill> {
           ],
           const SizedBox(height: 32),
 
-          // Mic button
           Center(child: _buildMicButton()),
           const SizedBox(height: 8),
           Center(

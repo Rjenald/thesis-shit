@@ -1,337 +1,363 @@
-/// AudioService — streams mic PCM through the on-device CREPE TFLite model
-/// and emits NoteResult events.
-///
-/// Primary:  On-device CREPE TFLite (huni_crepe.tflite) — highest accuracy.
-/// Fallback: On-device YIN pitch detector — works if model fails to load.
-///
-/// No WebSocket or internet connection required.
+/// AudioService — Pure Dart Real-Time Pitch Detection
+/// Uses YIN algorithm (no TFLite, no native dependencies, no FFI)
 library;
 
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
+import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
 
-import 'local_pitch_detector.dart';
 import 'note_utils.dart';
 
 class AudioService {
-  // ── Sample rate ─────────────────────────────────────────────────────────────
-  // CREPE requires exactly 16kHz. We record at 16kHz directly.
+  // ── Audio Constants ─────────────────────────────────────────────────────────
   static const int _sampleRate = 16000;
+  static const int _bufferSize = 2048;
+  static const int _hopSize = 512;
+  static const double _threshold = 0.15;
+  static const double _minFreq = 50.0;
+  static const double _maxFreq = 1500.0;
 
-  // ── CREPE constants ─────────────────────────────────────────────────────────
-  // These must match exactly how the model was trained in Colab.
-  static const int _frameSize = 1024;   // samples per CREPE input frame
-  static const int _hopSize   = 160;    // samples to advance each frame (10ms)
-  static const int _nBins     = 360;    // CREPE output bins
-  static const double _minPitchHz = 32.70;   // C1 — lowest CREPE can detect
-  static const double _maxPitchHz = 1975.5;  // B6 — highest CREPE can detect
-
-  // ── Tuning constants ────────────────────────────────────────────────────────
-
-
-  /// Minimum CREPE confidence to accept a result.
-  /// Below this = noise, silence, or uncertain — discard.
-  static const double _minConfidence = 0.55;
-
-  /// Minimum time between emitted results (rate limiter).
-  /// 80 ms = ~12 Hz update rate. Fast enough for UI, not too noisy.
+  // ── Smoothing ───────────────────────────────────────────────────────────────
   static const Duration _minEmitInterval = Duration(milliseconds: 80);
+  static const int _medianWindowSize = 5;
+  static const double _emaAlpha = 0.25;
 
-  // ── Internal state ──────────────────────────────────────────────────────────
+  // ── State ───────────────────────────────────────────────────────────────────
   final _recorder = AudioRecorder();
-  Interpreter? _interpreter;           // CREPE TFLite model
-  bool _crepeLoaded = false;           // true if model loaded successfully
-  bool _useLocalFallback = false;      // true if falling back to YIN
+  StreamSubscription<Uint8List>? _audioSub;
 
-  StreamSubscription<List<int>>? _audioSub;
+  StreamController<NoteResult?>? _resultController;
+  Stream<NoteResult?> get results {
+    _resultController ??= StreamController<NoteResult?>.broadcast();
+    return _resultController!.stream;
+  }
 
-  final _resultController = StreamController<NoteResult?>.broadcast();
-  Stream<NoteResult?> get results => _resultController.stream;
-
-  // Raw PCM bytes stream — for external consumers
   final _bytesController = StreamController<List<int>>.broadcast();
   Stream<List<int>> get rawBytes => _bytesController.stream;
 
   bool _isRunning = false;
-  bool _disposed  = false;
 
-  final LocalPitchDetector _localDetector = LocalPitchDetector();
   double? _targetFreq;
 
-  // Rolling audio buffer — accumulates PCM samples between chunks
   final List<double> _buffer = [];
+  final List<double> _recentHz = [];
+  double? _smoothedHz;
+  double? _lastConfidence;
 
-  // Rate-limiter state
   DateTime _lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get isRunning => _isRunning;
 
-  // ── Public API ──────────────────────────────────────────────────────────────
+  // ── Audio Session ─────────────────────────────────────────────────────────
+  Future<void> _configureAudioSession() async {
+    final session = await AudioSession.instance;
 
-  /// Pre-load the CREPE model without starting the microphone.
-  /// Call this in initState() so the model is ready when user hits Record.
-  Future<void> preloadCrepe() async {
-    await _loadCrepeModel();
+    final categoryOptions =
+        AVAudioSessionCategoryOptions.defaultToSpeaker |
+        AVAudioSessionCategoryOptions.allowBluetooth;
+
+    await session.configure(
+      AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.record,
+        avAudioSessionCategoryOptions: categoryOptions,
+        avAudioSessionMode: AVAudioSessionMode.measurement,
+        androidAudioAttributes: const AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.speech,
+          flags: AndroidAudioFlags.none,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ),
+    );
+
+    await session.setActive(true);
   }
 
-  /// Request mic permission, load CREPE model, start streaming.
-  /// Returns false only if microphone permission is denied.
-  Future<bool> start({double? targetFreq}) async {
-    if (_disposed || _isRunning) return _isRunning;
+  // ── Public API ──────────────────────────────────────────────────────────────
 
-    _targetFreq  = targetFreq;
-    _lastEmit    = DateTime.fromMillisecondsSinceEpoch(0);
+  Future<void> preloadCrepe() async {
+    // YIN doesn't need preloading, but this method exists for compatibility
+  }
+
+  /// Start recording and pitch detection
+  /// [targetFreq] = optional target frequency for pitch matching
+  /// [enableMonitoring] = whether to enable real-time voice monitoring (ignored in pure YIN mode)
+  Future<bool> start({double? targetFreq, bool enableMonitoring = true}) async {
+    if (_isRunning) return true;
+
+    _targetFreq = targetFreq;
+    _lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
     _buffer.clear();
-    _localDetector.reset();
+    _recentHz.clear();
+    _smoothedHz = null;
+    _lastConfidence = null;
 
-    // ── 1. Mic permission ───────────────────────────────────────────────────
+    try {
+      await _configureAudioSession();
+    } catch (e) {
+      debugPrint('Audio session config error: \$e');
+    }
+
     final status = await Permission.microphone.request();
-    if (!status.isGranted || _disposed) return false;
-
-    // ── 2. Load CREPE TFLite model (if not already loaded) ─────────────────
-    if (!_crepeLoaded) {
-      await _loadCrepeModel();
+    if (!status.isGranted) {
+      return false;
     }
 
-    if (!_crepeLoaded) {
-      // Model failed to load — use YIN local detector as fallback
-      _useLocalFallback = true;
-      print('⚠️ CREPE model not available — using local YIN fallback');
-    } else {
-      _useLocalFallback = false;
-      print('✅ CREPE model ready — using on-device pitch detection');
+    final hasPermission = await _recorder.hasPermission();
+    if (!hasPermission) {
+      return false;
     }
 
-    // ── 3. Start microphone PCM stream at 16kHz ─────────────────────────────
-    const config = RecordConfig(
+    final config = RecordConfig(
       encoder: AudioEncoder.pcm16bits,
-      sampleRate: _sampleRate,          // 16kHz — required by CREPE
-      numChannels: 1,                   // mono
+      sampleRate: _sampleRate,
+      numChannels: 1,
       autoGain: false,
       echoCancel: false,
       noiseSuppress: false,
     );
 
-    if (_disposed) return false;
-
     final stream = await _recorder.startStream(config);
-
-    if (_disposed) {
-      await _recorder.stop();
-      return false;
-    }
-
     _isRunning = true;
 
-    // ── 4. Process PCM bytes as they arrive from the microphone ─────────────
     _audioSub = stream.listen(
-      (List<int> bytes) {
-        if (_disposed) return;
-
-        // Broadcast raw PCM bytes to any external listeners
-        if (!_bytesController.isClosed) {
-          _bytesController.add(bytes);
-        }
-
-        if (_useLocalFallback) {
-          // ── YIN fallback path ─────────────────────────────────────────────
-          final hz = _localDetector.process(bytes);
-          if (hz == null) return; // buffer not full yet
-          if (hz > 0) {
-            _emitIfReady(analyzeFrequency(
-              hz,
-              targetFreq: _targetFreq,
-              confidence: 1.0,
-            ));
-          } else {
-            _emitIfReady(null); // silence
-          }
-        } else {
-          // ── CREPE on-device path ──────────────────────────────────────────
-          _processPcmBytes(bytes);
-        }
+      _processAudioChunk,
+      onError: (error) {
+        debugPrint('Stream error: \$error');
       },
-      onError: (_) {
-        if (!_disposed) _emitIfReady(null);
+      onDone: () {
+        _isRunning = false;
       },
     );
 
     return true;
   }
 
-  // ── CREPE model loading ─────────────────────────────────────────────────────
-
-  Future<void> _loadCrepeModel() async {
-    try {
-      _interpreter = await Interpreter.fromAsset(
-        'assets/models/huni_crepe.tflite',
-      );
-      _crepeLoaded = true;
-      print('✅ CREPE TFLite model loaded');
-      print('   Input shape  : ${_interpreter!.getInputTensor(0).shape}');
-      print('   Output shape : ${_interpreter!.getOutputTensor(0).shape}');
-    } catch (e) {
-      _crepeLoaded = false;
-      _useLocalFallback = true;
-      print('❌ Failed to load CREPE model: $e');
-      print('   Falling back to local YIN detector');
-    }
+  /// Toggle real-time voice monitoring (no-op in pure YIN mode, kept for API compatibility)
+  void setMonitoring(bool enabled) {
+    // Pure YIN mode doesn't support real-time monitoring toggle
+    // This method exists for API compatibility with the UI
+    debugPrint('Monitoring set to: \$enabled (no-op in YIN mode)');
   }
 
-  // ── CREPE inference pipeline ────────────────────────────────────────────────
+  // ── Audio Processing ────────────────────────────────────────────────────────
 
-  /// Convert raw PCM bytes → float samples → buffer → run CREPE per frame.
-  void _processPcmBytes(List<int> bytes) {
-    // Step 1: Convert PCM16 bytes to float32 samples
-    // PCM16 = 2 bytes per sample, little-endian, range -32768 to 32767
-    for (int i = 0; i + 1 < bytes.length; i += 2) {
-      final int raw = bytes[i] | (bytes[i + 1] << 8);
-      // Convert unsigned to signed
-      final int signed = raw > 32767 ? raw - 65536 : raw;
-      // Normalize to -1.0 to 1.0
+  void _processAudioChunk(Uint8List bytes) {
+    if (bytes.isEmpty) return;
+
+    // Forward raw bytes for WAV saving
+    _bytesController.add(bytes.toList());
+
+    final byteData = ByteData.sublistView(bytes);
+    final sampleCount = bytes.length ~/ 2;
+
+    for (int i = 0; i < sampleCount; i++) {
+      final int signed = byteData.getInt16(i * 2, Endian.little);
       _buffer.add(signed / 32768.0);
     }
 
-    // Step 2: Process every complete 1024-sample frame
-    while (_buffer.length >= _frameSize) {
-      // Extract one frame
-      final frame = _buffer.sublist(0, _frameSize);
+    const maxBufferSize = _bufferSize * 4;
+    if (_buffer.length > maxBufferSize) {
+      _buffer.removeRange(0, _buffer.length - maxBufferSize);
+    }
 
-      // Slide window forward by hopSize (10ms)
+    while (_buffer.length >= _bufferSize) {
+      final frame = Float64List(_bufferSize);
+      for (int i = 0; i < _bufferSize; i++) {
+        frame[i] = _buffer[i];
+      }
+
       _buffer.removeRange(0, _hopSize);
 
-      // Step 3: Run CREPE on this frame
-      final result = _runCrepe(frame);
+      final hz = _yinPitchDetect(frame);
 
-      if (result != null) {
-        _emitIfReady(result);
+      if (hz != null && hz >= _minFreq && hz <= _maxFreq) {
+        final confidence = _calculateConfidence(frame, hz);
+        final result = analyzeFrequency(
+          hz,
+          targetFreq: _targetFreq,
+          confidence: confidence,
+        );
+        _handleDetectedPitch(result);
+      }
+    }
+  }
+
+  // ── YIN Pitch Detection ─────────────────────────────────────────────────────
+
+  double? _yinPitchDetect(List<double> samples) {
+    final int tauMax = _bufferSize ~/ 2;
+    final List<double> diffFunction = List.filled(tauMax, 0.0);
+
+    final int safeMax = _bufferSize - tauMax;
+
+    for (int tau = 1; tau < tauMax; tau++) {
+      double diff = 0.0;
+      for (int i = 0; i < safeMax; i++) {
+        final double delta = samples[i] - samples[i + tau];
+        diff += delta * delta;
+      }
+      diffFunction[tau] = diff;
+    }
+
+    final List<double> cmnd = List.filled(tauMax, 0.0);
+    cmnd[0] = 1.0;
+    double runningSum = 0.0;
+
+    for (int tau = 1; tau < tauMax; tau++) {
+      runningSum += diffFunction[tau];
+      if (runningSum < 1e-10) {
+        cmnd[tau] = 1.0;
       } else {
-        _emitIfReady(null);
+        cmnd[tau] = diffFunction[tau] * tau / runningSum;
       }
     }
-  }
 
-  /// Run CREPE model on one 1024-sample frame.
-  /// Returns a NoteResult or null if no pitch detected.
-  NoteResult? _runCrepe(List<double> frame) {
-    if (_interpreter == null || !_crepeLoaded) return null;
+    int? tauEstimate;
+    for (int tau = 2; tau < tauMax - 1; tau++) {
+      if (cmnd[tau] < _threshold) {
+        if (cmnd[tau] < cmnd[tau - 1] && cmnd[tau] < cmnd[tau + 1]) {
+          tauEstimate = tau;
+          break;
+        }
+      }
+    }
 
-    // Step 1: Normalize the frame
-    // Subtract mean, divide by std — same as training preprocessing
-    double mean = frame.reduce((a, b) => a + b) / frame.length;
-    List<double> centered = frame.map((s) => s - mean).toList();
+    if (tauEstimate == null) return null;
 
-    double variance = centered
-        .map((s) => s * s)
-        .reduce((a, b) => a + b) / centered.length;
-    double std = sqrt(variance);
+    final double betterTau;
+    if (tauEstimate > 0 && tauEstimate < tauMax - 1) {
+      final alpha = diffFunction[tauEstimate - 1];
+      final beta = diffFunction[tauEstimate];
+      final gamma = diffFunction[tauEstimate + 1];
 
-    List<double> normalized;
-    if (std > 1e-6) {
-      normalized = centered.map((s) => s / std).toList();
+      final denominator = alpha - 2 * beta + gamma;
+      if (denominator.abs() > 1e-10) {
+        final p = 0.5 * (alpha - gamma) / denominator;
+        betterTau = tauEstimate + p;
+      } else {
+        betterTau = tauEstimate.toDouble();
+      }
     } else {
-      // Silent frame — std is near zero, no signal
+      betterTau = tauEstimate.toDouble();
+    }
+
+    final hz = _sampleRate / betterTau;
+
+    if (hz < _minFreq || hz > _maxFreq || hz.isNaN || hz.isInfinite) {
       return null;
     }
 
-    // Step 2: Prepare input tensor — shape [1, 1024, 1]
-    // CREPE expects (batch, samples, channels)
-    final input = [
-      normalized.map((s) => [s]).toList()
-    ];
-
-    // Step 3: Prepare output tensor — shape [1, 360]
-    final output = [List<double>.filled(_nBins, 0.0)];
-
-    // Step 4: Run inference
-    try {
-      _interpreter!.run(input, output);
-    } catch (e) {
-      print('❌ CREPE inference error: $e');
-      return null;
-    }
-
-    // Step 5: Read 360 bin probabilities
-    final bins = output[0];
-
-    // Step 6: Find the bin with highest confidence
-    int maxBin = 0;
-    double maxConf = bins[0];
-    for (int i = 1; i < _nBins; i++) {
-      if (bins[i] > maxConf) {
-        maxConf = bins[i];
-        maxBin  = i;
-      }
-    }
-
-    // Step 7: Gate on minimum confidence
-    // Below 0.55 = noise, silence, or uncertain transition
-    if (maxConf < _minConfidence) return null;
-
-    // Step 8: Convert bin index → Hz
-    // CREPE covers C1 (32.7 Hz) to B6 (1975.5 Hz) across 360 bins
-    final cents = maxBin * (6000.0 / (_nBins - 1));
-    final hz    = _minPitchHz * pow(2, cents / 1200.0);
-
-    // Step 9: Sanity check — pitch must be in human singing range
-    if (hz < _minPitchHz || hz > _maxPitchHz) return null;
-
-    // Step 10: Convert Hz → NoteResult (note name, cents, flat/sharp)
-    return analyzeFrequency(
-      hz,
-      targetFreq: _targetFreq,
-      confidence: maxConf,
-    );
+    return hz;
   }
 
-  // ── Private helpers ─────────────────────────────────────────────────────────
+  double _calculateConfidence(List<double> samples, double hz) {
+    double maxAmp = 0;
+    double sumSquares = 0;
 
-  /// Emit a result only if the rate-limiter allows it.
-  /// Prevents flooding the UI at 100+ Hz.
+    for (final s in samples) {
+      final abs = s.abs();
+      if (abs > maxAmp) maxAmp = abs;
+      sumSquares += s * s;
+    }
+
+    final rms = sqrt(sumSquares / samples.length);
+    double confidence = (rms * 4).clamp(0.3, 1.0);
+    if (maxAmp < 0.01) confidence *= 0.5;
+
+    return confidence;
+  }
+
+  // ── Temporal Smoothing ──────────────────────────────────────────────────────
+
+  void _handleDetectedPitch(NoteResult result) {
+    _recentHz.add(result.frequency);
+    if (_recentHz.length > _medianWindowSize) {
+      _recentHz.removeAt(0);
+    }
+
+    final medianHz = _calculateMedian(_recentHz);
+
+    if (_smoothedHz == null) {
+      _smoothedHz = medianHz;
+    } else {
+      _smoothedHz = _emaAlpha * medianHz + (1 - _emaAlpha) * _smoothedHz!;
+    }
+
+    if (_lastConfidence == null) {
+      _lastConfidence = result.confidence;
+    } else {
+      _lastConfidence = 0.7 * result.confidence + 0.3 * _lastConfidence!;
+    }
+
+    final smoothedResult = analyzeFrequency(
+      _smoothedHz!,
+      targetFreq: _targetFreq,
+      confidence: _lastConfidence!,
+    );
+
+    _emitIfReady(smoothedResult);
+  }
+
+  double _calculateMedian(List<double> values) {
+    if (values.isEmpty) return 0;
+    final sorted = List<double>.from(values)..sort();
+    final mid = sorted.length ~/ 2;
+    if (sorted.length % 2 == 0) {
+      return (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+    return sorted[mid];
+  }
+
+  // ── Rate Limiter ────────────────────────────────────────────────────────────
+
   void _emitIfReady(NoteResult? result) {
-    if (_disposed) return;
+    if (_resultController == null || _resultController!.isClosed) return;
+
     final now = DateTime.now();
     if (now.difference(_lastEmit) < _minEmitInterval) return;
     _lastEmit = now;
-    _resultController.add(result);
+    _resultController!.add(result);
   }
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
-  /// Stop recording. Safe to call multiple times.
   Future<void> stop() async {
     if (!_isRunning) return;
     _isRunning = false;
-    _useLocalFallback = false;
     _buffer.clear();
-    _localDetector.reset();
+    _recentHz.clear();
+    _smoothedHz = null;
+    _lastConfidence = null;
 
     await _audioSub?.cancel();
     _audioSub = null;
     await _recorder.stop();
+
+    final session = await AudioSession.instance;
+    await session.setActive(false);
   }
 
-  /// Dispose the service. Safe to call even if stop() was not called.
+  /// Full cleanup — call this in dispose()
   void dispose() {
-    if (_disposed) return;
-    _disposed   = true;
-    _isRunning  = false;
+    _isRunning = false;
 
     _audioSub?.cancel();
     _audioSub = null;
 
-    _resultController.close();
+    _resultController?.close();
+    _resultController = null;
+
     _bytesController.close();
     _buffer.clear();
+    _recentHz.clear();
 
-    _interpreter?.close();
-    _interpreter = null;
-    _crepeLoaded = false;
-
-    _recorder.stop().then((_) => _recorder.dispose()).ignore();
+    _recorder.stop().ignore();
   }
 }

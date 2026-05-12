@@ -8,9 +8,6 @@ import '../services/session_storage_service.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
-
-  /// Set to true when reached from a class assignment.
-  /// Changes the action buttons to "Try Again" | "Submit".
   final bool isAssignment;
 
   const ResultsPage({
@@ -24,23 +21,18 @@ class ResultsPage extends StatefulWidget {
 }
 
 class _ResultsPageState extends State<ResultsPage> {
-  bool _saved       = false;
-  bool _saving      = false;
-  bool _downloaded  = false;   // true once song is in DownloadsService
-
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  bool _saved = false;
+  bool _saving = false;
+  bool _downloaded = false;
 
   @override
   void initState() {
     super.initState();
-    // Auto-save song to downloads as soon as the results page opens.
     WidgetsBinding.instance.addPostFrameCallback((_) => _autoDownload());
   }
 
-  /// Saves the song metadata to DownloadsService and shows a brief snackbar.
   Future<void> _autoDownload() async {
     final s = widget.session;
-    // Look up language from the song catalog.
     final match = TagalogBisayaSongs.songs.cast<KaraokeSong?>().firstWhere(
       (song) =>
           song!.title.toLowerCase() == s.songTitle.toLowerCase() &&
@@ -56,10 +48,16 @@ class _ResultsPageState extends State<ResultsPage> {
       SnackBar(
         content: const Row(
           children: [
-            Icon(Icons.download_done_rounded, color: Color(0xFF4CAF50), size: 18),
+            Icon(
+              Icons.download_done_rounded,
+              color: Color(0xFF4CAF50),
+              size: 18,
+            ),
             SizedBox(width: 8),
-            Text('Song saved to Downloads',
-                style: TextStyle(color: Colors.white, fontFamily: 'Roboto')),
+            Text(
+              'Song saved to Downloads',
+              style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+            ),
           ],
         ),
         backgroundColor: AppColors.cardBg,
@@ -71,35 +69,33 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  /// Share song info + score via native share sheet.
   void _shareSong() {
-    final s        = widget.session;
+    final s = widget.session;
     final scoreInt = s.score.round();
     final text =
-        '🎤 I just sang "${s.songTitle}" by ${s.songArtist} on Huni Karaoke!\n'
-        '🏆 Score: $scoreInt% — ${_feedbackLabel(scoreInt)}\n\n'
+        'I just sang "${s.songTitle}" by ${s.songArtist} on Huni Karaoke!\n'
+        'Score: $scoreInt% - ${_feedbackLabel(scoreInt)}\n\n'
         'Search on YouTube: https://www.youtube.com/results?search_query='
         '${Uri.encodeComponent('${s.songTitle} ${s.songArtist} karaoke')}\n\n'
-        'Try it on Huni Karaoke App 🎵';
-    Share.share(text, subject: '${s.songTitle} – My Karaoke Score');
+        'Try it on Huni Karaoke App';
+    Share.share(text, subject: '${s.songTitle} - My Karaoke Score');
   }
 
-  // ── Color palette ──────────────────────────────────────────────────────────
-  static const _onTuneColor  = Color(0xFF4CAF50); // green  — correct
-  static const _offTuneColor = Color(0xFFF44336); // red    — flat / sharp
-  static const _silentColor  = Color(0xFF757575); // grey   — no signal
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  static const _onTuneColor = Color(0xFF4CAF50);
+  static const _offTuneColor = Color(0xFFF44336);
+  static const _silentColor = Color(0xFF757575);
 
   Color _lineColor(LyricPitchData line) {
     switch (line.status) {
-      case LineStatus.correct:  return _onTuneColor;
+      case LineStatus.correct:
+        return _onTuneColor;
       case LineStatus.flat:
-      case LineStatus.sharp:    return _offTuneColor;
-      case LineStatus.noSignal: return _silentColor;
+      case LineStatus.sharp:
+        return _offTuneColor;
+      case LineStatus.noSignal:
+        return _silentColor;
     }
   }
-
 
   String _feedbackLabel(int scoreInt) {
     if (scoreInt >= 80) return 'Good';
@@ -143,11 +139,122 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // Get recommendation based on performance
+  String _getRecommendationTitle() {
+    final s = widget.session;
+    final lines = s.lyricResults.where((l) => l.lyricText.isNotEmpty).toList();
+
+    int flatCount = 0;
+    int sharpCount = 0;
+    int noSignalCount = 0;
+
+    for (final line in lines) {
+      switch (line.status) {
+        case LineStatus.flat:
+          flatCount++;
+          break;
+        case LineStatus.sharp:
+          sharpCount++;
+          break;
+        case LineStatus.noSignal:
+          noSignalCount++;
+          break;
+        default:
+          break;
+      }
+    }
+
+    final total = lines.length;
+
+    if (noSignalCount > total * 0.15) return 'Sustain Drill';
+    if (flatCount > sharpCount && flatCount > total * 0.2)
+      return 'Pitch Up Drill';
+    if (sharpCount > flatCount && sharpCount > total * 0.2)
+      return 'Pitch Down Drill';
+    if (s.score < 60) return 'Scale Practice';
+    if (s.score < 80) return 'Voice Classification';
+    return 'Solfege Pitch';
+  }
+
+  String _getRecommendationSubtitle() {
+    final title = _getRecommendationTitle();
+    switch (title) {
+      case 'Sustain Drill':
+        return 'Hold notes steady for 3 seconds';
+      case 'Pitch Up Drill':
+        return 'Practice singing higher notes';
+      case 'Pitch Down Drill':
+        return 'Practice singing lower notes';
+      case 'Scale Practice':
+        return 'Run through Do to Ti scale';
+      case 'Voice Classification':
+        return 'Discover your vocal range';
+      default:
+        return 'Match pitch with piano keys';
+    }
+  }
+
+  IconData _getRecommendationIcon() {
+    final title = _getRecommendationTitle();
+    switch (title) {
+      case 'Sustain Drill':
+        return Icons.timer;
+      case 'Pitch Up Drill':
+        return Icons.arrow_upward;
+      case 'Pitch Down Drill':
+        return Icons.arrow_downward;
+      case 'Scale Practice':
+        return Icons.music_note;
+      case 'Voice Classification':
+        return Icons.record_voice_over;
+      default:
+        return Icons.piano;
+    }
+  }
+
+  Color _getRecommendationColor() {
+    final title = _getRecommendationTitle();
+    switch (title) {
+      case 'Sustain Drill':
+        return const Color(0xFF9C27B0);
+      case 'Pitch Up Drill':
+        return const Color(0xFF2196F3);
+      case 'Pitch Down Drill':
+        return const Color(0xFFFF9800);
+      case 'Scale Practice':
+        return const Color(0xFF00E5FF);
+      case 'Voice Classification':
+        return const Color(0xFFE91E63);
+      default:
+        return const Color(0xFF4CAF50);
+    }
+  }
+
+  void _navigateToDrill() {
+    final title = _getRecommendationTitle();
+    String route;
+    switch (title) {
+      case 'Sustain Drill':
+      case 'Scale Practice':
+        route = '/practice-drills';
+        break;
+      case 'Pitch Up Drill':
+      case 'Pitch Down Drill':
+      case 'Solfege Pitch':
+        route = '/solfege-pitch';
+        break;
+      case 'Voice Classification':
+        route = '/voice-classification';
+        break;
+      default:
+        route = '/practice-drills';
+    }
+    Navigator.pushNamed(context, route);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final s        = widget.session;
+    final s = widget.session;
     final scoreInt = s.score.round();
 
     return Scaffold(
@@ -167,6 +274,8 @@ class _ResultsPageState extends State<ResultsPage> {
                   const SizedBox(height: 20),
                   _buildLyricsResults(s),
                   const SizedBox(height: 24),
+                  _buildRecommendationButton(),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -176,8 +285,6 @@ class _ResultsPageState extends State<ResultsPage> {
       ),
     );
   }
-
-  // ── Header ─────────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
@@ -204,8 +311,6 @@ class _ResultsPageState extends State<ResultsPage> {
             ),
           ),
           const Spacer(),
-
-          // Download indicator
           if (_downloaded)
             Container(
               margin: const EdgeInsets.only(right: 8),
@@ -214,35 +319,44 @@ class _ResultsPageState extends State<ResultsPage> {
                 color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFF4CAF50).withValues(alpha: 0.4)),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                ),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.download_done_rounded,
-                      color: Color(0xFF4CAF50), size: 14),
+                  Icon(
+                    Icons.download_done_rounded,
+                    color: Color(0xFF4CAF50),
+                    size: 14,
+                  ),
                   SizedBox(width: 4),
-                  Text('Downloaded',
-                      style: TextStyle(
-                          color: Color(0xFF4CAF50),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Roboto')),
+                  Text(
+                    'Downloaded',
+                    style: TextStyle(
+                      color: Color(0xFF4CAF50),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ],
               ),
             ),
-
-          // Share button
           GestureDetector(
             onTap: _shareSong,
             child: Container(
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.07),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.share_outlined,
-                  color: Colors.white, size: 18),
+              child: const Icon(
+                Icons.share_outlined,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
         ],
@@ -250,13 +364,10 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // ── Heatmap ────────────────────────────────────────────────────────────────
-
   Widget _buildHeatmap(SessionResult s) {
     final lines = s.lyricResults.where((l) => l.lyricText.isNotEmpty).toList();
     final duration = s.durationSeconds > 0 ? s.durationSeconds : 210;
 
-    // Timeline tick marks every 30 s
     final ticks = <int>[];
     for (int t = 30; t <= duration; t += 30) {
       ticks.add(t);
@@ -265,7 +376,6 @@ class _ResultsPageState extends State<ResultsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Legend
         Row(
           children: [
             _legendDot(_offTuneColor, 'Flat / Sharp'),
@@ -274,8 +384,6 @@ class _ResultsPageState extends State<ResultsPage> {
           ],
         ),
         const SizedBox(height: 8),
-
-        // Heatmap colour bar
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: SizedBox(
@@ -283,15 +391,10 @@ class _ResultsPageState extends State<ResultsPage> {
             width: double.infinity,
             child: lines.isEmpty
                 ? Container(color: Colors.white12)
-                : CustomPaint(
-                    painter: _HeatmapPainter(lines, _lineColor),
-                  ),
+                : CustomPaint(painter: _HeatmapPainter(lines, _lineColor)),
           ),
         ),
-
         const SizedBox(height: 4),
-
-        // Timeline labels
         if (ticks.isNotEmpty)
           Row(
             children: ticks.map((t) {
@@ -311,8 +414,6 @@ class _ResultsPageState extends State<ResultsPage> {
       ],
     );
   }
-
-  // ── Feedback row ───────────────────────────────────────────────────────────
 
   Widget _buildFeedbackRow(int scoreInt, SessionResult s) {
     final flatnessPct = s.avgFlatPercent.toStringAsFixed(0);
@@ -348,14 +449,93 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // ── Result Lyrics table ────────────────────────────────────────────────────
+  // SINGLE RECOMMENDATION BUTTON
+  Widget _buildRecommendationButton() {
+    final color = _getRecommendationColor();
+    final icon = _getRecommendationIcon();
+    final title = _getRecommendationTitle();
+    final subtitle = _getRecommendationSubtitle();
+
+    return GestureDetector(
+      onTap: _navigateToDrill,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Practice Drills',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: color.withValues(alpha: 0.6),
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildLyricsResults(SessionResult s) {
-    // Build a numbered table matching the Figma layout:
-    //  #   Time   Pitch   Direction
-    final singable = s.lyricResults.where((l) => l.lyricText.isNotEmpty).toList();
+    final singable = s.lyricResults
+        .where((l) => l.lyricText.isNotEmpty)
+        .toList();
     final totalSec = s.durationSeconds;
-    final perLine  = singable.isEmpty ? 0 : totalSec ~/ singable.length;
+    final perLine = singable.isEmpty ? 0 : totalSec ~/ singable.length;
 
     const headerStyle = TextStyle(
       color: Colors.white38,
@@ -368,49 +548,56 @@ class _ResultsPageState extends State<ResultsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
             children: const [
-              SizedBox(width: 28, child: Text('#',         style: headerStyle)),
-              SizedBox(width: 56, child: Text('Time',      style: headerStyle)),
-              Expanded(          child: Text('Pitch',     style: headerStyle)),
-              SizedBox(width: 80, child: Text('Direction', style: headerStyle,
-                  textAlign: TextAlign.right)),
+              SizedBox(width: 28, child: Text('#', style: headerStyle)),
+              SizedBox(width: 56, child: Text('Time', style: headerStyle)),
+              Expanded(child: Text('Pitch', style: headerStyle)),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  'Direction',
+                  style: headerStyle,
+                  textAlign: TextAlign.right,
+                ),
+              ),
             ],
           ),
         ),
         const Divider(color: Colors.white10, height: 1),
         const SizedBox(height: 4),
-
-        // Data rows
         ...singable.asMap().entries.map((entry) {
-          final i    = entry.key;
+          final i = entry.key;
           final line = entry.value;
-          final sec  = perLine * (i + 1);
-          final m    = sec ~/ 60;
-          final s2   = sec % 60;
-          final ts   =
+          final sec = perLine * (i + 1);
+          final m = sec ~/ 60;
+          final s2 = sec % 60;
+          final ts =
               '${m.toString().padLeft(2, '0')}:${s2.toString().padLeft(2, '0')}';
 
           String pitch, direction;
-          Color  color;
+          Color color;
           switch (line.status) {
             case LineStatus.correct:
-              pitch = 'In Tune'; direction = '—';
+              pitch = 'In Tune';
+              direction = '-';
               color = _onTuneColor;
               break;
             case LineStatus.flat:
-              pitch = 'Flat';   direction = 'Too Low';
+              pitch = 'Flat';
+              direction = 'Too Low';
               color = _offTuneColor;
               break;
             case LineStatus.sharp:
-              pitch = 'Sharp';  direction = 'Too High';
+              pitch = 'Sharp';
+              direction = 'Too High';
               color = _offTuneColor;
               break;
             case LineStatus.noSignal:
-              pitch = 'No Signal'; direction = '—';
+              pitch = 'No Signal';
+              direction = '-';
               color = _silentColor;
               break;
           }
@@ -421,37 +608,49 @@ class _ResultsPageState extends State<ResultsPage> {
               children: [
                 SizedBox(
                   width: 28,
-                  child: Text('${i + 1}.',
-                      style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
-                          fontFamily: 'Roboto')),
+                  child: Text(
+                    '${i + 1}.',
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 13,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ),
                 SizedBox(
                   width: 56,
-                  child: Text(ts,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Roboto')),
+                  child: Text(
+                    ts,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ),
                 Expanded(
-                  child: Text(pitch,
-                      style: TextStyle(
-                          color: color,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Roboto')),
+                  child: Text(
+                    pitch,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ),
                 SizedBox(
                   width: 80,
-                  child: Text(direction,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          color: color.withValues(alpha: 0.75),
-                          fontSize: 13,
-                          fontFamily: 'Roboto')),
+                  child: Text(
+                    direction,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: color.withValues(alpha: 0.75),
+                      fontSize: 13,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -460,8 +659,6 @@ class _ResultsPageState extends State<ResultsPage> {
       ],
     );
   }
-
-  // ── Legend dot ─────────────────────────────────────────────────────────────
 
   Widget _legendDot(Color color, String label) {
     return Row(
@@ -485,14 +682,11 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // ── Action buttons ─────────────────────────────────────────────────────────
-
   Widget _buildActionButtons(BuildContext context, SessionResult s) {
     final btnShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(10),
     );
 
-    // ── Try Again button (shared) ────────────────────────────────────────────
     final tryAgainBtn = Expanded(
       child: OutlinedButton(
         onPressed: () => Navigator.pop(context),
@@ -518,7 +712,6 @@ class _ResultsPageState extends State<ResultsPage> {
       child: Row(
         children: widget.isAssignment
             ? [
-                // ── Assignment mode: [Try Again | Submit] ──────────────────
                 tryAgainBtn,
                 const SizedBox(width: 8),
                 Expanded(
@@ -529,8 +722,9 @@ class _ResultsPageState extends State<ResultsPage> {
                             final nav = Navigator.of(context);
                             await _saveSession();
                             if (!mounted) return;
-                            // Pop all the way back to the classroom
-                            nav.popUntil((r) => r.isFirst || r.settings.name == '/');
+                            nav.popUntil(
+                              (r) => r.isFirst || r.settings.name == '/',
+                            );
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _saved
@@ -551,7 +745,7 @@ class _ResultsPageState extends State<ResultsPage> {
                             ),
                           )
                         : Text(
-                            _saved ? 'Submitted ✓' : 'Submit',
+                            _saved ? 'Submitted' : 'Submit',
                             style: const TextStyle(
                               fontSize: 14,
                               fontFamily: 'Roboto',
@@ -562,11 +756,8 @@ class _ResultsPageState extends State<ResultsPage> {
                 ),
               ]
             : [
-                // ── Free-play mode: [Try Again | Download | Share | Save] ───
                 tryAgainBtn,
                 const SizedBox(width: 8),
-
-                // Download
                 SizedBox(
                   width: 46,
                   child: ElevatedButton(
@@ -575,8 +766,9 @@ class _ResultsPageState extends State<ResultsPage> {
                       backgroundColor: _downloaded
                           ? _onTuneColor.withValues(alpha: 0.15)
                           : const Color(0xFF2A2A2A),
-                      foregroundColor:
-                          _downloaded ? _onTuneColor : Colors.white,
+                      foregroundColor: _downloaded
+                          ? _onTuneColor
+                          : Colors.white,
                       padding: EdgeInsets.zero,
                       shape: btnShape,
                       elevation: 0,
@@ -590,8 +782,6 @@ class _ResultsPageState extends State<ResultsPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-
-                // Share
                 SizedBox(
                   width: 46,
                   child: ElevatedButton(
@@ -607,8 +797,6 @@ class _ResultsPageState extends State<ResultsPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-
-                // Save to Library
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _saving ? null : _saveSession,
@@ -631,7 +819,7 @@ class _ResultsPageState extends State<ResultsPage> {
                             ),
                           )
                         : Text(
-                            _saved ? 'Saved ✓' : 'Save',
+                            _saved ? 'Saved' : 'Save',
                             style: const TextStyle(
                               fontSize: 14,
                               fontFamily: 'Roboto',
@@ -646,8 +834,6 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 }
 
-// ── Heatmap painter ───────────────────────────────────────────────────────────
-
 class _HeatmapPainter extends CustomPainter {
   final List<LyricPitchData> lines;
   final Color Function(LyricPitchData) colorFor;
@@ -660,15 +846,10 @@ class _HeatmapPainter extends CustomPainter {
     final segW = size.width / lines.length;
     for (int i = 0; i < lines.length; i++) {
       final paint = Paint()..color = colorFor(lines[i]);
-      // 1 px gap between segments for readability
-      canvas.drawRect(
-        Rect.fromLTWH(i * segW, 0, segW - 1, size.height),
-        paint,
-      );
+      canvas.drawRect(Rect.fromLTWH(i * segW, 0, segW - 1, size.height), paint);
     }
   }
 
   @override
-  bool shouldRepaint(_HeatmapPainter old) =>
-      old.lines.length != lines.length;
+  bool shouldRepaint(_HeatmapPainter old) => old.lines.length != lines.length;
 }

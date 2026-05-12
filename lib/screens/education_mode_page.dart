@@ -3,7 +3,6 @@ import 'package:final_thesis_ui/screens/voice_classification_page.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'piano_mode_page.dart';
 import 'practice_drill_page.dart';
 
 class EducationModePage extends StatelessWidget {
@@ -19,11 +18,16 @@ class EducationModePage extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 32, vertical: 24),
+                  horizontal: 32,
+                  vertical: 24,
+                ),
                 child: Column(
                   children: [
-                    const Icon(Icons.school,
-                        color: AppColors.primaryCyan, size: 72),
+                    const Icon(
+                      Icons.school,
+                      color: AppColors.primaryCyan,
+                      size: 72,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'EDUCATION MODE',
@@ -52,7 +56,8 @@ class EducationModePage extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const PracticeDrillPage()),
+                          builder: (_) => const PracticeDrillPage(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -64,8 +69,8 @@ class EducationModePage extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) =>
-                                const VoiceClassificationPage()),
+                          builder: (_) => const VoiceClassificationPage(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -77,19 +82,8 @@ class EducationModePage extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const SolfegePitchPage()),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    _EduButton(
-                      icon: Icons.piano_outlined,
-                      title: 'Piano Practice',
-                      subtitle: 'Play keys, record sequences & follow along',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const PianoModePage()),
+                          builder: (_) => const SolfegePitchPage(),
+                        ),
                       ),
                     ),
 
@@ -102,24 +96,28 @@ class EducationModePage extends StatelessWidget {
                         color: Colors.amber.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: Colors.amber.withValues(alpha: 0.25)),
+                          color: Colors.amber.withValues(alpha: 0.25),
+                        ),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.info_outline,
-                              color: Colors.amber, size: 16),
+                          const Icon(
+                            Icons.info_outline,
+                            color: Colors.amber,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Vocal health alerts in this app are heuristic and non-diagnostic. '
                               'Consult a licensed vocal coach or ENT specialist for medical advice.',
                               style: TextStyle(
-                                  color:
-                                      Colors.amber.withValues(alpha: 0.85),
-                                  fontSize: 11,
-                                  fontFamily: 'Roboto',
-                                  height: 1.4),
+                                color: Colors.amber.withValues(alpha: 0.85),
+                                fontSize: 11,
+                                fontFamily: 'Roboto',
+                                height: 1.4,
+                              ),
                             ),
                           ),
                         ],
@@ -161,8 +159,7 @@ class _EduButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           color: AppColors.inputBg,
           borderRadius: BorderRadius.circular(12),
@@ -175,23 +172,32 @@ class _EduButton extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Roboto')),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.7),
-                          fontSize: 12,
-                          fontFamily: 'Roboto')),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: AppColors.grey.withValues(alpha: 0.7),
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right,
-                color: AppColors.grey.withValues(alpha: 0.5), size: 20),
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.grey.withValues(alpha: 0.5),
+              size: 20,
+            ),
           ],
         ),
       ),
