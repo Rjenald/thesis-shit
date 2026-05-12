@@ -23,7 +23,8 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   bool _loading = true;
   String _searchQuery = '';
   String _username = 'Teacher';
-  int _navIndex = 2; // 0=Notification 1=Submissions 2=Home 3=CreateStudent 4=Message
+  int _navIndex =
+      2; // 0=Notification 1=Submissions 2=Home 3=CreateStudent 4=Message
 
   // Keep a reference so we can remove the listener in dispose().
   EnrollmentService? _enrollmentService;
@@ -84,10 +85,16 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
 
       switch (_navIndex) {
         case 0: // Notification
-          tabBody = _buildPlaceholderTab(Icons.notifications_outlined, 'Notifications');
+          tabBody = _buildPlaceholderTab(
+            Icons.notifications_outlined,
+            'Notifications',
+          );
           break;
         case 1: // Submissions
           tabBody = const SubmissionsPage();
+          break;
+        case 3: // Create Student Account
+          tabBody = const CreateStudentAccountPage();
           break;
         case 4: // Profile
           tabBody = _buildProfileTab();
@@ -125,7 +132,11 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.logout, color: AppColors.errorRed, size: 22),
+                    icon: const Icon(
+                      Icons.logout,
+                      color: AppColors.errorRed,
+                      size: 22,
+                    ),
                     tooltip: 'Logout',
                     onPressed: _logout,
                   ),
@@ -402,14 +413,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
   Widget _navItem(IconData icon, int index, String label) {
     final selected = _navIndex == index;
     return GestureDetector(
-      onTap: () {
-        // "Create Student Account" → opens the dedicated creation dialog
-        if (index == 3) {
-          _showCreateStudentAccountDialog();
-          return;
-        }
-        setState(() => _navIndex = index);
-      },
+      onTap: () => setState(() => _navIndex = index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -493,15 +497,20 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
               child: ElevatedButton.icon(
                 onPressed: _logout,
                 icon: const Icon(Icons.logout, size: 18),
-                label: const Text('Logout',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontFamily: 'Roboto')),
+                label: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.errorRed,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -554,9 +563,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.cardBg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
         contentPadding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
         title: Row(
@@ -653,10 +660,10 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
 
               // Send via shared EnrollmentService
               context.read<EnrollmentService>().sendInvite(
-                    teacherName: _username,
-                    className: className,
-                    studentName: studentName,
-                  );
+                teacherName: _username,
+                className: className,
+                studentName: studentName,
+              );
 
               Navigator.pop(ctx);
 
@@ -675,7 +682,10 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
             icon: const Icon(Icons.send_outlined, size: 16),
             label: const Text(
               'Send Invite',
-              style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Roboto'),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Roboto',
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryCyan,
@@ -691,202 +701,18 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
     );
   }
 
-  // ── Create Student Account dialog ─────────────────────────────────────────
-  void _showCreateStudentAccountDialog() {
-    if (_classes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Create a class first before adding students.')),
-      );
-      return;
-    }
-
-    String selectedClass = _classes.first['name'] as String? ?? '';
-    final usernameCtrl  = TextEditingController();
-    final passwordCtrl  = TextEditingController();
-    bool obscure = true;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          backgroundColor: AppColors.cardBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          titlePadding:   const EdgeInsets.fromLTRB(20, 20, 20, 0),
-          contentPadding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
-          title: Row(children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primaryCyan.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.person_add_outlined,
-                  color: AppColors.primaryCyan, size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text('Create Student Account',
-                  style: TextStyle(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      fontFamily: 'Roboto')),
-            ),
-          ]),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Class picker
-                _fLabel('Assign to Class'),
-                const SizedBox(height: 6),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.inputBg,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: selectedClass,
-                      dropdownColor: AppColors.cardBg,
-                      style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 13,
-                          fontFamily: 'Roboto'),
-                      isExpanded: true,
-                      items: _classes.map((c) {
-                        final n = c['name'] as String? ?? '';
-                        return DropdownMenuItem(value: n, child: Text(n));
-                      }).toList(),
-                      onChanged: (v) {
-                        if (v != null) setS(() => selectedClass = v);
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Username
-                _fLabel('Student Username'),
-                const SizedBox(height: 6),
-                _fField(usernameCtrl, 'e.g. juan_delacruz'),
-                const SizedBox(height: 12),
-
-                // Password
-                _fLabel('Temporary Password'),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: passwordCtrl,
-                  obscureText: obscure,
-                  style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 13,
-                      fontFamily: 'Roboto'),
-                  decoration: InputDecoration(
-                    hintText: 'Set a login password',
-                    hintStyle: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.4),
-                        fontSize: 12,
-                        fontFamily: 'Roboto'),
-                    filled: true,
-                    fillColor: AppColors.inputBg,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none),
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                            color: AppColors.primaryCyan, width: 1.5)),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 11),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                          obscure ? Icons.visibility_off : Icons.visibility,
-                          color: AppColors.grey,
-                          size: 18),
-                      onPressed: () => setS(() => obscure = !obscure),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'The student uses these credentials to log in.\nAn enrollment invite will also be sent.',
-                  style: TextStyle(
-                      color: AppColors.grey.withValues(alpha: 0.55),
-                      fontSize: 11,
-                      fontFamily: 'Roboto'),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel',
-                  style: TextStyle(
-                      color: AppColors.grey.withValues(alpha: 0.8),
-                      fontFamily: 'Roboto')),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final uname = usernameCtrl.text.trim();
-                final pass  = passwordCtrl.text.trim();
-                if (uname.isEmpty || pass.isEmpty) return;
-
-                // Save credentials locally
-                await SessionStorageService.saveStudentAccount({
-                  'username':  uname,
-                  'password':  pass,
-                  'className': selectedClass,
-                });
-
-                // Also send an enrollment invite via the service
-                // ignore: use_build_context_synchronously
-                context.read<EnrollmentService>().sendInvite(
-                      teacherName: _username,
-                      className:   selectedClass,
-                      studentName: uname,
-                    );
-
-                if (ctx.mounted) Navigator.pop(ctx);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        'Account created for $uname in $selectedClass',
-                        style: const TextStyle(fontFamily: 'Roboto')),
-                    backgroundColor: AppColors.primaryCyan,
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 3),
-                  ));
-                }
-              },
-              icon: const Icon(Icons.check, size: 16),
-              label: const Text('Create Account',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryCyan,
-                foregroundColor: Colors.black,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(9)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ── Assign Activity dialog (Outlook-style) ────────────────────────────────
   /// Teacher selects an activity type, sets a title, optional description,
   /// and a deadline. On confirm, a [ClassNotification] of type
   /// [activityAssignment] is pushed to [ClassNotificationsService] so the
   /// student sees it in their Notification and Calendar screens.
   void _showAssignActivityDialog(String className) {
-    const types = ['Solfege Drill', 'Practice Exercise', 'Task Performance', 'Karaoke'];
+    const types = [
+      'Solfege Drill',
+      'Practice Exercise',
+      'Task Performance',
+      'Karaoke',
+    ];
     String selectedType = types[0];
     final titleCtrl = TextEditingController(text: 'Activity 1');
     final descCtrl = TextEditingController();
@@ -899,7 +725,9 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
         builder: (ctx, setS) {
           return AlertDialog(
             backgroundColor: AppColors.cardBg,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             contentPadding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
             title: Row(
@@ -910,8 +738,11 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                     color: AppColors.primaryCyan.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.assignment_outlined,
-                      color: AppColors.primaryCyan, size: 20),
+                  child: const Icon(
+                    Icons.assignment_outlined,
+                    color: AppColors.primaryCyan,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 const Text(
@@ -932,23 +763,35 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                 children: [
                   // Class badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryCyan.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.primaryCyan.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: AppColors.primaryCyan.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.class_outlined, size: 12, color: AppColors.primaryCyan),
+                        const Icon(
+                          Icons.class_outlined,
+                          size: 12,
+                          color: AppColors.primaryCyan,
+                        ),
                         const SizedBox(width: 5),
-                        Text(className,
-                            style: const TextStyle(
-                                color: AppColors.primaryCyan,
-                                fontSize: 12,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w500)),
+                        Text(
+                          className,
+                          style: const TextStyle(
+                            color: AppColors.primaryCyan,
+                            fontSize: 12,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -966,13 +809,14 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                         onTap: () {
                           setS(() {
                             selectedType = t;
-                            titleCtrl.text =
-                                'Activity 1 — $t';
+                            titleCtrl.text = 'Activity 1 — $t';
                           });
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: active
                                 ? AppColors.primaryCyan
@@ -1014,22 +858,27 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                     controller: descCtrl,
                     maxLines: 2,
                     style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 14,
-                        fontFamily: 'Roboto'),
+                      color: AppColors.white,
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.inputBg,
                       hintText: 'Instructions or notes…',
                       hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.5),
-                          fontFamily: 'Roboto',
-                          fontSize: 13),
+                        color: AppColors.grey.withValues(alpha: 0.5),
+                        fontFamily: 'Roboto',
+                        fontSize: 13,
+                      ),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -1043,8 +892,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                         context: ctx,
                         initialDate: deadline,
                         firstDate: DateTime.now(),
-                        lastDate: DateTime.now()
-                            .add(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
                         builder: (ctx2, child) => Theme(
                           data: ThemeData.dark().copyWith(
                             colorScheme: const ColorScheme.dark(
@@ -1059,28 +907,37 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 11),
+                        horizontal: 14,
+                        vertical: 11,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.inputBg,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppColors.primaryCyan.withValues(alpha: 0.4)),
+                          color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_month_outlined,
-                              color: AppColors.primaryCyan, size: 18),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: AppColors.primaryCyan,
+                            size: 18,
+                          ),
                           const SizedBox(width: 10),
                           Text(
                             '${_monthName(deadline.month)} ${deadline.day}, ${deadline.year}',
                             style: const TextStyle(
-                                color: AppColors.white,
-                                fontFamily: 'Roboto',
-                                fontSize: 14),
+                              color: AppColors.white,
+                              fontFamily: 'Roboto',
+                              fontSize: 14,
+                            ),
                           ),
                           const Spacer(),
-                          Icon(Icons.arrow_drop_down,
-                              color: AppColors.grey.withValues(alpha: 0.6)),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: AppColors.grey.withValues(alpha: 0.6),
+                          ),
                         ],
                       ),
                     ),
@@ -1107,30 +964,37 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 11),
+                        horizontal: 14,
+                        vertical: 11,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.inputBg,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color:
-                                AppColors.primaryCyan.withValues(alpha: 0.4)),
+                          color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.access_time_outlined,
-                              color: AppColors.primaryCyan, size: 18),
+                          const Icon(
+                            Icons.access_time_outlined,
+                            color: AppColors.primaryCyan,
+                            size: 18,
+                          ),
                           const SizedBox(width: 10),
                           Text(
                             deadlineTime.format(ctx),
                             style: const TextStyle(
-                                color: AppColors.white,
-                                fontFamily: 'Roboto',
-                                fontSize: 14),
+                              color: AppColors.white,
+                              fontFamily: 'Roboto',
+                              fontSize: 14,
+                            ),
                           ),
                           const Spacer(),
-                          Icon(Icons.arrow_drop_down,
-                              color:
-                                  AppColors.grey.withValues(alpha: 0.6)),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: AppColors.grey.withValues(alpha: 0.6),
+                          ),
                         ],
                       ),
                     ),
@@ -1139,9 +1003,10 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                   Text(
                     'Students will be notified immediately.',
                     style: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.55),
-                        fontSize: 11,
-                        fontFamily: 'Roboto'),
+                      color: AppColors.grey.withValues(alpha: 0.55),
+                      fontSize: 11,
+                      fontFamily: 'Roboto',
+                    ),
                   ),
                 ],
               ),
@@ -1149,10 +1014,13 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel',
-                    style: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.8),
-                        fontFamily: 'Roboto')),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: AppColors.grey.withValues(alpha: 0.8),
+                    fontFamily: 'Roboto',
+                  ),
+                ),
               ),
               ElevatedButton.icon(
                 onPressed: () {
@@ -1161,8 +1029,11 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
 
                   // Merge date + time into a single DateTime
                   final fullDeadline = DateTime(
-                    deadline.year, deadline.month, deadline.day,
-                    deadlineTime.hour, deadlineTime.minute,
+                    deadline.year,
+                    deadline.month,
+                    deadline.day,
+                    deadlineTime.hour,
+                    deadlineTime.minute,
                   );
 
                   ClassNotificationsService().addNotification(
@@ -1179,24 +1050,33 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                   );
 
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Activity "$title" assigned to $className',
-                        style: const TextStyle(fontFamily: 'Roboto')),
-                    backgroundColor: AppColors.primaryCyan,
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 2),
-                  ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Activity "$title" assigned to $className',
+                        style: const TextStyle(fontFamily: 'Roboto'),
+                      ),
+                      backgroundColor: AppColors.primaryCyan,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.send_outlined, size: 16),
-                label: const Text('Assign',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
+                label: const Text(
+                  'Assign',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryCyan,
                   foregroundColor: Colors.black,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(9)),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
                 ),
               ),
             ],
@@ -1208,8 +1088,19 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
 
   String _monthName(int month) {
     const names = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return names[month];
   }
@@ -1625,4 +1516,341 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
     ),
   );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CREATE STUDENT ACCOUNT PAGE — Full-page form matching your screenshot
+// ═══════════════════════════════════════════════════════════════════════════
+
+class CreateStudentAccountPage extends StatefulWidget {
+  const CreateStudentAccountPage({super.key});
+
+  @override
+  State<CreateStudentAccountPage> createState() =>
+      _CreateStudentAccountPageState();
+}
+
+class _CreateStudentAccountPageState extends State<CreateStudentAccountPage> {
+  final _lastNameCtrl = TextEditingController();
+  final _firstNameCtrl = TextEditingController();
+  final _usernameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+  bool _isLoading = false;
+
+  String? _lastNameError;
+  String? _firstNameError;
+  String? _usernameError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+
+  Future<void> _createAccount() async {
+    // Clear previous errors
+    setState(() {
+      _lastNameError = null;
+      _firstNameError = null;
+      _usernameError = null;
+      _passwordError = null;
+      _confirmPasswordError = null;
+    });
+
+    // Validate
+    bool hasError = false;
+    if (_lastNameCtrl.text.trim().isEmpty) {
+      _lastNameError = 'Last name is required';
+      hasError = true;
+    }
+    if (_firstNameCtrl.text.trim().isEmpty) {
+      _firstNameError = 'First name is required';
+      hasError = true;
+    }
+    if (_usernameCtrl.text.trim().isEmpty) {
+      _usernameError = 'Username is required';
+      hasError = true;
+    }
+    if (_passwordCtrl.text.isEmpty) {
+      _passwordError = 'Password is required';
+      hasError = true;
+    }
+    if (_confirmPasswordCtrl.text.isEmpty) {
+      _confirmPasswordError = 'Please re-type your password';
+      hasError = true;
+    } else if (_passwordCtrl.text != _confirmPasswordCtrl.text) {
+      _confirmPasswordError = 'Passwords do not match';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setState(() {});
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final lastName = _lastNameCtrl.text.trim();
+    final firstName = _firstNameCtrl.text.trim();
+    final username = _usernameCtrl.text.trim();
+    final password = _passwordCtrl.text;
+
+    // Save student account
+    await SessionStorageService.saveStudentAccount({
+      'username': username,
+      'password': password,
+      'lastName': lastName,
+      'firstName': firstName,
+      'fullName': '$firstName $lastName',
+    });
+
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Account created for $firstName $lastName',
+            style: const TextStyle(fontFamily: 'Roboto'),
+          ),
+          backgroundColor: AppColors.primaryCyan,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      // Clear fields after success
+      _lastNameCtrl.clear();
+      _firstNameCtrl.clear();
+      _usernameCtrl.clear();
+      _passwordCtrl.clear();
+      _confirmPasswordCtrl.clear();
+    }
+  }
+
+  @override
+  void dispose() {
+    _lastNameCtrl.dispose();
+    _firstNameCtrl.dispose();
+    _usernameCtrl.dispose();
+    _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ──────────────────────────────────────────────────────
+          const Text(
+            'Create Student Account',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Fill in the student\'s details below.',
+            style: TextStyle(
+              color: AppColors.grey.withValues(alpha: 0.6),
+              fontSize: 14,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // ── Personal Information Section ────────────────────────────────
+          const Text(
+            'Personal Information',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Last Name
+          _buildTextField(
+            controller: _lastNameCtrl,
+            hint: 'Last Name',
+            errorText: _lastNameError,
+          ),
+          const SizedBox(height: 12),
+
+          // First Name
+          _buildTextField(
+            controller: _firstNameCtrl,
+            hint: 'First Name',
+            errorText: _firstNameError,
+          ),
+          const SizedBox(height: 32),
+
+          // ── Login Information Section ───────────────────────────────────
+          const Text(
+            'Login Information',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Username
+          _buildTextField(
+            controller: _usernameCtrl,
+            hint: 'Username',
+            errorText: _usernameError,
+          ),
+          const SizedBox(height: 12),
+
+          // Password
+          _buildTextField(
+            controller: _passwordCtrl,
+            hint: 'Password',
+            obscureText: _obscurePassword,
+            errorText: _passwordError,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.grey,
+                size: 20,
+              ),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Re-type Password
+          _buildTextField(
+            controller: _confirmPasswordCtrl,
+            hint: 'Re-type Password',
+            obscureText: _obscureConfirm,
+            errorText: _confirmPasswordError,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.grey,
+                size: 20,
+              ),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
+            ),
+          ),
+          const SizedBox(height: 40),
+
+          // ── Create Account Button ───────────────────────────────────────
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _createAccount,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryCyan,
+                foregroundColor: Colors.black,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                disabledBackgroundColor: AppColors.primaryCyan.withValues(
+                  alpha: 0.4,
+                ),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : const Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Roboto',
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    bool obscureText = false,
+    String? errorText,
+    Widget? suffixIcon,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      style: const TextStyle(
+        color: AppColors.white,
+        fontSize: 16,
+        fontFamily: 'Roboto',
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: AppColors.grey.withValues(alpha: 0.5),
+          fontSize: 16,
+          fontFamily: 'Roboto',
+        ),
+        filled: true,
+        fillColor: AppColors.inputBg,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: AppColors.primaryCyan,
+            width: 1.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.errorRed, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.errorRed, width: 1.5),
+        ),
+        errorText: errorText,
+        errorStyle: const TextStyle(
+          color: AppColors.errorRed,
+          fontSize: 12,
+          fontFamily: 'Roboto',
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
+        suffixIcon: suffixIcon,
+      ),
+    );
+  }
 }
