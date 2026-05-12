@@ -58,7 +58,7 @@ class BottomNavBar extends StatelessWidget {
       _buildNavItem(Icons.home, 'Home', 0, context),
       _buildNavItem(Icons.library_music, 'Library', 1, context),
       _buildNavItem(Icons.add_circle_outline, 'Record', 2, context),
-      _buildNavItem(Icons.school, 'Education', 3, context),
+      _buildNavItem(Icons.school, 'Training', 3, context),
     ];
   }
 

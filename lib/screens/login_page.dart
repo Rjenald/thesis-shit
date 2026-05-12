@@ -1,6 +1,6 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
-import 'home_page.dart';
+import 'karaoke_home_page.dart';
 import 'register_page.dart';
 import 'teacher_account_page.dart';
 import 'student_account_page.dart';
@@ -83,11 +83,28 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       showUsernameError = false;
       showPasswordError = false;
+      _isLoading = true;
     });
 
-    setState(() => _isLoading = true);
-
     try {
+      // ── 1. Check teacher-created student accounts first (local / offline) ──
+      final studentAccount = await SessionStorageService.authenticateStudent(
+        username.text.trim(),
+        password.text,
+      );
+      if (studentAccount != null) {
+        await SessionStorageService.saveUsername(username.text.trim());
+        await SessionStorageService.saveRole('student');
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const StudentAccountPage()),
+          (route) => false,
+        );
+        return;
+      }
+
+      // ── 2. Fall through to API (teachers / normal users) ─────────────────
       final loginData = await ApiService.login(
         username.text.trim(),
         password.text,
@@ -98,7 +115,6 @@ class _LoginPageState extends State<LoginPage> {
       if (loginData['success'] == true) {
         await SessionStorageService.saveUsername(username.text.trim());
 
-        // Check role from API response or default to student
         final role = loginData['role'] ?? 'student';
         await SessionStorageService.saveRole(role);
         if (!mounted) return;
@@ -109,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
         } else if (role == 'student') {
           destination = const StudentAccountPage();
         } else {
-          destination = const HomePage();
+          destination = const KaraokeHomePage(isRoot: true);
         }
 
         Navigator.pushAndRemoveUntil(
@@ -119,22 +135,18 @@ class _LoginPageState extends State<LoginPage> {
         );
       } else {
         final error = loginData['error'] ?? 'Login failed.';
-
         if (error.toLowerCase().contains('username')) {
           setState(() => showUsernameError = true);
         } else if (error.toLowerCase().contains('password')) {
           setState(() => showPasswordError = true);
         }
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

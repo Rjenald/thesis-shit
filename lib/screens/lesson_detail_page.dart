@@ -1,25 +1,34 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import 'karaoke_assign_page.dart';
 import 'karaoke_practice_mode_page.dart';
+import 'karaoke_submissions_page.dart';
 import 'practice_solfege_page.dart';
 import 'solfege_activity_page.dart';
 
 /// Sub-lesson list for a given lesson inside a class.
 /// Matches Figma: teal header (class name + lesson subtitle),
 /// then a list of numbered sub-lesson cards.
+///
+/// [isTeacher] switches navigation targets and adds teacher-only buttons
+/// such as "View Submissions".
 class LessonDetailPage extends StatelessWidget {
   final Map<String, dynamic> classData;
   final int lessonNumber;
   final String lessonTitle;
+
+  /// Set to true when accessed from the teacher account page.
+  final bool isTeacher;
 
   const LessonDetailPage({
     super.key,
     required this.classData,
     required this.lessonNumber,
     required this.lessonTitle,
+    this.isTeacher = false,
   });
 
-  // ── Sub-lesson definitions per lesson ────────────────────────────────────
+  // ── Sub-lesson definitions ─────────────────────────────────────────────────
   List<_SubLesson> get _subLessons {
     switch (lessonNumber) {
       case 1:
@@ -50,20 +59,44 @@ class LessonDetailPage extends StatelessWidget {
         );
         break;
       case 'Practice Karaoke':
-        page = KaraokePracticeModePage(
-          classData: classData,
-          songTitle: 'Dadalhin',
-          songArtist: 'Regine Velasquez',
-          songImage: '',
-          dueDate: DateTime.now().add(const Duration(days: 7)),
-          maxScore: 100,
-        );
+        if (isTeacher) {
+          // Teacher → assignment page
+          page = KaraokeAssignPage(
+            classData:      classData,
+            lessonTitle:    'Lesson $lessonNumber: $lessonTitle',
+            subLessonTitle: sub.title,
+          );
+        } else {
+          // Student → practice mode page
+          page = KaraokePracticeModePage(
+            classData:  classData,
+            songTitle:  'Dadalhin',
+            songArtist: 'Regine Velasquez',
+            songImage:  '',
+            dueDate:    DateTime.now().add(const Duration(days: 7)),
+            maxScore:   100,
+          );
+        }
         break;
       default:
         return;
     }
     Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   }
+
+  void _viewSubmissions(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => KaraokeSubmissionsPage(
+          classData:   classData,
+          lessonTitle: 'Lesson $lessonNumber: $lessonTitle',
+        ),
+      ),
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +164,15 @@ class LessonDetailPage extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(24),
-              children: _subLessons.map((s) => _buildCard(context, s)).toList(),
+              children: [
+                ..._subLessons.map((s) => _buildCard(context, s)),
+
+                // Teacher-only action buttons for Lesson 2 (Karaoke)
+                if (isTeacher && lessonNumber == 2) ...[
+                  const SizedBox(height: 12),
+                  _buildViewSubmissionsBtn(context),
+                ],
+              ],
             ),
           ),
         ],
@@ -162,6 +203,42 @@ class LessonDetailPage extends StatelessWidget {
       ),
     );
   }
+
+  /// "View Submissions" button — teacher only.
+  Widget _buildViewSubmissionsBtn(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _viewSubmissions(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColors.primaryCyan.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.assignment_turned_in_outlined,
+                color: AppColors.primaryCyan, size: 18),
+            SizedBox(width: 8),
+            Text(
+              'View Submissions',
+              style: TextStyle(
+                color: AppColors.primaryCyan,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Bottom nav ─────────────────────────────────────────────────────────────
 
   Widget _buildBottomNav(BuildContext context) {
     return Container(

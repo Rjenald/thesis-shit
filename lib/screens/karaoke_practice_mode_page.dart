@@ -22,6 +22,14 @@ class KaraokePracticeModePage extends StatelessWidget {
     this.maxScore = 100,
   });
 
+  static const _monthNames = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December',
+  ];
+
+  static String _formatDeadline(DateTime dt) =>
+      '${_monthNames[dt.month - 1]} ${dt.day}';
+
   @override
   Widget build(BuildContext context) {
     final className = classData['name'] as String? ?? '';
@@ -119,6 +127,7 @@ class KaraokePracticeModePage extends StatelessWidget {
                             songTitle: songTitle,
                             songArtist: songArtist,
                             songImage: songImage,
+                            isAssignment: true,
                           ),
                         ),
                       );
@@ -238,7 +247,9 @@ class KaraokePracticeModePage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'March 21',
+                              dueDate != null
+                                  ? _formatDeadline(dueDate!)
+                                  : 'No deadline',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 13,

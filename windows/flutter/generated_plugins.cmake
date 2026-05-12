@@ -3,6 +3,8 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  file_selector_windows
+  flutter_inappwebview_windows
   permission_handler_windows
   record_windows
   share_plus
@@ -10,6 +12,8 @@ list(APPEND FLUTTER_PLUGIN_LIST
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
+  jni
+  tflite_flutter
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

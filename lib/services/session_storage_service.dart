@@ -244,7 +244,86 @@ class SessionStorageService {
     await prefs.remove(key);
   }
 
-  /// Clear all student account data
+  // ── Teacher-created student accounts ─────────────────────────────────────
+  // Each entry = { username, password, className }
+
+  static const _studentAccountsKey = 'huni_student_accounts_v1';
+
+  static Future<List<Map<String, dynamic>>> loadStudentAccounts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList(_studentAccountsKey) ?? [];
+    return list
+        .map((raw) {
+          try {
+            return jsonDecode(raw) as Map<String, dynamic>;
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<Map<String, dynamic>>()
+        .toList();
+  }
+
+  static Future<void> saveStudentAccount(Map<String, dynamic> account) async {
+    final accounts = await loadStudentAccounts();
+    // Overwrite if username already exists
+    accounts.removeWhere((a) => a['username'] == account['username']);
+    accounts.add(account);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _studentAccountsKey,
+      accounts.map((a) => jsonEncode(a)).toList(),
+    );
+  }
+
+  /// Returns the account map if username + password match, else null.
+  static Future<Map<String, dynamic>?> authenticateStudent(
+      String username, String password) async {
+    final accounts = await loadStudentAccounts();
+    try {
+      return accounts.firstWhere(
+        (a) => a['username'] == username && a['password'] == password,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Submission scores ──────────────────────────────────────────────────────
+  // Key format: '<studentName>|<activityName>'
+
+  static const _scoresKey = 'huni_scores_v1';
+
+  static Future<Map<String, String>> loadScores() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_scoresKey);
+    if (raw == null) return {};
+    try {
+      return (jsonDecode(raw) as Map<String, dynamic>)
+          .map((k, v) => MapEntry(k, v as String));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> saveScore({
+    required String studentName,
+    required String activityName,
+    required String score,
+  }) async {
+    final scores = await loadScores();
+    scores['$studentName|$activityName'] = score;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_scoresKey, jsonEncode(scores));
+  }
+
+  static Future<String?> getScore(
+      String studentName, String activityName) async {
+    final scores = await loadScores();
+    return scores['$studentName|$activityName'];
+  }
+
+  // ── Clear all student account data ────────────────────────────────────────
   static Future<void> clearStudentAccount() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_sessionsKey);
