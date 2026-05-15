@@ -27,12 +27,14 @@ class SongsService {
   /// karaoke pages across normal user, teacher, and student accounts.
   static List<Map<String, String>> get _localSongs {
     return TagalogBisayaSongs.songs
-        .map<Map<String, String>>((s) => {
-              'title':    s.title,
-              'artist':   s.artist,
-              'language': s.language,
-              'image':    '',        // no static thumbnail; UI falls back to icon
-            })
+        .map<Map<String, String>>(
+          (s) => {
+            'title': s.title,
+            'artist': s.artist,
+            'language': s.language,
+            'image': '', // no static thumbnail; UI falls back to icon
+          },
+        )
         .toList();
   }
 
@@ -53,14 +55,16 @@ class SongsService {
 
       if (res.statusCode == 200) {
         final body = json.decode(res.body) as Map<String, dynamic>;
-        final raw  = (body['songs'] as List<dynamic>).cast<Map<String, dynamic>>();
+        final raw = (body['songs'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
 
         final songs = raw
             .map<Map<String, String>>(
-                (m) => m.map((k, v) => MapEntry(k, v?.toString() ?? '')))
+              (m) => m.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+            )
             .toList();
 
-        _cache       = songs;
+        _cache = songs;
         _fromBackend = true;
         return _applyFilter(songs, language);
       }
@@ -76,7 +80,9 @@ class SongsService {
   }
 
   static List<Map<String, String>> _applyFilter(
-      List<Map<String, String>> songs, String? language) {
+    List<Map<String, String>> songs,
+    String? language,
+  ) {
     if (language == null) return songs;
     final lang = language.toLowerCase();
     return songs
@@ -86,7 +92,7 @@ class SongsService {
 
   /// Clear the cache so the next call re-fetches from the backend.
   static void clearCache() {
-    _cache       = null;
+    _cache = null;
     _fromBackend = false;
   }
 }

@@ -34,10 +34,9 @@ class LrcLibService {
     required String artist,
   }) async {
     try {
-      final uri = Uri.parse('$_lrcBase/search').replace(queryParameters: {
-        'track_name': title,
-        'artist_name': artist,
-      });
+      final uri = Uri.parse(
+        '$_lrcBase/search',
+      ).replace(queryParameters: {'track_name': title, 'artist_name': artist});
 
       final res = await http.get(uri).timeout(_timeout);
       if (res.statusCode != 200) return null;
@@ -130,11 +129,13 @@ class LrcLibService {
     // placeholder so the position-based sync waits through the intro.
     final firstLineStart = parsed.first.time.inMilliseconds / 1000.0;
     if (firstLineStart > 3) {
-      result.add(LyricLine(
-        '',
-        firstLineStart.round().clamp(1, 120),
-        startMs: 0, // intro starts at position 0
-      ));
+      result.add(
+        LyricLine(
+          '',
+          firstLineStart.round().clamp(1, 120),
+          startMs: 0, // intro starts at position 0
+        ),
+      );
     }
 
     for (int i = 0; i < parsed.length; i++) {
@@ -150,11 +151,13 @@ class LrcLibService {
       }
 
       // Store the exact LRC timestamp so the player can sync to video position.
-      result.add(LyricLine(
-        current.text,
-        durSeconds,
-        startMs: current.time.inMilliseconds,
-      ));
+      result.add(
+        LyricLine(
+          current.text,
+          durSeconds,
+          startMs: current.time.inMilliseconds,
+        ),
+      );
     }
 
     return result;

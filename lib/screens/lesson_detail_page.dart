@@ -62,19 +62,19 @@ class LessonDetailPage extends StatelessWidget {
         if (isTeacher) {
           // Teacher → assignment page
           page = KaraokeAssignPage(
-            classData:      classData,
-            lessonTitle:    'Lesson $lessonNumber: $lessonTitle',
+            classData: classData,
+            lessonTitle: 'Lesson $lessonNumber: $lessonTitle',
             subLessonTitle: sub.title,
           );
         } else {
           // Student → practice mode page
           page = KaraokePracticeModePage(
-            classData:  classData,
-            songTitle:  'Dadalhin',
+            classData: classData,
+            songTitle: 'Dadalhin',
             songArtist: 'Regine Velasquez',
-            songImage:  '',
-            dueDate:    DateTime.now().add(const Duration(days: 7)),
-            maxScore:   100,
+            songImage: '',
+            dueDate: DateTime.now().add(const Duration(days: 7)),
+            maxScore: 100,
           );
         }
         break;
@@ -89,7 +89,7 @@ class LessonDetailPage extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (_) => KaraokeSubmissionsPage(
-          classData:   classData,
+          classData: classData,
           lessonTitle: 'Lesson $lessonNumber: $lessonTitle',
         ),
       ),
@@ -220,8 +220,11 @@ class LessonDetailPage extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.assignment_turned_in_outlined,
-                color: AppColors.primaryCyan, size: 18),
+            Icon(
+              Icons.assignment_turned_in_outlined,
+              color: AppColors.primaryCyan,
+              size: 18,
+            ),
             SizedBox(width: 8),
             Text(
               'View Submissions',

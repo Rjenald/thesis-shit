@@ -49,36 +49,39 @@ class YouTubeService {
     int maxResults = 10,
   }) async {
     try {
-      final uri = Uri.https(
-        'www.googleapis.com',
-        '/youtube/v3/search',
-        {
-          'part':            'snippet',
-          'q':               '$query karaoke',
-          'type':            'video',
-          'videoCategoryId': '10',   // Music only — excludes movies/dramas
-          'maxResults':      '$maxResults',
-          'key':             apiKey,
-        },
-      );
+      final uri = Uri.https('www.googleapis.com', '/youtube/v3/search', {
+        'part': 'snippet',
+        'q': '$query karaoke',
+        'type': 'video',
+        'videoCategoryId': '10', // Music only — excludes movies/dramas
+        'maxResults': '$maxResults',
+        'key': apiKey,
+      });
 
       final res = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {
-        final body  = jsonDecode(res.body) as Map<String, dynamic>;
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
         final items = body['items'] as List? ?? [];
-        return items.map<Map<String, String>>((item) {
-          final id      = (item['id']      as Map<String, dynamic>?)?['videoId']                      as String? ?? '';
-          final snippet = item['snippet']  as Map<String, dynamic>? ?? {};
-          final thumb   = (snippet['thumbnails'] as Map<String, dynamic>?)?['medium']
-                              as Map<String, dynamic>?;
-          return {
-            'videoId':   id,
-            'title':     snippet['title']        as String? ?? '',
-            'channel':   snippet['channelTitle'] as String? ?? '',
-            'thumbnail': thumb?['url']           as String? ?? '',
-          };
-        }).where((m) => m['videoId']!.isNotEmpty).toList();
+        return items
+            .map<Map<String, String>>((item) {
+              final id =
+                  (item['id'] as Map<String, dynamic>?)?['videoId']
+                      as String? ??
+                  '';
+              final snippet = item['snippet'] as Map<String, dynamic>? ?? {};
+              final thumb =
+                  (snippet['thumbnails'] as Map<String, dynamic>?)?['medium']
+                      as Map<String, dynamic>?;
+              return {
+                'videoId': id,
+                'title': snippet['title'] as String? ?? '',
+                'channel': snippet['channelTitle'] as String? ?? '',
+                'thumbnail': thumb?['url'] as String? ?? '',
+              };
+            })
+            .where((m) => m['videoId']!.isNotEmpty)
+            .toList();
       }
     } catch (_) {
       // Network error / timeout — return empty list
@@ -88,22 +91,18 @@ class YouTubeService {
 
   static Future<String?> _fetchFirstVideoId(String query) async {
     try {
-      final uri = Uri.https(
-        'www.googleapis.com',
-        '/youtube/v3/search',
-        {
-          'part': 'snippet',
-          'q': query,
-          'type': 'video',
-          'maxResults': '1',
-          'key': apiKey,
-        },
-      );
+      final uri = Uri.https('www.googleapis.com', '/youtube/v3/search', {
+        'part': 'snippet',
+        'q': query,
+        'type': 'video',
+        'maxResults': '1',
+        'key': apiKey,
+      });
 
       final res = await http.get(uri).timeout(const Duration(seconds: 8));
 
       if (res.statusCode == 200) {
-        final body  = jsonDecode(res.body) as Map<String, dynamic>;
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
         final items = body['items'] as List?;
         if (items != null && items.isNotEmpty) {
           final id = items[0]['id'] as Map<String, dynamic>?;

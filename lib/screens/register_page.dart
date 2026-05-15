@@ -3,57 +3,53 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'home_page.dart';
 import 'teacher_account_page.dart';
-import 'student_account_page.dart';
 import '../constants/app_colors.dart';
-import '../services/api_service.dart';
-import '../services/session_storage_service.dart';
- 
+
 class CurvedBottomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.fill;
- 
+
     final path = Path();
     path.moveTo(0, 50);
     path.cubicTo(size.width / 4, 0, (size.width * 3) / 4, 0, size.width, 50);
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
     path.close();
- 
+
     canvas.drawPath(path, paint);
   }
- 
+
   @override
   bool shouldRepaint(CurvedBottomPainter oldDelegate) => false;
 }
- 
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
- 
+
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
- 
+
 class _RegisterPageState extends State<RegisterPage> {
   bool obscurePassword = true;
   bool obscureRePassword = true;
   bool showUsernameError = false;
   bool showPasswordError = false;
-  bool _isLoading = false;
   String _selectedRole = '';
- 
+
   int _currentPage = 0;
   Timer? _timer;
- 
+
   final List<String> _backgroundImages = [
     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1744527912638-5d30b9908313?q=80&w=627&auto=format&fit=crop',
   ];
- 
+
   final TextEditingController lastName = TextEditingController();
   final TextEditingController firstName = TextEditingController();
   final TextEditingController teacherId = TextEditingController();
@@ -61,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController confirmPassword = TextEditingController();
- 
+
   @override
   void initState() {
     super.initState();
@@ -77,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
       });
     });
   }
- 
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -90,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
     confirmPassword.dispose();
     super.dispose();
   }
- 
+
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -101,13 +97,13 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
- 
-  Future<void> _register() async {
+
+  void _register() {
     setState(() {
       showUsernameError = false;
       showPasswordError = false;
     });
- 
+
     final ln = lastName.text.trim();
     final fn = firstName.text.trim();
     final tid = teacherId.text.trim();
@@ -115,8 +111,8 @@ class _RegisterPageState extends State<RegisterPage> {
     final em = email.text.trim();
     final pw = password.text;
     final cpw = confirmPassword.text;
- 
-    // ── Client-side validation BEFORE calling the API ─────────────────────
+
+    // ── Validation ────────────────────────────────────────────────────────
     if (ln.isEmpty) {
       _showError('Last name is required.');
       return;
@@ -142,14 +138,26 @@ class _RegisterPageState extends State<RegisterPage> {
       _showError('Username is required.');
       return;
     }
+    if (!RegExp(r'^[A-Za-z0-9._]{5,30}$').hasMatch(un)) {
+      setState(() => showUsernameError = true);
+      _showError(
+        'Username must be 5–30 characters, only letters, numbers, . and _',
+      );
+      return;
+    }
     if (pw.isEmpty) {
       setState(() => showPasswordError = true);
       _showError('Password is required.');
       return;
     }
-    if (pw.length < 4) {
+    if (pw.length < 8 ||
+        !RegExp(r'[A-Z]').hasMatch(pw) ||
+        !RegExp(r'[0-9]').hasMatch(pw) ||
+        !RegExp(r'[^A-Za-z0-9]').hasMatch(pw)) {
       setState(() => showPasswordError = true);
-      _showError('Password must be at least 4 characters.');
+      _showError(
+        'Password must be 8+ characters with 1 uppercase, 1 number, and 1 special character.',
+      );
       return;
     }
     if (pw != cpw) {
@@ -157,96 +165,23 @@ class _RegisterPageState extends State<RegisterPage> {
       _showError('Passwords do not match.');
       return;
     }
- 
-    setState(() => _isLoading = true);
- 
-    try {
-      // ── STEP 1: Register ──────────────────────────────────────────────
-      final registerData = await ApiService.register(
-        username: un,
-        password: pw,
-        confirmPassword: cpw,
-        email: em,
-        role: _selectedRole, // 'normal' or 'teacher'
-        firstName: fn,
-        lastName: ln,
-        teacherIdNumber: tid,
+
+    // ── Navigate based on role ────────────────────────────────────────────
+    if (_selectedRole == 'teacher') {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const TeacherAccountPage()),
+        (route) => false,
       );
- 
-      if (registerData['success'] != true) {
-        if (!mounted) return;
-        final error = (registerData['error'] as String?) ?? 'Registration failed.';
-        final lower = error.toLowerCase();
-        if (lower.contains('username')) {
-          setState(() => showUsernameError = true);
-        } else if (lower.contains('password')) {
-          setState(() => showPasswordError = true);
-        }
-        _showError(error);
-        setState(() => _isLoading = false);
-        return;
-      }
- 
-      // ── STEP 2: Auto-login ────────────────────────────────────────────
-      final loginData = await ApiService.login(un, pw);
-      if (!mounted) return;
- 
-      if (loginData['success'] == true) {
-        final role = (loginData['role'] as String?) ?? _selectedRole;
-        await SessionStorageService.saveUsername(un);
-        await SessionStorageService.saveRole(role);
- 
-        // Save the new user id (teachers need this to create students later)
-        final id = loginData['id'];
-        if (id != null) {
-          try {
-            final intId =
-                id is int ? id : int.tryParse(id.toString()) ?? 0;
-            if (intId > 0) {
-              await SessionStorageService.saveUserId(intId);
-            }
-          } catch (_) {}
-        }
- 
-        if (!mounted) return;
- 
-        Widget destination;
-        switch (role) {
-          case 'teacher':
-            destination = const TeacherAccountPage();
-            break;
-          case 'student':
-            destination = const StudentAccountPage();
-            break;
-          case 'normal':
-          default:
-            destination = const HomePage();
-        }
- 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => destination),
-          (route) => false,
-        );
-      } else {
-        // Registration succeeded but auto-login failed → send to login page
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registered! Please log in.')),
-        );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      _showError('Network error: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+        (route) => false,
+      );
     }
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -273,8 +208,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (loadingProgress == null) return child;
                         return Container(color: Colors.black);
                       },
-                      errorBuilder: (_, _, _) =>
-                          Container(color: Colors.black),
+                      errorBuilder: (_, _, _) => Container(color: Colors.black),
                     ),
                   ),
                 ),
@@ -290,8 +224,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ],
             ),
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -347,9 +280,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => setState(() {
-                          _selectedRole = 'normal';
-                        }),
+                        onPressed: () =>
+                            setState(() => _selectedRole = 'normal'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryCyan,
                           foregroundColor: Colors.black,
@@ -373,9 +305,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed: () => setState(() {
-                          _selectedRole = 'teacher';
-                        }),
+                        onPressed: () =>
+                            setState(() => _selectedRole = 'teacher'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primaryCyan,
                           side: const BorderSide(color: Colors.white54),
@@ -436,8 +367,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const LoginPage()),
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
                         );
                       },
                       child: Text.rich(
@@ -506,7 +436,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    if (_selectedRole == 'teacher')
+                    if (_selectedRole == 'teacher') ...[
                       TextField(
                         controller: teacherId,
                         style: const TextStyle(color: Colors.white),
@@ -524,9 +454,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                    if (_selectedRole == 'teacher')
                       const SizedBox(height: 12),
-                    // Email field — required by the API for both roles
+                    ],
                     TextField(
                       controller: email,
                       keyboardType: TextInputType.emailAddress,
@@ -613,9 +542,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 : Icons.visibility,
                             color: AppColors.grey,
                           ),
-                          onPressed: () {
-                            setState(() => obscurePassword = !obscurePassword);
-                          },
+                          onPressed: () => setState(
+                            () => obscurePassword = !obscurePassword,
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -642,11 +571,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 : Icons.visibility,
                             color: AppColors.grey,
                           ),
-                          onPressed: () {
-                            setState(
-                              () => obscureRePassword = !obscureRePassword,
-                            );
-                          },
+                          onPressed: () => setState(
+                            () => obscureRePassword = !obscureRePassword,
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -658,33 +585,22 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _register,
+                        onPressed: _register,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryCyan,
                           foregroundColor: Colors.black,
-                          disabledBackgroundColor:
-                              AppColors.primaryCyan.withValues(alpha: 0.5),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.black,
-                                ),
-                              )
-                            : const Text(
-                                'Register',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
+                        child: const Text(
+                          'Register',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -692,8 +608,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const LoginPage()),
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
                         );
                       },
                       child: Text.rich(

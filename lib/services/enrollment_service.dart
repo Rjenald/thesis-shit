@@ -22,20 +22,20 @@ class EnrollmentInvite {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'teacherName': teacherName,
-        'className': className,
-        'studentName': studentName,
-        'sentAt': sentAt.toIso8601String(),
-      };
+    'id': id,
+    'teacherName': teacherName,
+    'className': className,
+    'studentName': studentName,
+    'sentAt': sentAt.toIso8601String(),
+  };
 
   factory EnrollmentInvite.fromJson(Map<String, dynamic> j) => EnrollmentInvite(
-        id: j['id'] as String,
-        teacherName: j['teacherName'] as String,
-        className: j['className'] as String,
-        studentName: j['studentName'] as String,
-        sentAt: DateTime.parse(j['sentAt'] as String),
-      );
+    id: j['id'] as String,
+    teacherName: j['teacherName'] as String,
+    className: j['className'] as String,
+    studentName: j['studentName'] as String,
+    sentAt: DateTime.parse(j['sentAt'] as String),
+  );
 }
 
 // ── Service ────────────────────────────────────────────────────────────────────
@@ -57,18 +57,18 @@ class EnrollmentService extends ChangeNotifier {
   factory EnrollmentService() => _instance;
 
   // ── Storage keys ──────────────────────────────────────────────────────────
-  static const _pendingKey  = 'enrollment_pending_v1';
+  static const _pendingKey = 'enrollment_pending_v1';
   static const _enrolledKey = 'enrollment_enrolled_v1';
 
   // ── State ──────────────────────────────────────────────────────────────────
-  final List<EnrollmentInvite> _pending        = [];
-  final List<String>           _enrolledClasses = [];
+  final List<EnrollmentInvite> _pending = [];
+  final List<String> _enrolledClasses = [];
 
   // ── Public getters ─────────────────────────────────────────────────────────
-  List<EnrollmentInvite> get pendingInvites  => List.unmodifiable(_pending);
-  List<String>           get enrolledClasses => List.unmodifiable(_enrolledClasses);
-  bool                   get isEnrolled      => _enrolledClasses.isNotEmpty;
-  String?                get primaryClass    =>
+  List<EnrollmentInvite> get pendingInvites => List.unmodifiable(_pending);
+  List<String> get enrolledClasses => List.unmodifiable(_enrolledClasses);
+  bool get isEnrolled => _enrolledClasses.isNotEmpty;
+  String? get primaryClass =>
       _enrolledClasses.isEmpty ? null : _enrolledClasses.first;
 
   // ── Initialization (call once in main()) ──────────────────────────────────
@@ -84,8 +84,11 @@ class EnrollmentService extends ChangeNotifier {
         final list = jsonDecode(pendingRaw) as List<dynamic>;
         _pending
           ..clear()
-          ..addAll(list.map(
-              (e) => EnrollmentInvite.fromJson(e as Map<String, dynamic>)));
+          ..addAll(
+            list.map(
+              (e) => EnrollmentInvite.fromJson(e as Map<String, dynamic>),
+            ),
+          );
       } catch (e) {
         if (kDebugMode) print('EnrollmentService: error loading pending: $e');
       }
@@ -115,10 +118,7 @@ class EnrollmentService extends ChangeNotifier {
       _pendingKey,
       jsonEncode(_pending.map((e) => e.toJson()).toList()),
     );
-    await prefs.setString(
-      _enrolledKey,
-      jsonEncode(_enrolledClasses),
-    );
+    await prefs.setString(_enrolledKey, jsonEncode(_enrolledClasses));
   }
 
   // ── Teacher API ────────────────────────────────────────────────────────────
@@ -130,13 +130,15 @@ class EnrollmentService extends ChangeNotifier {
     required String className,
     required String studentName,
   }) {
-    _pending.add(EnrollmentInvite(
-      id: '${DateTime.now().millisecondsSinceEpoch}',
-      teacherName: teacherName,
-      className: className,
-      studentName: studentName,
-      sentAt: DateTime.now(),
-    ));
+    _pending.add(
+      EnrollmentInvite(
+        id: '${DateTime.now().millisecondsSinceEpoch}',
+        teacherName: teacherName,
+        className: className,
+        studentName: studentName,
+        sentAt: DateTime.now(),
+      ),
+    );
     notifyListeners();
     _save(); // fire-and-forget — persists in background
   }
@@ -174,16 +176,16 @@ class EnrollmentService extends ChangeNotifier {
   /// Finds the teacher's class by name and appends [studentName] to its
   /// `students` list in SharedPreferences.
   Future<void> _persistStudentToClass(
-      String className, String studentName) async {
+    String className,
+    String studentName,
+  ) async {
     final classes = await SessionStorageService.loadClasses();
     final idx = classes.indexWhere(
       (c) =>
-          (c['name'] as String? ?? '').toLowerCase() ==
-          className.toLowerCase(),
+          (c['name'] as String? ?? '').toLowerCase() == className.toLowerCase(),
     );
     if (idx == -1) return; // class not found — edge case
-    final students =
-        List<String>.from(classes[idx]['students'] as List? ?? []);
+    final students = List<String>.from(classes[idx]['students'] as List? ?? []);
     if (!students.contains(studentName)) {
       students.add(studentName);
       classes[idx] = {...classes[idx], 'students': students};

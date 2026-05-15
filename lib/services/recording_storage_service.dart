@@ -18,20 +18,20 @@ class RecordingEntry {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'filePath': filePath,
-        'durationSeconds': durationSeconds,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'filePath': filePath,
+    'durationSeconds': durationSeconds,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory RecordingEntry.fromJson(Map<String, dynamic> j) => RecordingEntry(
-        id: j['id'] as String,
-        title: j['title'] as String,
-        filePath: j['filePath'] as String,
-        durationSeconds: j['durationSeconds'] as int,
-        createdAt: DateTime.parse(j['createdAt'] as String),
-      );
+    id: j['id'] as String,
+    title: j['title'] as String,
+    filePath: j['filePath'] as String,
+    durationSeconds: j['durationSeconds'] as int,
+    createdAt: DateTime.parse(j['createdAt'] as String),
+  );
 }
 
 class RecordingStorageService {
@@ -54,7 +54,8 @@ class RecordingStorageService {
         .map((s) {
           try {
             return RecordingEntry.fromJson(
-                jsonDecode(s) as Map<String, dynamic>);
+              jsonDecode(s) as Map<String, dynamic>,
+            );
           } catch (_) {
             return null;
           }

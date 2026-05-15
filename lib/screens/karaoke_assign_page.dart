@@ -109,35 +109,37 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
 
     setState(() => _assigning = true);
 
-    final className   = widget.classData['name'] as String? ?? '';
-    final students    = List<String>.from(
-        widget.classData['students'] as List? ?? []);
+    final className = widget.classData['name'] as String? ?? '';
+    final students = List<String>.from(
+      widget.classData['students'] as List? ?? [],
+    );
     final teacherName = await SessionStorageService.loadUsername() ?? 'Teacher';
 
     // 1 — push notification so students see it in their inbox
     final notifService = ClassNotificationsService();
     await notifService.addNotification(
       ClassNotification(
-        id:           '${DateTime.now().millisecondsSinceEpoch}',
-        teacherName:  teacherName,
-        className:    className,
-        message:      'Added Activity / Karaoke – $_selectedSongTitle',
-        timestamp:    DateTime.now(),
-        type:         NotificationType.activityAssignment,
+        id: '${DateTime.now().millisecondsSinceEpoch}',
+        teacherName: teacherName,
+        className: className,
+        message: 'Added Activity / Karaoke – $_selectedSongTitle',
+        timestamp: DateTime.now(),
+        type: NotificationType.activityAssignment,
         activityName: _selectedSongTitle,
-        deadline:     _dueDate,
+        deadline: _dueDate,
       ),
     );
 
     // 2 — store assigned song in class data
     final classes = await SessionStorageService.loadClasses();
     final idx = classes.indexWhere(
-      (c) => (c['name'] as String? ?? '').toLowerCase() ==
-          className.toLowerCase(),
+      (c) =>
+          (c['name'] as String? ?? '').toLowerCase() == className.toLowerCase(),
     );
     if (idx != -1) {
       final songs = List<String>.from(
-          classes[idx]['assignedSongs'] as List? ?? []);
+        classes[idx]['assignedSongs'] as List? ?? [],
+      );
       if (!songs.contains(_selectedSongTitle)) {
         songs.add(_selectedSongTitle!);
       }
@@ -150,7 +152,7 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
 
     // 3 — confirmation dialog
     final studentCount = students.length;
-    final studentWord  = studentCount == 1 ? 'student' : 'students';
+    final studentWord = studentCount == 1 ? 'student' : 'students';
 
     showDialog(
       context: context,
@@ -159,7 +161,11 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.check_circle_rounded, color: Color(0xFF4CAF50), size: 22),
+            Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF4CAF50),
+              size: 22,
+            ),
             SizedBox(width: 8),
             Text(
               'Song Assigned',
@@ -190,12 +196,15 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
               foregroundColor: Colors.black,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9)),
+                borderRadius: BorderRadius.circular(9),
+              ),
             ),
             child: const Text(
               'Done',
               style: TextStyle(
-                  fontWeight: FontWeight.w700, fontFamily: 'Roboto'),
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Roboto',
+              ),
             ),
           ),
         ],
@@ -285,12 +294,18 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                     fontFamily: 'Roboto',
                     fontSize: 14,
                   ),
-                  prefixIcon:
-                      const Icon(Icons.search, color: AppColors.grey, size: 20),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.grey,
+                    size: 20,
+                  ),
                   suffixIcon: _search.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear,
-                              color: AppColors.grey, size: 18),
+                          icon: const Icon(
+                            Icons.clear,
+                            color: AppColors.grey,
+                            size: 18,
+                          ),
                           onPressed: () {
                             _searchCtrl.clear();
                             _onSearch('');
@@ -298,8 +313,10 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                         )
                       : null,
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 13,
+                  ),
                 ),
               ),
             ),
@@ -377,15 +394,20 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                     onTap: _pickDate,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 11),
+                        horizontal: 12,
+                        vertical: 11,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.inputBg,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today_outlined,
-                              color: AppColors.grey, size: 15),
+                          const Icon(
+                            Icons.calendar_today_outlined,
+                            color: AppColors.grey,
+                            size: 15,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             _dueDate == null
@@ -431,13 +453,15 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
                 onPressed: _assigning ? null : _giveToStudents,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryCyan,
-                  disabledBackgroundColor:
-                      AppColors.primaryCyan.withValues(alpha: 0.4),
+                  disabledBackgroundColor: AppColors.primaryCyan.withValues(
+                    alpha: 0.4,
+                  ),
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: _assigning
                     ? const SizedBox(
@@ -468,8 +492,8 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
   // ── Song row — Figma style: title | artist | Select button ────────────────
 
   Widget _buildSongRow(Map<String, String> song) {
-    final title    = song['title']  ?? '';
-    final artist   = song['artist'] ?? '';
+    final title = song['title'] ?? '';
+    final artist = song['artist'] ?? '';
     final selected = _selectedSongTitle == title;
 
     return Container(
@@ -521,8 +545,7 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
               _selectedSongTitle = selected ? null : title;
             }),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 color: selected ? AppColors.primaryCyan : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
@@ -615,11 +638,10 @@ class _KaraokeAssignPageState extends State<KaraokeAssignPage> {
   }
 
   Widget _navIcon(IconData icon, {VoidCallback? onTap}) => GestureDetector(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Icon(icon,
-              color: AppColors.grey.withValues(alpha: 0.5), size: 26),
-        ),
-      );
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Icon(icon, color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+    ),
+  );
 }

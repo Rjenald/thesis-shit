@@ -23,7 +23,10 @@ class LyricsSyncService {
   /// Example: [00:12.34]First line of lyrics
   static List<TimedLyricLine> parseLrcLyrics(String lrcContent) {
     final lines = <TimedLyricLine>[];
-    final pattern = RegExp(r'\[(\d{2}):(\d{2}[.,]\d{2,3})\](.*?)$', multiLine: true);
+    final pattern = RegExp(
+      r'\[(\d{2}):(\d{2}[.,]\d{2,3})\](.*?)$',
+      multiLine: true,
+    );
 
     final matches = pattern.allMatches(lrcContent);
 
@@ -55,11 +58,9 @@ class LyricsSyncService {
             endTime = startTime + const Duration(seconds: 3);
           }
 
-          lines.add(TimedLyricLine(
-            text: text,
-            startTime: startTime,
-            endTime: endTime,
-          ));
+          lines.add(
+            TimedLyricLine(text: text, startTime: startTime, endTime: endTime),
+          );
         }
       } catch (e) {
         debugPrint('Error parsing lyric line: $e');
@@ -75,13 +76,15 @@ class LyricsSyncService {
     String artist,
   ) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://lrclib.net/api/get?'
-          'artist_name=${Uri.encodeComponent(artist)}&'
-          'track_name=${Uri.encodeComponent(songTitle)}'
-        ),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            Uri.parse(
+              'https://lrclib.net/api/get?'
+              'artist_name=${Uri.encodeComponent(artist)}&'
+              'track_name=${Uri.encodeComponent(songTitle)}',
+            ),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -105,11 +108,12 @@ class LyricsSyncService {
   }
 
   /// Create timed lyrics from plain lyrics (auto-estimate timing)
-  static List<TimedLyricLine> _createPlainLyricsWithTiming(
-    String plainLyrics,
-  ) {
+  static List<TimedLyricLine> _createPlainLyricsWithTiming(String plainLyrics) {
     final lines = <TimedLyricLine>[];
-    final textLines = plainLyrics.split('\n').where((l) => l.isNotEmpty).toList();
+    final textLines = plainLyrics
+        .split('\n')
+        .where((l) => l.isNotEmpty)
+        .toList();
 
     const secondsPerLine = 3.5; // Estimate 3.5 seconds per line
 
@@ -121,11 +125,13 @@ class LyricsSyncService {
         milliseconds: ((i + 1) * secondsPerLine * 1000).toInt(),
       );
 
-      lines.add(TimedLyricLine(
-        text: textLines[i].trim(),
-        startTime: startTime,
-        endTime: endTime,
-      ));
+      lines.add(
+        TimedLyricLine(
+          text: textLines[i].trim(),
+          startTime: startTime,
+          endTime: endTime,
+        ),
+      );
     }
 
     return lines;

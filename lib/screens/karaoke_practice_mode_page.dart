@@ -23,8 +23,18 @@ class KaraokePracticeModePage extends StatelessWidget {
   });
 
   static const _monthNames = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   static String _formatDeadline(DateTime dt) =>
@@ -134,7 +144,9 @@ class KaraokePracticeModePage extends StatelessWidget {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
+                        vertical: 10,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryCyan,
                         borderRadius: BorderRadius.circular(8),
@@ -283,8 +295,11 @@ class KaraokePracticeModePage extends StatelessWidget {
             children: [
               _navItem(Icons.notifications_outlined, 'Notification'),
               _navItem(Icons.mic_none, 'Karaoke Mode'),
-              _navItem(Icons.home_outlined, 'Home',
-                  onTap: () => Navigator.pop(context)),
+              _navItem(
+                Icons.home_outlined,
+                'Home',
+                onTap: () => Navigator.pop(context),
+              ),
               _navItem(Icons.calendar_today_outlined, 'Calendar'),
               _navItem(Icons.person_outline, 'Profile'),
             ],
@@ -302,8 +317,10 @@ class KaraokePracticeModePage extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white70, size: 24),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          ),
         ],
       ),
     );

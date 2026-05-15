@@ -18,10 +18,9 @@ class LyricsService {
     required String artist,
   }) async {
     try {
-      final uri = Uri.parse(_base).replace(queryParameters: {
-        'track_name': title,
-        'artist_name': artist,
-      });
+      final uri = Uri.parse(
+        _base,
+      ).replace(queryParameters: {'track_name': title, 'artist_name': artist});
       final res = await http.get(uri).timeout(const Duration(seconds: 8));
       if (res.statusCode != 200) return [];
 
@@ -45,14 +44,17 @@ class LyricsService {
       final minutes = int.parse(m.group(1)!);
       final seconds = int.parse(m.group(2)!);
       final hundredths = int.parse(
-          m.group(3)!.padRight(2, '0').substring(0, 2));
+        m.group(3)!.padRight(2, '0').substring(0, 2),
+      );
       final ms = (minutes * 60 + seconds) * 1000 + hundredths * 10;
       final text = m.group(4)?.trim() ?? '';
       if (text.isEmpty) continue;
-      lines.add(LrcLine(
-        timestamp: Duration(milliseconds: ms),
-        text: text,
-      ));
+      lines.add(
+        LrcLine(
+          timestamp: Duration(milliseconds: ms),
+          text: text,
+        ),
+      );
     }
     lines.sort((a, b) => a.timestamp.compareTo(b.timestamp));
     return lines;

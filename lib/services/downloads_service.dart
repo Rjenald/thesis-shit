@@ -24,7 +24,7 @@ class DownloadsService {
   static Future<Set<String>> _ensureLoaded() async {
     if (_keys != null) return _keys!;
     final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getStringList(_key) ?? [];
+    final raw = prefs.getStringList(_key) ?? [];
     _keys = raw.toSet();
     return _keys!;
   }
@@ -36,12 +36,12 @@ class DownloadsService {
 
   static Future<List<Map<String, String>>> loadAll() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getStringList(_key) ?? [];
+    final raw = prefs.getStringList(_key) ?? [];
     return raw.map((entry) {
       final parts = entry.split('||');
       return {
-        'title':    parts.length > 2 ? parts[2] : '',
-        'artist':   parts.length > 3 ? parts[3] : '',
+        'title': parts.length > 2 ? parts[2] : '',
+        'artist': parts.length > 3 ? parts[3] : '',
         'language': parts.length > 4 ? parts[4] : '',
       };
     }).toList();
@@ -50,16 +50,21 @@ class DownloadsService {
   // ── Download ──────────────────────────────────────────────────────────────
 
   static Future<void> download(
-      String title, String artist, String language) async {
+    String title,
+    String artist,
+    String language,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
-    final keys  = await _ensureLoaded();
-    final k     = _makeKey(title, artist);
+    final keys = await _ensureLoaded();
+    final k = _makeKey(title, artist);
     if (keys.contains(k)) return; // already downloaded
 
     keys.add(k);
     // Store with full metadata so we can reconstruct the list later.
     final raw = prefs.getStringList(_key) ?? [];
-    raw.add(jsonEncode({'title': title, 'artist': artist, 'language': language}));
+    raw.add(
+      jsonEncode({'title': title, 'artist': artist, 'language': language}),
+    );
     await prefs.setStringList(_key, raw);
     _keys = keys;
   }
@@ -68,16 +73,19 @@ class DownloadsService {
 
   static Future<void> remove(String title, String artist) async {
     final prefs = await SharedPreferences.getInstance();
-    final keys  = await _ensureLoaded();
-    final k     = _makeKey(title, artist);
+    final keys = await _ensureLoaded();
+    final k = _makeKey(title, artist);
     keys.remove(k);
 
     final raw = prefs.getStringList(_key) ?? [];
     raw.removeWhere((entry) {
       try {
         final m = jsonDecode(entry) as Map<String, dynamic>;
-        return _makeKey(m['title'] as String? ?? '',
-                        m['artist'] as String? ?? '') == k;
+        return _makeKey(
+              m['title'] as String? ?? '',
+              m['artist'] as String? ?? '',
+            ) ==
+            k;
       } catch (_) {
         return false;
       }

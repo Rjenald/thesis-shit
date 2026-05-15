@@ -43,7 +43,8 @@ class StingrayService {
       if (searchRes.statusCode != 200) return null;
 
       final data = json.decode(searchRes.body);
-      final tracks = (data['tracks'] ?? data['data'] ?? data['results']) as List?;
+      final tracks =
+          (data['tracks'] ?? data['data'] ?? data['results']) as List?;
       if (tracks == null || tracks.isEmpty) return null;
 
       // Get best matching track
@@ -52,9 +53,9 @@ class StingrayService {
       if (trackId == null) return null;
 
       // Get stream URL for that track
-      final streamUri = Uri.parse('$_base/tracks/$trackId/stream').replace(
-        queryParameters: {'apiKey': apiKey},
-      );
+      final streamUri = Uri.parse(
+        '$_base/tracks/$trackId/stream',
+      ).replace(queryParameters: {'apiKey': apiKey});
 
       final streamRes = await http
           .get(streamUri, headers: {'Accept': 'application/json'})

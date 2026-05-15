@@ -71,8 +71,7 @@ class _StartPageState extends State<StartPage> {
                         if (loadingProgress == null) return child;
                         return Container(color: Colors.black);
                       },
-                      errorBuilder: (_, _, _) =>
-                          Container(color: Colors.black),
+                      errorBuilder: (_, _, _) => Container(color: Colors.black),
                     ),
                   ),
                 ),

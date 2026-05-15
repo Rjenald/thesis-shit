@@ -100,10 +100,10 @@ class ClassDetailPage extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => LessonDetailPage(
-              classData:    classData,
+              classData: classData,
               lessonNumber: number,
-              lessonTitle:  title,
-              isTeacher:    true,
+              lessonTitle: title,
+              isTeacher: true,
             ),
           ),
         ),

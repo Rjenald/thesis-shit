@@ -26,14 +26,15 @@ class ClassNotificationsService with ChangeNotifier {
   }
 
   Future<void> _loadNotifications() async {
-    final stored =
-        await SessionStorageService.loadFromStorage(_storageKey);
+    final stored = await SessionStorageService.loadFromStorage(_storageKey);
     if (stored != null) {
       try {
         final List<dynamic> decoded = jsonDecode(stored);
         _notifications = decoded
-            .map((item) =>
-                ClassNotification.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) =>
+                  ClassNotification.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
         notifyListeners();
       } catch (e) {
@@ -44,8 +45,7 @@ class ClassNotificationsService with ChangeNotifier {
 
   Future<void> _saveNotifications() async {
     final json = _notifications.map((n) => n.toJson()).toList();
-    await SessionStorageService.saveToStorage(
-        _storageKey, jsonEncode(json));
+    await SessionStorageService.saveToStorage(_storageKey, jsonEncode(json));
     notifyListeners();
   }
 

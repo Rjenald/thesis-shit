@@ -42,7 +42,9 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
   Widget _getScreen(EnrollmentService enrollment) {
     switch (_selectedIndex) {
       case 0:
-        return NotificationScreen(onEnrollmentConfirmed: _onEnrollmentConfirmed);
+        return NotificationScreen(
+          onEnrollmentConfirmed: _onEnrollmentConfirmed,
+        );
       case 1:
         return const KaraokeHomePage(embedded: true);
       case 2:
@@ -107,7 +109,12 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index, {int badge = 0}) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    int index, {
+    int badge = 0,
+  }) {
     final isSelected = _selectedIndex == index;
     return GestureDetector(
       onTap: () => _onItemTapped(index),
@@ -128,7 +135,10 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
                       color: Colors.redAccent,
                       shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
                     child: Text(
                       '$badge',
                       style: const TextStyle(
@@ -173,11 +183,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Consumer2<EnrollmentService, ClassNotificationsService>(
       builder: (context, enrollment, notifSvc, _) {
         final invites = enrollment.pendingInvites;
-        final activities = notifSvc.notifications
-            .where((n) =>
-                n.type == NotificationType.activityAssignment && !n.isDeclined)
-            .toList()
-          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        final activities =
+            notifSvc.notifications
+                .where(
+                  (n) =>
+                      n.type == NotificationType.activityAssignment &&
+                      !n.isDeclined,
+                )
+                .toList()
+              ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
         final hasAny = invites.isNotEmpty || activities.isNotEmpty;
 
@@ -189,70 +203,76 @@ class _NotificationScreenState extends State<NotificationScreen> {
             title: const Text(
               'Notification',
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           body: !hasAny
               ? const Center(
-                  child: Text('No new notifications',
-                      style: TextStyle(color: Colors.white54, fontSize: 16)),
+                  child: Text(
+                    'No new notifications',
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
                 )
               : ListView(
                   padding: EdgeInsets.zero,
                   children: [
                     // ── Enrollment invitations ───────────────────────────
-                    ...invites.map((invite) => _NotifCard(
-                          name: invite.teacherName,
-                          action:
-                              'Wants to enroll you in ${invite.className}',
-                          type: 'enrollment',
-                          onConfirm: () async {
-                            await enrollment.acceptInvite(invite.id);
-                            widget.onEnrollmentConfirmed?.call();
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'Enrolled in ${invite.className}!',
-                                      style: const TextStyle(
-                                          fontFamily: 'Roboto')),
-                                  backgroundColor: _cyan,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
-                          },
-                          onDelete: () {
-                            enrollment.declineInvite(invite.id);
+                    ...invites.map(
+                      (invite) => _NotifCard(
+                        name: invite.teacherName,
+                        action: 'Wants to enroll you in ${invite.className}',
+                        type: 'enrollment',
+                        onConfirm: () async {
+                          await enrollment.acceptInvite(invite.id);
+                          widget.onEnrollmentConfirmed?.call();
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Enrollment declined'),
-                                backgroundColor: Colors.redAccent,
+                              SnackBar(
+                                content: Text(
+                                  'Enrolled in ${invite.className}!',
+                                  style: const TextStyle(fontFamily: 'Roboto'),
+                                ),
+                                backgroundColor: _cyan,
                                 behavior: SnackBarBehavior.floating,
-                                duration: Duration(seconds: 2),
+                                duration: const Duration(seconds: 2),
                               ),
                             );
-                          },
-                        )),
+                          }
+                        },
+                        onDelete: () {
+                          enrollment.declineInvite(invite.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Enrollment declined'),
+                              backgroundColor: Colors.redAccent,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
 
                     // ── Activity assignments ─────────────────────────────
-                    ...activities.map((n) => _NotifCard(
-                          name: n.teacherName,
-                          action: n.activityName ?? n.message,
-                          deadline: n.deadline != null
-                              ? _fmtDeadline(n.deadline!)
-                              : null,
-                          type: 'activity',
-                          onConfirm: () {
-                            notifSvc.declineNotification(n.id);
-                          },
-                          onDelete: () {
-                            notifSvc.removeNotification(n.id);
-                          },
-                        )),
+                    ...activities.map(
+                      (n) => _NotifCard(
+                        name: n.teacherName,
+                        action: n.activityName ?? n.message,
+                        deadline: n.deadline != null
+                            ? _fmtDeadline(n.deadline!)
+                            : null,
+                        type: 'activity',
+                        onConfirm: () {
+                          notifSvc.declineNotification(n.id);
+                        },
+                        onDelete: () {
+                          notifSvc.removeNotification(n.id);
+                        },
+                      ),
+                    ),
                   ],
                 ),
         );
@@ -277,7 +297,7 @@ class _NotifCard extends StatelessWidget {
   final String? deadline;
   final String type; // 'enrollment' | 'activity'
   final VoidCallback onConfirm; // enrollment→Accept, activity→Dismiss
-  final VoidCallback onDelete;  // enrollment→Delete, activity→Delete
+  final VoidCallback onDelete; // enrollment→Delete, activity→Delete
 
   const _NotifCard({
     required this.name,
@@ -310,22 +330,27 @@ class _NotifCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500),
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
-                Text(action,
-                    style:
-                        const TextStyle(color: Colors.white70, fontSize: 12),
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  action,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
                 if (type == 'activity' && deadline != null) ...[
                   const SizedBox(height: 3),
-                  Text('Deadline: $deadline',
-                      style: const TextStyle(
-                          color: _cyan, fontSize: 11)),
+                  Text(
+                    'Deadline: $deadline',
+                    style: const TextStyle(color: _cyan, fontSize: 11),
+                  ),
                 ],
               ],
             ),
@@ -340,9 +365,10 @@ class _NotifCard extends StatelessWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('Accept Enroll',
-                  style:
-                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Accept Enroll',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
             ),
             TextButton(
               onPressed: onDelete,
@@ -352,9 +378,10 @@ class _NotifCard extends StatelessWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('Delete',
-                  style:
-                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Delete',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
             ),
           ] else if (type == 'activity') ...[
             TextButton(
@@ -365,9 +392,10 @@ class _NotifCard extends StatelessWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('Dismiss',
-                  style:
-                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Dismiss',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
             ),
             TextButton(
               onPressed: onDelete,
@@ -377,9 +405,10 @@ class _NotifCard extends StatelessWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('Delete',
-                  style:
-                      TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Delete',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ],
@@ -405,10 +434,12 @@ class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
 
   List<KaraokeSong> get _filtered {
     final allSongs = TagalogBisayaSongs.songs;
-    if (_query.trim().isEmpty && _selectedLanguage == 'All') return allSongs.toList();
+    if (_query.trim().isEmpty && _selectedLanguage == 'All')
+      return allSongs.toList();
     final q = _query.toLowerCase();
     return allSongs.where((s) {
-      final matchesQuery = q.isEmpty ||
+      final matchesQuery =
+          q.isEmpty ||
           s.title.toLowerCase().contains(q) ||
           s.artist.toLowerCase().contains(q);
       final matchesLang =
@@ -448,36 +479,46 @@ class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Karaoke',
-                          style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Roboto')),
-                      Text('Choose a song to sing',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white54,
-                              fontFamily: 'Roboto')),
+                      Text(
+                        'Karaoke',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                      Text(
+                        'Choose a song to sing',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white54,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
                     ],
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _cyan.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.music_note,
-                            color: _cyan, size: 14),
+                        const Icon(Icons.music_note, color: _cyan, size: 14),
                         const SizedBox(width: 4),
-                        Text('${results.length} songs',
-                            style: const TextStyle(
-                                color: _cyan,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600)),
+                        Text(
+                          '${results.length} songs',
+                          style: const TextStyle(
+                            color: _cyan,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -501,10 +542,16 @@ class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
                   decoration: const InputDecoration(
                     hintText: 'Search songs, artist...',
                     hintStyle: TextStyle(color: Colors.white38),
-                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 20),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white38,
+                      size: 20,
+                    ),
                     border: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
                 ),
               ),
@@ -525,20 +572,23 @@ class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
                     child: Container(
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: selected
-                            ? _cyan
-                            : const Color(0xFF2A2A2A),
+                        color: selected ? _cyan : const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(lang,
-                          style: TextStyle(
-                              color: selected ? Colors.black : Colors.white70,
-                              fontSize: 12,
-                              fontWeight: selected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal)),
+                      child: Text(
+                        lang,
+                        style: TextStyle(
+                          color: selected ? Colors.black : Colors.white70,
+                          fontSize: 12,
+                          fontWeight: selected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
                     ),
                   );
                 }).toList(),
@@ -581,49 +631,66 @@ class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
                               color: const Color(0xFF2A2A2A),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.music_note,
-                                color: Colors.white38, size: 22),
+                            child: const Icon(
+                              Icons.music_note,
+                              color: Colors.white38,
+                              size: 22,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(song.title,
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis),
+                                Text(
+                                  song.title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 const SizedBox(height: 2),
                                 Row(
                                   children: [
-                                    Text(song.artist,
-                                        style: const TextStyle(
-                                            color: Colors.white54,
-                                            fontSize: 12),
-                                        overflow: TextOverflow.ellipsis),
+                                    Text(
+                                      song.artist,
+                                      style: const TextStyle(
+                                        color: Colors.white54,
+                                        fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                     const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: _cyan.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: Text(song.language,
-                                          style: const TextStyle(
-                                              color: _cyan,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold)),
+                                      child: Text(
+                                        song.language,
+                                        style: const TextStyle(
+                                          color: _cyan,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.play_circle_outline,
-                              color: Colors.white38, size: 28),
+                          const Icon(
+                            Icons.play_circle_outline,
+                            color: Colors.white38,
+                            size: 28,
+                          ),
                         ],
                       ),
                     ),
@@ -673,11 +740,14 @@ class ClassroomScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: _dark,
         elevation: 0,
-        title: const Text('Classroom',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Classroom',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -690,9 +760,10 @@ class ClassroomScreen extends StatelessWidget {
               child: Text(
                 isEnrolled ? className : 'Not Enrolled yet',
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600),
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -712,7 +783,8 @@ class ClassroomScreen extends StatelessWidget {
                           className: className,
                           lessonTitle: lesson['title'],
                           subLessons: List<Map<String, dynamic>>.from(
-                              lesson['subLessons']),
+                            lesson['subLessons'],
+                          ),
                         ),
                       ),
                     ),
@@ -721,23 +793,32 @@ class ClassroomScreen extends StatelessWidget {
                         color: _cardBg,
                         border: Border(
                           bottom: BorderSide(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              width: 1),
+                            color: Colors.black.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
                         ),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 20),
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(lesson['title'],
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500)),
+                            child: Text(
+                              lesson['title'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                          const Icon(Icons.chevron_right,
-                              color: Colors.white54, size: 20),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
@@ -748,8 +829,10 @@ class ClassroomScreen extends StatelessWidget {
           else
             const Expanded(
               child: Center(
-                child: Text('Enroll in a class to see lessons',
-                    style: TextStyle(color: Colors.white54, fontSize: 14)),
+                child: Text(
+                  'Enroll in a class to see lessons',
+                  style: TextStyle(color: Colors.white54, fontSize: 14),
+                ),
               ),
             ),
         ],
@@ -792,23 +875,26 @@ class StudentLessonDetailPage extends StatelessWidget {
       case 'Karaoke Practice':
         // ── Look up the actual assigned song from the teacher's notification ─
         final notifSvc = context.read<ClassNotificationsService>();
-        final assignments = notifSvc.notifications
-            .where((n) =>
-                n.type == NotificationType.activityAssignment &&
-                !n.isDeclined &&
-                n.activityName != null)
-            .toList()
-          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        final assignments =
+            notifSvc.notifications
+                .where(
+                  (n) =>
+                      n.type == NotificationType.activityAssignment &&
+                      !n.isDeclined &&
+                      n.activityName != null,
+                )
+                .toList()
+              ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
         // Defaults (shown when no assignment exists yet)
-        String songTitle  = 'Dadalhin';
+        String songTitle = 'Dadalhin';
         String songArtist = 'Regine Velasquez';
         DateTime? dueDate;
 
         if (assignments.isNotEmpty) {
           final latest = assignments.first;
           songTitle = latest.activityName!;
-          dueDate   = latest.deadline;
+          dueDate = latest.deadline;
 
           // Find the matching artist from the song database
           final match = TagalogBisayaSongs.songs.where(
@@ -820,12 +906,12 @@ class StudentLessonDetailPage extends StatelessWidget {
         }
 
         page = KaraokePracticeModePage(
-          classData:  classData,
-          songTitle:  songTitle,
+          classData: classData,
+          songTitle: songTitle,
           songArtist: songArtist,
-          songImage:  '',
-          dueDate:    dueDate,
-          maxScore:   100,
+          songImage: '',
+          dueDate: dueDate,
+          maxScore: 100,
         );
         break;
     }
@@ -858,8 +944,11 @@ class StudentLessonDetailPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.black, size: 20),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -877,9 +966,10 @@ class StudentLessonDetailPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.only(left: 36),
-                  child: Text(lessonTitle,
-                      style: const TextStyle(
-                          color: Colors.black87, fontSize: 12)),
+                  child: Text(
+                    lessonTitle,
+                    style: const TextStyle(color: Colors.black87, fontSize: 12),
+                  ),
                 ),
               ],
             ),
@@ -899,18 +989,22 @@ class StudentLessonDetailPage extends StatelessWidget {
                       color: _cardBg,
                       border: Border(
                         bottom: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            width: 1),
+                          color: Colors.black.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 20),
+                      horizontal: 24,
+                      vertical: 20,
+                    ),
                     child: Text(
                       '${sub['number']}    ${sub['title']}',
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500),
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 );
@@ -934,8 +1028,11 @@ class StudentLessonDetailPage extends StatelessWidget {
             children: [
               _navItem(Icons.notifications_outlined, 'Notification'),
               _navItem(Icons.mic_none, 'Karaoke Mode'),
-              _navItem(Icons.home_outlined, 'Home',
-                  onTap: () => Navigator.pop(context)),
+              _navItem(
+                Icons.home_outlined,
+                'Home',
+                onTap: () => Navigator.pop(context),
+              ),
               _navItem(Icons.calendar_today_outlined, 'Calendar'),
               _navItem(Icons.person_outline, 'Profile'),
             ],
@@ -953,8 +1050,10 @@ class StudentLessonDetailPage extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white70, size: 24),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          ),
         ],
       ),
     );
@@ -1017,16 +1116,20 @@ class _StudentSolfegeActivityPageState
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.black, size: 20),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       widget.className.toUpperCase(),
                       style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold),
+                        color: Colors.black,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -1035,8 +1138,7 @@ class _StudentSolfegeActivityPageState
                   padding: const EdgeInsets.only(left: 36),
                   child: Text(
                     '${widget.lessonTitle}  /  Solfege Activity',
-                    style:
-                        const TextStyle(color: Colors.black87, fontSize: 12),
+                    style: const TextStyle(color: Colors.black87, fontSize: 12),
                   ),
                 ),
               ],
@@ -1046,15 +1148,16 @@ class _StudentSolfegeActivityPageState
           // ── Scrollable body ──────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Instruction box
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF5A5A5A),
                       borderRadius: BorderRadius.circular(8),
@@ -1062,9 +1165,10 @@ class _StudentSolfegeActivityPageState
                     child: const Text(
                       'Instruction:',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500),
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -1090,7 +1194,9 @@ class _StudentSolfegeActivityPageState
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF2A2A2A),
                           borderRadius: BorderRadius.circular(6),
@@ -1098,30 +1204,42 @@ class _StudentSolfegeActivityPageState
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('Hit Note: ',
-                                style: TextStyle(
-                                    color: Colors.white70, fontSize: 13)),
-                            Text(_hitNote,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold)),
+                            const Text(
+                              'Hit Note: ',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              _hitNote,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 8),
+                          horizontal: 18,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text('NO',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'NO',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1131,8 +1249,10 @@ class _StudentSolfegeActivityPageState
                   LayoutBuilder(
                     builder: (ctx, constraints) {
                       final w = constraints.maxWidth;
-                      final thumbX =
-                          (w * (0.5 + _pitchOffset * 0.35)).clamp(1.0, w - 3);
+                      final thumbX = (w * (0.5 + _pitchOffset * 0.35)).clamp(
+                        1.0,
+                        w - 3,
+                      );
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -1142,7 +1262,9 @@ class _StudentSolfegeActivityPageState
                               color: const Color(0xFF1A1A1A),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                  color: Colors.white12, width: 0.5),
+                                color: Colors.white12,
+                                width: 0.5,
+                              ),
                             ),
                             child: Stack(
                               children: [
@@ -1151,15 +1273,18 @@ class _StudentSolfegeActivityPageState
                                   left: 12,
                                   right: 12,
                                   child: Container(
-                                      height: 1, color: Colors.white24),
+                                    height: 1,
+                                    color: Colors.white24,
+                                  ),
                                 ),
                                 Positioned(
                                   top: 10,
                                   left: thumbX,
                                   child: Container(
-                                      width: 2,
-                                      height: 24,
-                                      color: Colors.white),
+                                    width: 2,
+                                    height: 24,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1168,12 +1293,20 @@ class _StudentSolfegeActivityPageState
                           const Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('TOO HIGH',
-                                  style: TextStyle(
-                                      color: Colors.white38, fontSize: 8)),
-                              Text('TOO LOW',
-                                  style: TextStyle(
-                                      color: Colors.white38, fontSize: 8)),
+                              Text(
+                                'TOO HIGH',
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 8,
+                                ),
+                              ),
+                              Text(
+                                'TOO LOW',
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 8,
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -1187,7 +1320,9 @@ class _StudentSolfegeActivityPageState
                     alignment: Alignment.centerLeft,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(6),
@@ -1195,14 +1330,21 @@ class _StudentSolfegeActivityPageState
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('Score  ',
-                              style: TextStyle(
-                                  color: Colors.white70, fontSize: 13)),
-                          Text('${_score.round()}%',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Score  ',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            '${_score.round()}%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1212,14 +1354,14 @@ class _StudentSolfegeActivityPageState
                   // Record button
                   Center(
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _isRecording = !_isRecording),
+                      onTap: () => setState(() => _isRecording = !_isRecording),
                       child: Container(
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          color:
-                              _isRecording ? Colors.red.shade700 : Colors.red,
+                          color: _isRecording
+                              ? Colors.red.shade700
+                              : Colors.red,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -1247,12 +1389,17 @@ class _StudentSolfegeActivityPageState
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       elevation: 0,
                     ),
-                    child: const Text('Submit',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      'Submit',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -1274,11 +1421,14 @@ class _StudentSolfegeActivityPageState
         border: Border.all(color: const Color(0xFFCCCCCC)),
       ),
       alignment: Alignment.center,
-      child: Text(note,
-          style: const TextStyle(
-              color: Colors.black,
-              fontSize: 14,
-              fontWeight: FontWeight.w500)),
+      child: Text(
+        note,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 
@@ -1293,8 +1443,11 @@ class _StudentSolfegeActivityPageState
             children: [
               _navItem(Icons.notifications_outlined, 'Notification'),
               _navItem(Icons.mic_none, 'Karaoke Mode'),
-              _navItem(Icons.home_outlined, 'Home',
-                  onTap: () => Navigator.pop(context)),
+              _navItem(
+                Icons.home_outlined,
+                'Home',
+                onTap: () => Navigator.pop(context),
+              ),
               _navItem(Icons.calendar_today_outlined, 'Calendar'),
               _navItem(Icons.person_outline, 'Profile'),
             ],
@@ -1312,8 +1465,10 @@ class _StudentSolfegeActivityPageState
         children: [
           Icon(icon, color: Colors.white70, size: 24),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(color: Colors.white70, fontSize: 10)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          ),
         ],
       ),
     );
@@ -1345,17 +1500,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  List<Map<String, dynamic>> _eventsFromService(
-      ClassNotificationsService svc) {
+  List<Map<String, dynamic>> _eventsFromService(ClassNotificationsService svc) {
     return svc.notifications
-        .where((n) =>
-            n.type == NotificationType.activityAssignment &&
-            !n.isDeclined &&
-            n.deadline != null)
-        .map((n) => {
-              'date': n.deadline!,
-              'title': 'Due: ${n.activityName ?? n.message}',
-            })
+        .where(
+          (n) =>
+              n.type == NotificationType.activityAssignment &&
+              !n.isDeclined &&
+              n.deadline != null,
+        )
+        .map(
+          (n) => {
+            'date': n.deadline!,
+            'title': 'Due: ${n.activityName ?? n.message}',
+          },
+        )
         .toList();
   }
 
@@ -1370,8 +1528,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   static const _monthNames = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   @override
@@ -1393,11 +1562,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     children: [
                       Icon(Icons.calendar_today, color: _cyan, size: 18),
                       SizedBox(width: 8),
-                      Text('Calendar',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold)),
+                      Text(
+                        'Calendar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -1408,25 +1580,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
-                          onTap: () => setState(() => _focusedMonth =
-                              DateTime(_focusedMonth.year,
-                                  _focusedMonth.month - 1)),
-                          child: const Icon(Icons.chevron_left,
-                              color: Colors.white70, size: 22),
+                          onTap: () => setState(
+                            () => _focusedMonth = DateTime(
+                              _focusedMonth.year,
+                              _focusedMonth.month - 1,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.chevron_left,
+                            color: Colors.white70,
+                            size: 22,
+                          ),
                         ),
                         Text(
                           '${_monthNames[_focusedMonth.month]} ${_focusedMonth.year}',
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600),
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         GestureDetector(
-                          onTap: () => setState(() => _focusedMonth =
-                              DateTime(_focusedMonth.year,
-                                  _focusedMonth.month + 1)),
-                          child: const Icon(Icons.chevron_right,
-                              color: Colors.white70, size: 22),
+                          onTap: () => setState(
+                            () => _focusedMonth = DateTime(
+                              _focusedMonth.year,
+                              _focusedMonth.month + 1,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.chevron_right,
+                            color: Colors.white70,
+                            size: 22,
+                          ),
                         ),
                       ],
                     ),
@@ -1434,16 +1619,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-                          .map((h) => SizedBox(
-                                width: 32,
-                                child: Center(
-                                  child: Text(h,
-                                      style: const TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600)),
+                          .map(
+                            (h) => SizedBox(
+                              width: 32,
+                              child: Center(
+                                child: Text(
+                                  h,
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ))
+                              ),
+                            ),
+                          )
                           .toList(),
                     ),
                     const SizedBox(height: 6),
@@ -1459,22 +1649,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) =>
-                                  FullCalendarPage(events: events)),
+                            builder: (_) => FullCalendarPage(events: events),
+                          ),
                         ),
-                        child: const Text('full calendar',
-                            style: TextStyle(
-                                color: _cyan,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500)),
+                        child: const Text(
+                          'full calendar',
+                          style: TextStyle(
+                            color: _cyan,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                       GestureDetector(
-                        onTap: () => setState(
-                            () => _calendarHidden = !_calendarHidden),
+                        onTap: () =>
+                            setState(() => _calendarHidden = !_calendarHidden),
                         child: Text(
                           _calendarHidden ? 'show' : 'hide',
                           style: const TextStyle(
-                              color: Colors.white54, fontSize: 13),
+                            color: Colors.white54,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -1487,14 +1682,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   // ── Upcoming deadlines ────────────────────────────────
                   const Row(
                     children: [
-                      Icon(Icons.assignment_outlined,
-                          color: _cyan, size: 18),
+                      Icon(Icons.assignment_outlined, color: _cyan, size: 18),
                       SizedBox(width: 6),
-                      Text('Upcoming Deadlines',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600)),
+                      Text(
+                        'Upcoming Deadlines',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -1502,23 +1699,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   if (events.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text('No activities assigned yet.',
-                          style: TextStyle(
-                              color: Colors.white38, fontSize: 13)),
+                      child: Text(
+                        'No activities assigned yet.',
+                        style: TextStyle(color: Colors.white38, fontSize: 13),
+                      ),
                     )
                   else
                     ...events.map((e) {
                       final d = e['date'] as DateTime;
                       final daysLeft = d
-                          .difference(DateTime(
-                              _today.year, _today.month, _today.day))
+                          .difference(
+                            DateTime(_today.year, _today.month, _today.day),
+                          )
                           .inDays;
                       final overdue = daysLeft < 0;
                       final urgent = daysLeft >= 0 && daysLeft <= 2;
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1A1A1A),
                           borderRadius: BorderRadius.circular(10),
@@ -1527,8 +1728,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               color: overdue
                                   ? Colors.redAccent
                                   : urgent
-                                      ? Colors.orange
-                                      : _cyan,
+                                  ? Colors.orange
+                                  : _cyan,
                               width: 3,
                             ),
                           ),
@@ -1542,44 +1743,47 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   Text(
                                     e['title'] as String,
                                     style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500),
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
                                     _fmtDatetime(d),
                                     style: const TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 11),
+                                      color: Colors.white54,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: overdue
                                     ? Colors.redAccent.withValues(alpha: 0.15)
                                     : urgent
-                                        ? Colors.orange
-                                            .withValues(alpha: 0.15)
-                                        : _cyan.withValues(alpha: 0.12),
+                                    ? Colors.orange.withValues(alpha: 0.15)
+                                    : _cyan.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 overdue
                                     ? 'Overdue'
                                     : daysLeft == 0
-                                        ? 'Today'
-                                        : '$daysLeft day${daysLeft == 1 ? '' : 's'}',
+                                    ? 'Today'
+                                    : '$daysLeft day${daysLeft == 1 ? '' : 's'}',
                                 style: TextStyle(
                                   color: overdue
                                       ? Colors.redAccent
                                       : urgent
-                                          ? Colors.orange
-                                          : _cyan,
+                                      ? Colors.orange
+                                      : _cyan,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -1600,20 +1804,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.check_circle_outline,
-                              color: _cyan, size: 18),
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: _cyan,
+                            size: 18,
+                          ),
                           SizedBox(width: 6),
-                          Text('To-do',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'To-do',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                       GestureDetector(
                         onTap: () => _addTodo(context),
-                        child: const Icon(Icons.add,
-                            color: Colors.white70, size: 20),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
                       ),
                     ],
                   ),
@@ -1621,7 +1834,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                   _todoRow(
                     icon: Icons.description_outlined,
-                    text: '${events.length} assignment${events.length == 1 ? '' : 's'} due',
+                    text:
+                        '${events.length} assignment${events.length == 1 ? '' : 's'} due',
                     color: _cyan,
                   ),
                   const SizedBox(height: 6),
@@ -1635,8 +1849,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         color: Colors.white70,
                         trailing: GestureDetector(
                           onTap: () => setState(() => _todos.remove(t)),
-                          child: const Icon(Icons.delete_outline,
-                              color: Colors.white38, size: 16),
+                          child: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.white38,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ),
@@ -1656,8 +1873,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text('Add To-do',
-            style: TextStyle(color: Colors.white, fontSize: 16)),
+        title: const Text(
+          'Add To-do',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -1665,17 +1884,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
           decoration: const InputDecoration(
             hintText: 'e.g. Practice scales',
             hintStyle: TextStyle(color: Colors.white38),
-            enabledBorder:
-                UnderlineInputBorder(borderSide: BorderSide(color: _cyan)),
-            focusedBorder:
-                UnderlineInputBorder(borderSide: BorderSide(color: _cyan)),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: _cyan),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: _cyan),
+            ),
           ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel',
-                  style: TextStyle(color: Colors.white54))),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
           TextButton(
             onPressed: () {
               final t = ctrl.text.trim();
@@ -1693,16 +1917,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildMonthGrid(List<Map<String, dynamic>> events) {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
     final firstDow = firstDay.weekday % 7;
-    final daysInMonth =
-        DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    final daysInMonth = DateTime(
+      _focusedMonth.year,
+      _focusedMonth.month + 1,
+      0,
+    ).day;
 
     final cells = <Widget>[
-      ...List.generate(
-          firstDow, (_) => const SizedBox(width: 32, height: 32)),
+      ...List.generate(firstDow, (_) => const SizedBox(width: 32, height: 32)),
       ...List.generate(daysInMonth, (i) {
         final day = i + 1;
-        final date =
-            DateTime(_focusedMonth.year, _focusedMonth.month, day);
+        final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
         final isToday = _isSameDay(date, _today);
         final hasEv = _hasEvent(events, date);
         return SizedBox(
@@ -1713,18 +1938,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
             children: [
               Container(
                 decoration: isToday
-                    ? const BoxDecoration(
-                        color: _cyan, shape: BoxShape.circle)
+                    ? const BoxDecoration(color: _cyan, shape: BoxShape.circle)
                     : null,
                 alignment: Alignment.center,
-                child: Text('$day',
-                    style: TextStyle(
-                        color:
-                            isToday ? Colors.black : Colors.white70,
-                        fontSize: 13,
-                        fontWeight: hasEv
-                            ? FontWeight.bold
-                            : FontWeight.normal)),
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    color: isToday ? Colors.black : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: hasEv ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
               ),
               if (hasEv && !isToday)
                 Positioned(
@@ -1733,7 +1957,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     width: 4,
                     height: 4,
                     decoration: const BoxDecoration(
-                        color: _cyan, shape: BoxShape.circle),
+                      color: _cyan,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
             ],
@@ -1748,12 +1974,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
       while (slice.length < 7) {
         slice.add(const SizedBox(width: 32, height: 32));
       }
-      rows.add(Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Row(
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: slice),
-      ));
+            children: slice,
+          ),
+        ),
+      );
     }
     return Column(children: rows);
   }
@@ -1763,18 +1992,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
     required String text,
     required Color color,
     Widget? trailing,
-  }) =>
-      Row(children: [
-        Icon(icon, color: color, size: 16),
-        const SizedBox(width: 8),
-        Expanded(
-            child: Text(text,
-                style: TextStyle(
-                    color: color,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500))),
-        ?trailing,
-      ]);
+  }) => Row(
+    children: [
+      Icon(icon, color: color, size: 16),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      ?trailing,
+    ],
+  );
 }
 
 // ==================== FULL CALENDAR PAGE (week view) ====================
@@ -1794,8 +2028,18 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
 
   static const _dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   static const _hours = [
-    '12pm', '1pm', '2pm', '3pm', '4pm', '5pm',
-    '6pm', '7pm', '8pm', '9pm', '10pm', '11pm',
+    '12pm',
+    '1pm',
+    '2pm',
+    '3pm',
+    '4pm',
+    '5pm',
+    '6pm',
+    '7pm',
+    '8pm',
+    '9pm',
+    '10pm',
+    '11pm',
   ];
 
   @override
@@ -1814,8 +2058,7 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final weekDays =
-        List.generate(7, (i) => _weekStart.add(Duration(days: i)));
+    final weekDays = List.generate(7, (i) => _weekStart.add(Duration(days: i)));
 
     return Scaffold(
       backgroundColor: const Color(0xFF12122A),
@@ -1825,34 +2068,48 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
             // ── Top bar ───────────────────────────────────────────────
             Container(
               color: const Color(0xFF1A1A2E),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: Row(
                 children: [
                   // Back arrow
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios,
-                        color: Colors.white, size: 18),
+                    child: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   // Today
-                  _topBtn('Today', onTap: () {
-                    setState(() {
-                      _today = DateTime.now();
-                      final dow = _today.weekday % 7;
-                      _weekStart = _today.subtract(Duration(days: dow));
-                    });
-                  }),
+                  _topBtn(
+                    'Today',
+                    onTap: () {
+                      setState(() {
+                        _today = DateTime.now();
+                        final dow = _today.weekday % 7;
+                        _weekStart = _today.subtract(Duration(days: dow));
+                      });
+                    },
+                  ),
                   const SizedBox(width: 6),
                   // Prev / Next
-                  _arrowBtn(Icons.chevron_left,
-                      () => setState(() => _weekStart =
-                          _weekStart.subtract(const Duration(days: 7)))),
+                  _arrowBtn(
+                    Icons.chevron_left,
+                    () => setState(
+                      () => _weekStart = _weekStart.subtract(
+                        const Duration(days: 7),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 4),
-                  _arrowBtn(Icons.chevron_right,
-                      () => setState(() => _weekStart =
-                          _weekStart.add(const Duration(days: 7)))),
+                  _arrowBtn(
+                    Icons.chevron_right,
+                    () => setState(
+                      () =>
+                          _weekStart = _weekStart.add(const Duration(days: 7)),
+                    ),
+                  ),
                   const Spacer(),
                   // View tabs
                   _viewTab('Week'),
@@ -1867,8 +2124,7 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
             // ── Day headers ───────────────────────────────────────────
             Container(
               color: const Color(0xFF1A1A2E),
-              padding:
-                  const EdgeInsets.only(bottom: 10, left: 52, right: 4),
+              padding: const EdgeInsets.only(bottom: 10, left: 52, right: 4),
               child: Row(
                 children: List.generate(7, (i) {
                   final day = weekDays[i];
@@ -1876,27 +2132,33 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
                   return Expanded(
                     child: Column(
                       children: [
-                        Text(_dayNames[i],
-                            style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500)),
+                        Text(
+                          _dayNames[i],
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Container(
                           width: 26,
                           height: 26,
                           decoration: isToday
                               ? const BoxDecoration(
-                                  color: _cyan, shape: BoxShape.circle)
+                                  color: _cyan,
+                                  shape: BoxShape.circle,
+                                )
                               : null,
                           alignment: Alignment.center,
-                          child: Text('${day.day}',
-                              style: TextStyle(
-                                  color: isToday
-                                      ? Colors.black
-                                      : Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600)),
+                          child: Text(
+                            '${day.day}',
+                            style: TextStyle(
+                              color: isToday ? Colors.black : Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -1920,9 +2182,10 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
                   const SizedBox(
                     width: 52,
                     child: Center(
-                      child: Text('All day',
-                          style: TextStyle(
-                              color: Colors.white38, fontSize: 10)),
+                      child: Text(
+                        'All day',
+                        style: TextStyle(color: Colors.white38, fontSize: 10),
+                      ),
                     ),
                   ),
                   ...List.generate(7, (i) {
@@ -1934,27 +2197,31 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
                           final idx = entry.key;
                           final e = entry.value;
                           // alternate border colours like the screenshot
-                          final borderColor =
-                              idx < 3 ? _cyan : Colors.deepPurple;
+                          final borderColor = idx < 3
+                              ? _cyan
+                              : Colors.deepPurple;
                           return Container(
-                            margin: const EdgeInsets.only(
-                                bottom: 3, right: 2),
+                            margin: const EdgeInsets.only(bottom: 3, right: 2),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 3),
+                              horizontal: 4,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E1E3A),
                               borderRadius: BorderRadius.circular(3),
                               border: Border(
-                                left: BorderSide(
-                                    color: borderColor, width: 2),
+                                left: BorderSide(color: borderColor, width: 2),
                               ),
                             ),
-                            child: Text(e['title'] as String,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              e['title'] as String,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                       ),
@@ -1977,11 +2244,14 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
                             width: 52,
                             child: Padding(
                               padding: const EdgeInsets.only(right: 8),
-                              child: Text(label,
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                      color: Colors.white38,
-                                      fontSize: 10)),
+                              child: Text(
+                                label,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 10,
+                                ),
+                              ),
                             ),
                           ),
                           Expanded(
@@ -1989,9 +2259,13 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
                               decoration: const BoxDecoration(
                                 border: Border(
                                   top: BorderSide(
-                                      color: Colors.white12, width: 0.5),
+                                    color: Colors.white12,
+                                    width: 0.5,
+                                  ),
                                   left: BorderSide(
-                                      color: Colors.white12, width: 0.5),
+                                    color: Colors.white12,
+                                    width: 0.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -2015,12 +2289,24 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _fcNavItem(context, Icons.notifications_outlined, 'Notification'),
+                _fcNavItem(
+                  context,
+                  Icons.notifications_outlined,
+                  'Notification',
+                ),
                 _fcNavItem(context, Icons.mic_none, 'Karaoke Mode'),
-                _fcNavItem(context, Icons.home_outlined, 'Home',
-                    onTap: () => Navigator.pop(context)),
-                _fcNavItem(context, Icons.calendar_today_outlined, 'Calendar',
-                    active: true),
+                _fcNavItem(
+                  context,
+                  Icons.home_outlined,
+                  'Home',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _fcNavItem(
+                  context,
+                  Icons.calendar_today_outlined,
+                  'Calendar',
+                  active: true,
+                ),
                 _fcNavItem(context, Icons.person_outline, 'Profile'),
               ],
             ),
@@ -2031,28 +2317,31 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
   }
 
   Widget _topBtn(String label, {VoidCallback? onTap}) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          decoration: BoxDecoration(
-              color: const Color(0xFF2A2A3E),
-              borderRadius: BorderRadius.circular(16)),
-          child: Text(label,
-              style:
-                  const TextStyle(color: Colors.white, fontSize: 12)),
-        ),
-      );
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+      ),
+    ),
+  );
 
   Widget _arrowBtn(IconData icon, VoidCallback onTap) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-              color: const Color(0xFF2A2A3E),
-              borderRadius: BorderRadius.circular(16)),
-          child: Icon(icon, color: Colors.white, size: 16),
-        ),
-      );
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Icon(icon, color: Colors.white, size: 16),
+    ),
+  );
 
   Widget _viewTab(String label) {
     final active = _view == label;
@@ -2062,8 +2351,7 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: active ? _cyan : Colors.white24, width: 1),
+          border: Border.all(color: active ? _cyan : Colors.white24, width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2072,24 +2360,32 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
               label == 'Week'
                   ? Icons.calendar_view_week
                   : label == 'Month'
-                      ? Icons.calendar_month
-                      : Icons.format_list_bulleted,
+                  ? Icons.calendar_month
+                  : Icons.format_list_bulleted,
               color: active ? _cyan : Colors.white38,
               size: 10,
             ),
             const SizedBox(width: 3),
-            Text(label,
-                style: TextStyle(
-                    color: active ? _cyan : Colors.white54,
-                    fontSize: 11)),
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? _cyan : Colors.white54,
+                fontSize: 11,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _fcNavItem(BuildContext context, IconData icon, String label,
-      {VoidCallback? onTap, bool active = false}) {
+  Widget _fcNavItem(
+    BuildContext context,
+    IconData icon,
+    String label, {
+    VoidCallback? onTap,
+    bool active = false,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -2097,12 +2393,14 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
         children: [
           Icon(icon, color: active ? _cyan : Colors.white70, size: 24),
           const SizedBox(height: 4),
-          Text(label,
-              style: TextStyle(
-                  color: active ? _cyan : Colors.white70,
-                  fontSize: 10,
-                  fontWeight:
-                      active ? FontWeight.w600 : FontWeight.normal)),
+          Text(
+            label,
+            style: TextStyle(
+              color: active ? _cyan : Colors.white70,
+              fontSize: 10,
+              fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
         ],
       ),
     );
@@ -2153,29 +2451,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final enrollment = context.watch<EnrollmentService>();
     final notifSvc = context.watch<ClassNotificationsService>();
-    final className =
-        enrollment.primaryClass ?? 'Not Enrolled';
+    final className = enrollment.primaryClass ?? 'Not Enrolled';
     final activityCount = notifSvc.notifications
-        .where((n) =>
-            n.type == NotificationType.activityAssignment && !n.isDeclined)
+        .where(
+          (n) => n.type == NotificationType.activityAssignment && !n.isDeclined,
+        )
         .length;
     return Scaffold(
       backgroundColor: _dark,
       body: SafeArea(
         child: _loading
-            ? const Center(
-                child: CircularProgressIndicator(color: _cyan))
+            ? const Center(child: CircularProgressIndicator(color: _cyan))
             : Column(
                 children: [
                   const Padding(
                     padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: Text('Profile',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'Profile',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -2189,43 +2489,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  Text(_username,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    _username,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
 
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _cyan.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(className,
-                        style: const TextStyle(
-                            color: _cyan,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500)),
+                    child: Text(
+                      className,
+                      style: const TextStyle(
+                        color: _cyan,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 32),
 
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       children: [
-                        _infoRow(Icons.school_outlined, 'Section',
-                            className),
+                        _infoRow(Icons.school_outlined, 'Section', className),
+                        const SizedBox(height: 10),
+                        _infoRow(Icons.person_outline, 'Role', 'Student'),
                         const SizedBox(height: 10),
                         _infoRow(
-                            Icons.person_outline, 'Role', 'Student'),
-                        const SizedBox(height: 10),
-                        _infoRow(
-                            Icons.assignment_outlined,
-                            'Assignments Due',
-                            '$activityCount'),
+                          Icons.assignment_outlined,
+                          'Assignments Due',
+                          '$activityCount',
+                        ),
                       ],
                     ),
                   ),
@@ -2233,24 +2539,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Spacer(),
 
                   Padding(
-                    padding:
-                        const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _logout,
                         icon: const Icon(Icons.logout, size: 18),
-                        label: const Text('Log Out',
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
+                        label: const Text(
+                          'Log Out',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.redAccent,
                           foregroundColor: Colors.white,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           elevation: 0,
                         ),
                       ),
@@ -2262,28 +2570,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) =>
-      Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(10),
+  Widget _infoRow(IconData icon, String label, String value) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: BoxDecoration(
+      color: const Color(0xFF1A1A1A),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: _cyan, size: 18),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white54, fontSize: 13),
         ),
-        child: Row(
-          children: [
-            Icon(icon, color: _cyan, size: 18),
-            const SizedBox(width: 12),
-            Text(label,
-                style: const TextStyle(
-                    color: Colors.white54, fontSize: 13)),
-            const Spacer(),
-            Text(value,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600)),
-          ],
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      );
+      ],
+    ),
+  );
 }

@@ -50,9 +50,11 @@ class _RecordedKaraokePageState extends State<RecordedKaraokePage>
     });
     _stateSub = _player.playerStateStream.listen((state) {
       if (mounted) {
-        setState(() => _isPlaying =
-            state.playing &&
-            state.processingState != ProcessingState.completed);
+        setState(
+          () => _isPlaying =
+              state.playing &&
+              state.processingState != ProcessingState.completed,
+        );
       }
     });
 
@@ -235,7 +237,8 @@ class _RecordedKaraokePageState extends State<RecordedKaraokePage>
         GestureDetector(
           onTap: _togglePlay,
           child: Container(
-            width: 56, height: 56,
+            width: 56,
+            height: 56,
             decoration: const BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
@@ -299,11 +302,13 @@ class _RecordedKaraokePageState extends State<RecordedKaraokePage>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon,
-              color: active
-                  ? const Color(0xFF00ACC1)
-                  : Colors.white.withValues(alpha: 0.85),
-              size: size),
+          Icon(
+            icon,
+            color: active
+                ? const Color(0xFF00ACC1)
+                : Colors.white.withValues(alpha: 0.85),
+            size: size,
+          ),
           const SizedBox(height: 4),
           Text(
             label,
@@ -363,14 +368,16 @@ class _WaveformPainter extends CustomPainter {
       // Amplitude based on a sinusoidal shape + random variation.
       final wave = math.sin(i * 0.4 + animValue * math.pi * 2) * 0.5 + 0.5;
       final noise = rng.nextDouble();
-      final amp = (wave * 0.6 + noise * 0.4) *
+      final amp =
+          (wave * 0.6 + noise * 0.4) *
           (size.width * 0.35) *
-          (isPlaying ? (0.7 + math.sin(animValue * math.pi * 4 + i * 0.3) * 0.3) : 1.0);
+          (isPlaying
+              ? (0.7 + math.sin(animValue * math.pi * 4 + i * 0.3) * 0.3)
+              : 1.0);
 
       // Bars to the left and right of centre line.
       final paint = (i / barCount) < progress ? redPaint : fadePaint;
-      canvas.drawLine(
-          Offset(cx - amp, y), Offset(cx + amp * 0.6, y), paint);
+      canvas.drawLine(Offset(cx - amp, y), Offset(cx + amp * 0.6, y), paint);
     }
   }
 

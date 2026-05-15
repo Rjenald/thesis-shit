@@ -54,7 +54,11 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
 
   Future<void> _loadRecordings() async {
     final list = await RecordingStorageService.loadRecordings();
-    if (mounted) setState(() { _recordings = list; _loading = false; });
+    if (mounted)
+      setState(() {
+        _recordings = list;
+        _loading = false;
+      });
   }
 
   Future<void> _togglePlay(RecordingEntry entry) async {
@@ -70,14 +74,17 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
     final file = File(entry.filePath);
     if (!await file.exists()) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio file not found.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Audio file not found.')));
       }
       return;
     }
 
-    setState(() { _playingId = entry.id; _position = Duration.zero; });
+    setState(() {
+      _playingId = entry.id;
+      _position = Duration.zero;
+    });
     await _player.stop();
     await _player.setAudioSource(AudioSource.file(entry.filePath));
     await _player.play();
@@ -106,13 +113,17 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('Delete',
-                        style: TextStyle(color: Colors.red)),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('Cancel',
-                        style: TextStyle(color: Colors.blue)),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.blue),
+                    ),
                   ),
                 ],
               ),
@@ -126,7 +137,10 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
 
     if (_playingId == entry.id) {
       await _player.stop();
-      setState(() { _playingId = null; _isPlaying = false; });
+      setState(() {
+        _playingId = null;
+        _isPlaying = false;
+      });
     }
 
     await RecordingStorageService.deleteRecording(entry);
@@ -141,8 +155,18 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}  '
         '${dt.hour.toString().padLeft(2, '0')}:'
@@ -162,8 +186,11 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back,
-                        color: AppColors.white, size: 26),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.white,
+                      size: 26,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Text(
@@ -186,39 +213,42 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
               child: _loading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: AppColors.primaryCyan))
+                        color: AppColors.primaryCyan,
+                      ),
+                    )
                   : _recordings.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No recordings yet.\nRecord something and it will appear here.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: AppColors.grey,
-                                fontSize: 14,
-                                fontFamily: 'Roboto'),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          itemCount: _recordings.length,
-                          separatorBuilder: (_, _) =>
-                              const Divider(color: Colors.white10, height: 1),
-                          itemBuilder: (context, i) {
-                            final entry = _recordings[i];
-                            final isThisPlaying = _playingId == entry.id;
-                            return _RecordingCard(
-                              entry: entry,
-                              isPlaying: isThisPlaying && _isPlaying,
-                              isPaused: isThisPlaying && !_isPlaying,
-                              position: isThisPlaying ? _position : Duration.zero,
-                              duration: isThisPlaying ? _duration : Duration.zero,
-                              formatDuration: _formatDuration,
-                              formatDate: _formatDate,
-                              onPlayPause: () => _togglePlay(entry),
-                              onDelete: () => _deleteRecording(entry),
-                            );
-                          },
+                  ? const Center(
+                      child: Text(
+                        'No recordings yet.\nRecord something and it will appear here.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.grey,
+                          fontSize: 14,
+                          fontFamily: 'Roboto',
                         ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      itemCount: _recordings.length,
+                      separatorBuilder: (_, _) =>
+                          const Divider(color: Colors.white10, height: 1),
+                      itemBuilder: (context, i) {
+                        final entry = _recordings[i];
+                        final isThisPlaying = _playingId == entry.id;
+                        return _RecordingCard(
+                          entry: entry,
+                          isPlaying: isThisPlaying && _isPlaying,
+                          isPaused: isThisPlaying && !_isPlaying,
+                          position: isThisPlaying ? _position : Duration.zero,
+                          duration: isThisPlaying ? _duration : Duration.zero,
+                          formatDuration: _formatDuration,
+                          formatDate: _formatDate,
+                          onPlayPause: () => _togglePlay(entry),
+                          onDelete: () => _deleteRecording(entry),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -332,8 +362,11 @@ class _RecordingCard extends StatelessWidget {
 
               // Delete button
               IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: Colors.redAccent, size: 20),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.redAccent,
+                  size: 20,
+                ),
                 onPressed: onDelete,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -352,14 +385,14 @@ class _RecordingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: duration.inMilliseconds > 0
-                          ? (position.inMilliseconds /
-                                  duration.inMilliseconds)
-                              .clamp(0.0, 1.0)
+                          ? (position.inMilliseconds / duration.inMilliseconds)
+                                .clamp(0.0, 1.0)
                           : 0.0,
                       minHeight: 4,
                       backgroundColor: Colors.white12,
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.primaryCyan),
+                        AppColors.primaryCyan,
+                      ),
                     ),
                   ),
                 ),

@@ -55,8 +55,8 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
         // Build placeholder submissions for each existing class.
         for (final c in cls) {
           final name = c['name'] as String? ?? 'Class';
-          final students =
-              (c['students'] as List<dynamic>? ?? []).cast<String>();
+          final students = (c['students'] as List<dynamic>? ?? [])
+              .cast<String>();
           if (_submissions[name] == null) {
             _submissions[name] = students
                 .map(
@@ -81,7 +81,9 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
     if (_loading) {
       return const Center(
         child: CircularProgressIndicator(
-            color: AppColors.primaryCyan, strokeWidth: 2),
+          color: AppColors.primaryCyan,
+          strokeWidth: 2,
+        ),
       );
     }
 
@@ -90,20 +92,29 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.assignment_outlined,
-                color: Colors.white.withValues(alpha: 0.2), size: 56),
+            Icon(
+              Icons.assignment_outlined,
+              color: Colors.white.withValues(alpha: 0.2),
+              size: 56,
+            ),
             const SizedBox(height: 14),
-            Text('No classes yet',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 15,
-                    fontFamily: 'Roboto')),
+            Text(
+              'No classes yet',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 15,
+                fontFamily: 'Roboto',
+              ),
+            ),
             const SizedBox(height: 6),
-            Text('Create a class to see submissions here',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    fontSize: 12,
-                    fontFamily: 'Roboto')),
+            Text(
+              'Create a class to see submissions here',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 12,
+                fontFamily: 'Roboto',
+              ),
+            ),
           ],
         ),
       );
@@ -161,11 +172,14 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
         if (subs.isEmpty)
           Padding(
             padding: const EdgeInsets.all(20),
-            child: Text('No submissions yet',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 13,
-                    fontFamily: 'Roboto')),
+            child: Text(
+              'No submissions yet',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 13,
+                fontFamily: 'Roboto',
+              ),
+            ),
           )
         else
           ...subs.map((s) => _buildRow(s)),
@@ -179,14 +193,11 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => SubmissionDetailPage(submission: s),
-        ),
+        MaterialPageRoute(builder: (_) => SubmissionDetailPage(submission: s)),
       ),
       child: Container(
         decoration: const BoxDecoration(
-          border: Border(
-              bottom: BorderSide(color: Colors.white10, width: 0.5)),
+          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -196,52 +207,70 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
               flex: 3,
               child: Row(
                 children: [
-                  const Icon(Icons.person_outline,
-                      color: Colors.white54, size: 16),
+                  const Icon(
+                    Icons.person_outline,
+                    color: Colors.white54,
+                    size: 16,
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text(s.studentName,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontFamily: 'Roboto')),
+                    child: Text(
+                      s.studentName,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontFamily: 'Roboto',
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
             Expanded(
               flex: 2,
-              child: Text(s.subject,
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontFamily: 'Roboto')),
+              child: Text(
+                s.subject,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12,
+                  fontFamily: 'Roboto',
+                ),
+              ),
             ),
             Expanded(
               flex: 2,
-              child: Text(s.activity,
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontFamily: 'Roboto')),
+              child: Text(
+                s.activity,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12,
+                  fontFamily: 'Roboto',
+                ),
+              ),
             ),
             Expanded(
               flex: 2,
-              child: Text(s.date,
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontFamily: 'Roboto')),
+              child: Text(
+                s.date,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12,
+                  fontFamily: 'Roboto',
+                ),
+              ),
             ),
             Expanded(
               flex: 1,
-              child: Text(s.score,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Roboto')),
+              child: Text(
+                s.score,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto',
+                ),
+              ),
             ),
           ],
         ),
@@ -256,12 +285,15 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text,
-        style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Roboto'));
+    return Text(
+      text,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.5),
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        fontFamily: 'Roboto',
+      ),
+    );
   }
 }
 
@@ -303,19 +335,21 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
     if (value.isEmpty) return;
     setState(() => _saving = true);
     await SessionStorageService.saveScore(
-      studentName:  widget.submission.studentName,
+      studentName: widget.submission.studentName,
       activityName: widget.submission.activity,
-      score:        value,
+      score: value,
     );
     if (mounted) {
       setState(() {
         _savedScore = value;
-        _saving     = false;
+        _saving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Score saved: $value',
-              style: const TextStyle(fontFamily: 'Roboto')),
+          content: Text(
+            'Score saved: $value',
+            style: const TextStyle(fontFamily: 'Roboto'),
+          ),
           backgroundColor: AppColors.primaryCyan,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
@@ -344,7 +378,11 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.black,
+                    size: 24,
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
                 const SizedBox(width: 4),
@@ -375,9 +413,16 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
                   // Activity + Subject
                   Row(
                     children: [
-                      Expanded(child: _infoBox('Activity:', widget.submission.activity)),
+                      Expanded(
+                        child: _infoBox(
+                          'Activity:',
+                          widget.submission.activity,
+                        ),
+                      ),
                       const SizedBox(width: 12),
-                      Expanded(child: _infoBox('Subject:', widget.submission.subject)),
+                      Expanded(
+                        child: _infoBox('Subject:', widget.submission.subject),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -406,15 +451,17 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
                           controller: _scoreCtrl,
                           keyboardType: TextInputType.text,
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontFamily: 'Roboto'),
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontFamily: 'Roboto',
+                          ),
                           decoration: InputDecoration(
                             hintText: 'e.g. 10/10 or 95%',
                             hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.35),
-                                fontFamily: 'Roboto',
-                                fontSize: 13),
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontFamily: 'Roboto',
+                              fontSize: 13,
+                            ),
                             filled: true,
                             fillColor: const Color(0xFF2A2A2A),
                             border: OutlineInputBorder(
@@ -424,10 +471,14 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: const BorderSide(
-                                  color: AppColors.primaryCyan, width: 1.5),
+                                color: AppColors.primaryCyan,
+                                width: 1.5,
+                              ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 13),
+                              horizontal: 14,
+                              vertical: 13,
+                            ),
                           ),
                         ),
                       ),
@@ -438,9 +489,12 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
                           backgroundColor: AppColors.primaryCyan,
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 14),
+                            horizontal: 18,
+                            vertical: 14,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           elevation: 0,
                         ),
                         child: _saving
@@ -448,11 +502,17 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.black))
-                            : const Text('Save',
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
+                              )
+                            : const Text(
+                                'Save',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Roboto')),
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -461,25 +521,32 @@ class _SubmissionDetailPageState extends State<SubmissionDetailPage> {
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryCyan.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppColors.primaryCyan.withValues(alpha: 0.4)),
+                          color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.check_circle_outline,
-                              color: AppColors.primaryCyan, size: 18),
+                          const Icon(
+                            Icons.check_circle_outline,
+                            color: AppColors.primaryCyan,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Current score: $_savedScore',
                             style: const TextStyle(
-                                color: AppColors.primaryCyan,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Roboto'),
+                              color: AppColors.primaryCyan,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Roboto',
+                            ),
                           ),
                         ],
                       ),

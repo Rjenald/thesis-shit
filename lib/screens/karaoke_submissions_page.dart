@@ -16,8 +16,7 @@ class KaraokeSubmissionsPage extends StatefulWidget {
   });
 
   @override
-  State<KaraokeSubmissionsPage> createState() =>
-      _KaraokeSubmissionsPageState();
+  State<KaraokeSubmissionsPage> createState() => _KaraokeSubmissionsPageState();
 }
 
 class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
@@ -145,8 +144,9 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
                                 child: Text(
                                   'No submissions yet',
                                   style: TextStyle(
-                                    color: AppColors.grey
-                                        .withValues(alpha: 0.5),
+                                    color: AppColors.grey.withValues(
+                                      alpha: 0.5,
+                                    ),
                                     fontFamily: 'Roboto',
                                     fontSize: 13,
                                   ),
@@ -155,10 +155,11 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
                             : ListView.separated(
                                 padding: EdgeInsets.zero,
                                 itemCount: _sessions.length,
-                                separatorBuilder: (context2, i2) => const Divider(
-                                  color: Colors.white10,
-                                  height: 1,
-                                ),
+                                separatorBuilder: (context2, i2) =>
+                                    const Divider(
+                                      color: Colors.white10,
+                                      height: 1,
+                                    ),
                                 itemBuilder: (_, i) =>
                                     _buildDataRow(i, _sessions[i]),
                               ),
@@ -186,10 +187,10 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: const [
-          Expanded(flex: 3, child: Text('Student',     style: style)),
-          Expanded(flex: 2, child: Text('Student ID',  style: style)),
-          Expanded(flex: 2, child: Text('Submission',  style: style)),
-          Expanded(flex: 2, child: Text('Date',        style: style)),
+          Expanded(flex: 3, child: Text('Student', style: style)),
+          Expanded(flex: 2, child: Text('Student ID', style: style)),
+          Expanded(flex: 2, child: Text('Submission', style: style)),
+          Expanded(flex: 2, child: Text('Date', style: style)),
           SizedBox(
             width: 48,
             child: Text('Score', style: style, textAlign: TextAlign.right),
@@ -205,9 +206,10 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
     // In this prototype the "student name" is the saved song title,
     // and we derive a student-ID from the index for demo purposes.
     final studentName = s.songTitle;
-    final studentId   = 'STU${(index + 1).toString().padLeft(3, '0')}';
-    final submission  = s.songArtist.isNotEmpty ? s.songArtist : '—';
-    final date        = '${s.completedAt.month.toString().padLeft(2, '0')}/'
+    final studentId = 'STU${(index + 1).toString().padLeft(3, '0')}';
+    final submission = s.songArtist.isNotEmpty ? s.songArtist : '—';
+    final date =
+        '${s.completedAt.month.toString().padLeft(2, '0')}/'
         '${s.completedAt.day.toString().padLeft(2, '0')}/'
         '${s.completedAt.year}';
     final score = s.score.round();
@@ -272,8 +274,8 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
                 color: score >= 80
                     ? const Color(0xFF4CAF50)
                     : score >= 60
-                        ? AppColors.primaryCyan
-                        : const Color(0xFFF44336),
+                    ? AppColors.primaryCyan
+                    : const Color(0xFFF44336),
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'Roboto',
@@ -303,11 +305,10 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
   }
 
   Widget _navIcon(IconData icon, {VoidCallback? onTap}) => GestureDetector(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Icon(icon,
-              color: AppColors.grey.withValues(alpha: 0.5), size: 26),
-        ),
-      );
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Icon(icon, color: AppColors.grey.withValues(alpha: 0.5), size: 26),
+    ),
+  );
 }
