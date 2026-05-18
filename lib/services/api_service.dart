@@ -40,8 +40,9 @@ class ApiService {
       debugPrint('Body: ${res.body}');
       debugPrint('=============================');
 
-      if (res.statusCode != 200)
+      if (res.statusCode != 200) {
         return {'success': false, 'error': 'Server error (${res.statusCode})'};
+      }
       final body = _safeDecode(res.body);
       return body ??
           {
@@ -77,8 +78,9 @@ class ApiService {
       debugPrint('Body: ${res.body}');
       debugPrint('==========================');
 
-      if (res.statusCode != 200)
+      if (res.statusCode != 200) {
         return {'success': false, 'error': 'Server error (${res.statusCode})'};
+      }
       final body = _safeDecode(res.body);
       return body ??
           {
@@ -127,8 +129,9 @@ class ApiService {
       debugPrint('Body: ${res.body}');
       debugPrint('====================================');
 
-      if (res.statusCode != 200)
+      if (res.statusCode != 200) {
         return {'success': false, 'error': 'Server error (${res.statusCode})'};
+      }
       final body = _safeDecode(res.body);
       return body ??
           {
@@ -144,11 +147,6 @@ class ApiService {
       debugPrint('=== CREATE STUDENT EXCEPTION: $e ===');
       return {'success': false, 'error': 'Cannot reach server: $e'};
     }
-  }
-
-  static bool _looksLikeEmail(String e) {
-    final re = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    return re.hasMatch(e);
   }
 
   static Map<String, dynamic>? _safeDecode(String body) {

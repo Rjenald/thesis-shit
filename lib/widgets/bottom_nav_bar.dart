@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../screens/home_page.dart';
-import '../screens/library_page.dart';
-import '../screens/record_selection_page.dart';
-import '../screens/education_mode_page.dart';
-import '../screens/notifications_page.dart';
-import '../screens/student_calendar_page.dart';
+import '../screens/normal_user/home_page.dart';
+import '../screens/normal_user/library_page.dart';
+import '../screens/normal_user/record_selection_page.dart';
+import '../screens/normal_user/education_mode_page.dart';
+import '../screens/normal_user/notifications_page.dart';
+import '../screens/student/student_calendar_page.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;

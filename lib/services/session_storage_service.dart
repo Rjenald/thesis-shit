@@ -345,6 +345,68 @@ class SessionStorageService {
     return scores['$studentName|$activityName'];
   }
  
+  // ── Registered accounts (login/register flow) ────────────────────────────
+  static const _registeredAccountsKey = 'huni_registered_accounts_v1';
+
+  static Future<List<Map<String, dynamic>>> _loadRegisteredAccounts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList(_registeredAccountsKey) ?? [];
+    return list
+        .map((raw) {
+          try {
+            return jsonDecode(raw) as Map<String, dynamic>;
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<Map<String, dynamic>>()
+        .toList();
+  }
+
+  static Future<bool> isUsernameTaken(String username) async {
+    final accounts = await _loadRegisteredAccounts();
+    return accounts.any((a) => a['username'] == username);
+  }
+
+  static Future<void> saveRegisteredAccount({
+    required String username,
+    required String password,
+    required String role,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? teacherIdNumber,
+  }) async {
+    final accounts = await _loadRegisteredAccounts();
+    accounts.removeWhere((a) => a['username'] == username);
+    accounts.add({
+      'username': username,
+      'password': password,
+      'role': role,
+      if (firstName != null) 'firstName': firstName,
+      if (lastName != null) 'lastName': lastName,
+      if (email != null) 'email': email,
+      if (teacherIdNumber != null) 'teacherIdNumber': teacherIdNumber,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _registeredAccountsKey,
+      accounts.map((a) => jsonEncode(a)).toList(),
+    );
+  }
+
+  static Future<Map<String, dynamic>?> authenticateRegisteredAccount(
+      String username, String password) async {
+    final accounts = await _loadRegisteredAccounts();
+    try {
+      return accounts.firstWhere(
+        (a) => a['username'] == username && a['password'] == password,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   // ── Clear all student account data ────────────────────────────────────────
   static Future<void> clearStudentAccount() async {
     final prefs = await SharedPreferences.getInstance();

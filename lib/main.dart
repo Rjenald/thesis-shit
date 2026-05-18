@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/smooth_page_route.dart';
-import 'screens/splash_screen.dart';
+import 'screens/shared/splash_screen.dart';
 import 'services/class_notifications_service.dart';
 import 'services/enrollment_service.dart';
 import 'services/profile_picture_service.dart';
