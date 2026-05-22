@@ -1,6 +1,8 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
 import '../../services/recording_storage_service.dart';
 
@@ -72,23 +74,41 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
       return;
     }
 
-    final file = File(entry.filePath);
-    if (!await file.exists()) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Audio file not found.')));
-      }
-      return;
-    }
-
     setState(() {
       _playingId = entry.id;
       _position = Duration.zero;
     });
     await _player.stop();
-    await _player.setAudioSource(AudioSource.file(entry.filePath));
-    await _player.play();
+
+    try {
+      if (entry.filePath.startsWith('local:')) {
+        final id = entry.filePath.replaceFirst('local:', '');
+        final prefs = await SharedPreferences.getInstance();
+        final b64 = prefs.getString('wav_$id');
+        if (b64 == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Audio data not found.')),
+            );
+          }
+          setState(() => _playingId = null);
+          return;
+        }
+        final Uint8List bytes = base64Decode(b64);
+        final dataUri = Uri.dataFromBytes(bytes, mimeType: 'audio/wav');
+        await _player.setAudioSource(AudioSource.uri(dataUri));
+      } else {
+        await _player.setAudioSource(AudioSource.uri(Uri.file(entry.filePath)));
+      }
+      await _player.play();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Playback error: $e')),
+        );
+        setState(() => _playingId = null);
+      }
+    }
   }
 
   Future<void> _deleteRecording(RecordingEntry entry) async {

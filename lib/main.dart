@@ -5,6 +5,7 @@ import 'screens/shared/splash_screen.dart';
 import 'services/class_notifications_service.dart';
 import 'services/enrollment_service.dart';
 import 'services/profile_picture_service.dart';
+import 'services/submission_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,7 @@ void main() async {
     ClassNotificationsService().initialize(),
     EnrollmentService().initialize(),
     ProfilePictureService().initialize(),
+    SubmissionService().initialize(),
   ]);
   runApp(const MyApp());
 }
@@ -28,6 +30,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ClassNotificationsService()),
         ChangeNotifierProvider(create: (_) => EnrollmentService()),
         ChangeNotifierProvider(create: (_) => ProfilePictureService()),
+        ChangeNotifierProvider(create: (_) => SubmissionService()),
       ],
       child: MaterialApp(
         title: 'Karaoke App',

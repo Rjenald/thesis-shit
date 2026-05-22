@@ -169,7 +169,6 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
                 ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -287,28 +286,4 @@ class _KaraokeSubmissionsPageState extends State<KaraokeSubmissionsPage> {
     );
   }
 
-  // ── Bottom nav ─────────────────────────────────────────────────────────────
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-          _navIcon(Icons.person_outline),
-        ],
-      ),
-    );
-  }
-
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) => GestureDetector(
-    onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.all(12),
-      child: Icon(icon, color: AppColors.grey.withValues(alpha: 0.5), size: 26),
-    ),
-  );
 }

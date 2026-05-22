@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RecordingEntry {
@@ -72,10 +71,10 @@ class RecordingStorageService {
       _key,
       list.map((e) => jsonEncode(e.toJson())).toList(),
     );
-    // Delete the audio file from disk
-    try {
-      final file = File(entry.filePath);
-      if (await file.exists()) await file.delete();
-    } catch (_) {}
+    // Remove stored WAV data if it was saved locally
+    if (entry.filePath.startsWith('local:')) {
+      final id = entry.filePath.replaceFirst('local:', '');
+      await prefs.remove('wav_$id');
+    }
   }
 }

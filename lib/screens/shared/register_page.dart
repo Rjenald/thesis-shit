@@ -35,12 +35,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  bool obscurePassword = true;
-  bool obscureRePassword = true;
-  bool showUsernameError = false;
-  bool showPasswordError = false;
   bool _isLoading = false;
-  String _selectedRole = '';
 
   int _currentPage = 0;
   Timer? _timer;
@@ -51,14 +46,6 @@ class _RegisterPageState extends State<RegisterPage> {
     'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1470&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1744527912638-5d30b9908313?q=80&w=627&auto=format&fit=crop',
   ];
-
-  final TextEditingController lastName = TextEditingController();
-  final TextEditingController firstName = TextEditingController();
-  final TextEditingController teacherId = TextEditingController();
-  final TextEditingController username = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController password = TextEditingController();
-  final TextEditingController confirmPassword = TextEditingController();
 
   @override
   void initState() {
@@ -79,13 +66,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _timer?.cancel();
-    lastName.dispose();
-    firstName.dispose();
-    teacherId.dispose();
-    username.dispose();
-    email.dispose();
-    password.dispose();
-    confirmPassword.dispose();
     super.dispose();
   }
 
@@ -100,114 +80,19 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _showSuccess(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
 
-  Future<void> _register() async {
-    setState(() {
-      showUsernameError = false;
-      showPasswordError = false;
-    });
-
-    final ln = lastName.text.trim();
-    final fn = firstName.text.trim();
-    final tid = teacherId.text.trim();
-    final un = username.text.trim();
-    final em = email.text.trim();
-    final pw = password.text;
-    final cpw = confirmPassword.text;
-
-    if (ln.isEmpty) {
-      _showError('Last name is required.');
-      return;
-    }
-    if (fn.isEmpty) {
-      _showError('First name is required.');
-      return;
-    }
-    if (_selectedRole == 'teacher' && tid.isEmpty) {
-      _showError('Teacher ID is required.');
-      return;
-    }
-    if (em.isEmpty) {
-      _showError('Email is required.');
-      return;
-    }
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(em)) {
-      _showError('Please enter a valid email address.');
-      return;
-    }
-    if (un.isEmpty) {
-      setState(() => showUsernameError = true);
-      _showError('Username is required.');
-      return;
-    }
-    if (!RegExp(r'^[A-Za-z0-9._]{5,30}$').hasMatch(un)) {
-      setState(() => showUsernameError = true);
-      _showError(
-        'Username must be 5–30 characters, only letters, numbers, . and _',
-      );
-      return;
-    }
-    if (pw.isEmpty) {
-      setState(() => showPasswordError = true);
-      _showError('Password is required.');
-      return;
-    }
-    if (pw.length < 8 ||
-        !RegExp(r'[A-Z]').hasMatch(pw) ||
-        !RegExp(r'[0-9]').hasMatch(pw) ||
-        !RegExp(r'[^A-Za-z0-9]').hasMatch(pw)) {
-      setState(() => showPasswordError = true);
-      _showError(
-        'Password must be 8+ characters with 1 uppercase, 1 number, and 1 special character.',
-      );
-      return;
-    }
-    if (pw != cpw) {
-      setState(() => showPasswordError = true);
-      _showError('Passwords do not match.');
-      return;
-    }
-
+  Future<void> _registerAndLogin(String role) async {
     setState(() => _isLoading = true);
 
     try {
-      final taken = await SessionStorageService.isUsernameTaken(un);
-      if (taken) {
-        setState(() => showUsernameError = true);
-        _showError('Username is already taken.');
-        return;
-      }
-
-      await SessionStorageService.saveRegisteredAccount(
-        username: un,
-        password: pw,
-        role: _selectedRole == 'teacher' ? 'teacher' : 'normal',
-        firstName: fn,
-        lastName: ln,
-        email: em,
-        teacherIdNumber: tid,
-      );
-
-      await SessionStorageService.saveUsername(un);
+      await SessionStorageService.saveUsername('guest');
       await SessionStorageService.saveRole(
-        _selectedRole == 'teacher' ? 'teacher' : 'normal',
+        role == 'teacher' ? 'teacher' : 'normal',
       );
 
       if (!mounted) return;
 
-      _showSuccess('Account created successfully!');
-
-      if (_selectedRole == 'teacher') {
+      if (role == 'teacher') {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const TeacherAccountPage()),
@@ -284,443 +169,145 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (_selectedRole != '')
-                    Text(
-                      _selectedRole == 'teacher'
-                          ? 'as Teacher'
-                          : 'as Normal User',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        fontFamily: 'Roboto',
-                      ),
-                    )
-                  else ...[
-                    const SizedBox(height: 4),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Singing',
-                            style: TextStyle(
-                              color: AppColors.primaryCyan,
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' brings joy to the heart',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 32),
-                  if (_selectedRole == '') ...[
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () =>
-                            setState(() => _selectedRole = 'normal'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryCyan,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          'Normal User',
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: 'Singing',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(color: Colors.white24, thickness: 1),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () =>
-                            setState(() => _selectedRole = 'teacher'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryCyan,
-                          side: const BorderSide(color: Colors.white54),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          'as Teacher',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text.rich(
-                      TextSpan(
-                        text: 'By continuing, you agree to ',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 12,
-                        ),
-                        children: [
-                          const TextSpan(
-                            text: 'Huni\'s',
-                            style: TextStyle(color: AppColors.primaryCyan),
-                          ),
-                          TextSpan(
-                            text: '\nTerms of Use',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' and ',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6),
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'Privacy Policy',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
-                      child: Text.rich(
-                        TextSpan(
-                          text: 'Have an account? ',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: AppColors.primaryCyan,
                             fontSize: 14,
-                          ),
-                          children: const [
-                            TextSpan(
-                              text: 'Login',
-                              style: TextStyle(
-                                color: AppColors.primaryCyan,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    Text(
-                      'Personal Information',
-                      style: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.8),
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: lastName,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Last Name',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                          fontFamily: 'Roboto',
-                        ),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: firstName,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'First Name',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                          fontFamily: 'Roboto',
-                        ),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (_selectedRole == 'teacher') ...[
-                      TextField(
-                        controller: teacherId,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Teacher ID',
-                          hintStyle: TextStyle(
-                            color: AppColors.grey.withValues(alpha: 0.6),
                             fontFamily: 'Roboto',
                           ),
-                          filled: true,
-                          fillColor: AppColors.inputBg,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    TextField(
-                      controller: email,
-                      keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                          fontFamily: 'Roboto',
-                        ),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Login Information',
-                      style: TextStyle(
-                        color: AppColors.grey.withValues(alpha: 0.8),
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (showUsernameError)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 4.0),
-                        child: Text(
-                          'Username is required or invalid',
-                          style: TextStyle(
-                            color: AppColors.errorRed,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    TextField(
-                      controller: username,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Username',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (showPasswordError)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 4.0),
-                        child: Text(
-                          'Password is required or invalid',
-                          style: TextStyle(
-                            color: AppColors.errorRed,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    TextField(
-                      controller: password,
-                      obscureText: obscurePassword,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: AppColors.grey,
-                          ),
-                          onPressed: () => setState(
-                            () => obscurePassword = !obscurePassword,
-                          ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: confirmPassword,
-                      obscureText: obscureRePassword,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Re-type Password',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.inputBg,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            obscureRePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: AppColors.grey,
-                          ),
-                          onPressed: () => setState(
-                            () => obscureRePassword = !obscureRePassword,
-                          ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryCyan,
-                          foregroundColor: Colors.black,
-                          disabledBackgroundColor:
-                              AppColors.primaryCyan.withValues(alpha: 0.5),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.black,
-                                ),
-                              )
-                            : const Text(
-                                'Register',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
-                      child: Text.rich(
                         TextSpan(
-                          text: 'Have an account? ',
+                          text: ' brings joy to the heart',
                           style: TextStyle(
-                            color: AppColors.grey.withValues(alpha: 0.8),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 14,
+                            fontFamily: 'Roboto',
                           ),
-                          children: const [
-                            TextSpan(
-                              text: 'Login',
-                              style: TextStyle(
-                                color: AppColors.primaryCyan,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _registerAndLogin('normal'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryCyan,
+                        foregroundColor: Colors.black,
+                        disabledBackgroundColor:
+                            AppColors.primaryCyan.withValues(alpha: 0.5),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Normal User',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Text.rich(
-                      TextSpan(
-                        text: 'By continuing, you agree to Huni\'s ',
-                        style: TextStyle(
-                          color: AppColors.grey.withValues(alpha: 0.6),
-                          fontSize: 12,
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white24, thickness: 1),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _registerAndLogin('teacher'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primaryCyan,
+                        side: const BorderSide(color: Colors.white54),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        children: [
-                          TextSpan(
-                            text: 'Terms of Use',
-                            style: TextStyle(
-                              color: AppColors.grey.withValues(alpha: 0.8),
-                              decoration: TextDecoration.underline,
-                            ),
+                      ),
+                      child: const Text(
+                        'as Teacher',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text.rich(
+                    TextSpan(
+                      text: 'By continuing, you agree to ',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12,
+                      ),
+                      children: [
+                        const TextSpan(
+                          text: 'Huni\'s',
+                          style: TextStyle(color: AppColors.primaryCyan),
+                        ),
+                        TextSpan(
+                          text: '\nTerms of Use',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            decoration: TextDecoration.underline,
                           ),
-                          TextSpan(
-                            text: ' and ',
-                            style: TextStyle(
-                              color: AppColors.grey.withValues(alpha: 0.6),
-                            ),
+                        ),
+                        TextSpan(
+                          text: ' and ',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
+                        ),
+                        TextSpan(
+                          text: 'Privacy Policy',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                      );
+                    },
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Have an account? ',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 14,
+                        ),
+                        children: const [
                           TextSpan(
-                            text: 'Privacy Policy',
+                            text: 'Login',
                             style: TextStyle(
-                              color: AppColors.grey.withValues(alpha: 0.8),
-                              decoration: TextDecoration.underline,
+                              color: AppColors.primaryCyan,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),

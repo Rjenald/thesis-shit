@@ -10,6 +10,7 @@ import 'class_detail_page.dart';
 import '../normal_user/home_page.dart';
 import '../shared/start_page.dart';
 import 'submissions_page.dart';
+import 'teacher_notifications_page.dart';
 
 /// Teacher main page — Classroom view matching Figma design.
 class TeacherAccountPage extends StatefulWidget {
@@ -86,10 +87,7 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
 
       switch (_navIndex) {
         case 0: // Notification
-          tabBody = _buildPlaceholderTab(
-            Icons.notifications_outlined,
-            'Notifications',
-          );
+          tabBody = const TeacherNotificationsPage();
           break;
         case 1: // Submissions
           tabBody = const SubmissionsPage();
@@ -542,26 +540,6 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
     );
   }
 
-  // ── Placeholder tab body ───────────────────────────────────────────────────
-  Widget _buildPlaceholderTab(IconData icon, String label) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.grey.withValues(alpha: 0.3), size: 56),
-          const SizedBox(height: 14),
-          Text(
-            '$label coming soon',
-            style: TextStyle(
-              color: AppColors.grey.withValues(alpha: 0.5),
-              fontSize: 15,
-              fontFamily: 'Roboto',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _logout() async {
     await SessionStorageService.saveUsername('');

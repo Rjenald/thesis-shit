@@ -4,9 +4,7 @@ library;
 
 import 'dart:async';
 import 'dart:math';
-import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
 import 'note_utils.dart';
@@ -51,32 +49,6 @@ class AudioService {
 
   bool get isRunning => _isRunning;
 
-  // ── Audio Session ─────────────────────────────────────────────────────────
-  Future<void> _configureAudioSession() async {
-    final session = await AudioSession.instance;
-
-    final categoryOptions =
-        AVAudioSessionCategoryOptions.defaultToSpeaker |
-        AVAudioSessionCategoryOptions.allowBluetooth;
-
-    await session.configure(
-      AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.record,
-        avAudioSessionCategoryOptions: categoryOptions,
-        avAudioSessionMode: AVAudioSessionMode.measurement,
-        androidAudioAttributes: const AndroidAudioAttributes(
-          contentType: AndroidAudioContentType.speech,
-          flags: AndroidAudioFlags.none,
-          usage: AndroidAudioUsage.media,
-        ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-        androidWillPauseWhenDucked: true,
-      ),
-    );
-
-    await session.setActive(true);
-  }
-
   // ── Public API ──────────────────────────────────────────────────────────────
 
   Future<void> preloadCrepe() async {
@@ -95,17 +67,6 @@ class AudioService {
     _recentHz.clear();
     _smoothedHz = null;
     _lastConfidence = null;
-
-    try {
-      await _configureAudioSession();
-    } catch (e) {
-      debugPrint('Audio session config error: \$e');
-    }
-
-    final status = await Permission.microphone.request();
-    if (!status.isGranted) {
-      return false;
-    }
 
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
@@ -127,7 +88,7 @@ class AudioService {
     _audioSub = stream.listen(
       _processAudioChunk,
       onError: (error) {
-        debugPrint('Stream error: \$error');
+        debugPrint('Stream error: $error');
       },
       onDone: () {
         _isRunning = false;
@@ -337,9 +298,6 @@ class AudioService {
     await _audioSub?.cancel();
     _audioSub = null;
     await _recorder.stop();
-
-    final session = await AudioSession.instance;
-    await session.setActive(false);
   }
 
   /// Full cleanup — call this in dispose()

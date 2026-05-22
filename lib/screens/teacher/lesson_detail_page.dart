@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../normal_user/solfagepitch_page.dart';
 import 'karaoke_assign_page.dart';
 import '../normal_user/karaoke_practice_mode_page.dart';
 import 'karaoke_submissions_page.dart';
 import '../student/practice_solfege_page.dart';
 import '../student/solfege_activity_page.dart';
+import 'task_performance_assign_page.dart';
 
 /// Sub-lesson list for a given lesson inside a class.
 /// Matches Figma: teal header (class name + lesson subtitle),
@@ -38,6 +40,14 @@ class LessonDetailPage extends StatelessWidget {
         ];
       case 2:
         return [_SubLesson('2.1', 'Practice Karaoke')];
+      case 3:
+        return [
+          _SubLesson('3.1', 'Task Performance'),
+        ];
+      case 4:
+        return [
+          _SubLesson('4.1', 'Solfege Pitch'),
+        ];
       default:
         return [];
     }
@@ -77,6 +87,15 @@ class LessonDetailPage extends StatelessWidget {
             maxScore: 100,
           );
         }
+        break;
+      case 'Task Performance':
+        page = TaskPerformanceAssignPage(
+          classData: classData,
+          lessonTitle: 'Lesson $lessonNumber: $lessonTitle',
+        );
+        break;
+      case 'Solfege Pitch':
+        page = const SolfegePitchPage();
         break;
       default:
         return;
@@ -177,7 +196,6 @@ class LessonDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -241,36 +259,6 @@ class LessonDetailPage extends StatelessWidget {
     );
   }
 
-  // ── Bottom nav ─────────────────────────────────────────────────────────────
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-          _navIcon(Icons.person_outline),
-        ],
-      ),
-    );
-  }
-
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: AppColors.grey.withValues(alpha: 0.5),
-          size: 26,
-        ),
-      ),
-    );
-  }
 }
 
 class _SubLesson {

@@ -27,6 +27,11 @@ class ClassDetailPage extends StatelessWidget {
       'title': 'Karaoke Practice',
       'subtitle': 'Song performance with pitch tracking',
     },
+    {
+      'number': 3,
+      'title': 'Task Performance',
+      'subtitle': 'Solfege performance activity for grading',
+    },
   ];
 
   @override
@@ -86,7 +91,6 @@ class ClassDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -123,36 +127,6 @@ class ClassDetailPage extends StatelessWidget {
               fontFamily: 'Roboto',
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  // â”€â”€ Bottom nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-          _navIcon(Icons.person_outline),
-        ],
-      ),
-    );
-  }
-
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: AppColors.grey.withValues(alpha: 0.5),
-          size: 26,
         ),
       ),
     );

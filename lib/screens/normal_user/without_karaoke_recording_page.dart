@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
 import '../../core/audio_service.dart';
 import '../../core/note_utils.dart';
@@ -313,23 +314,24 @@ class _WithoutKaraokeRecordingPageState
 
   Future<void> _saveWav(List<int> pcm, int durationSecs) async {
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final id = DateTime.now().millisecondsSinceEpoch.toString();
-      final path = '${dir.path}/recording_$id.wav';
-
-      final wavBytes = _buildWavBytes(pcm, sampleRate: 16000, channels: 1);
-      await File(path).writeAsBytes(wavBytes);
-
       final now = DateTime.now();
+      final id = now.millisecondsSinceEpoch.toString();
       final title =
           'Recording ${now.year}-${_pad(now.month)}-${_pad(now.day)} '
           '${_pad(now.hour)}:${_pad(now.minute)}';
+
+      final wavBytes = _buildWavBytes(pcm, sampleRate: 16000, channels: 1);
+
+      // Store WAV as base64 in SharedPreferences (works on web and mobile)
+      final prefs = await SharedPreferences.getInstance();
+      final b64 = base64Encode(wavBytes);
+      await prefs.setString('wav_$id', b64);
 
       await RecordingStorageService.saveRecording(
         RecordingEntry(
           id: id,
           title: title,
-          filePath: path,
+          filePath: 'local:$id',
           durationSeconds: durationSecs,
           createdAt: now,
         ),

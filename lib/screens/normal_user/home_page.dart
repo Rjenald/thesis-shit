@@ -2,17 +2,18 @@ import 'dart:async';
 import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
 import '../../models/session_result.dart';
 import '../../services/session_storage_service.dart';
-import '../../services/youtube_service.dart';
+import '../../services/song_audio_service.dart';
+import '../../services/song_catalog_service.dart';
 import '../../services/class_notifications_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/profile_avatar.dart';
 import 'favorites_page.dart';
 import 'library_page.dart';
 import 'karaoke_recording_page.dart';
+import 'song_player_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
 import '../shared/start_page.dart';
@@ -22,7 +23,8 @@ import '../teacher/teacher_account_page.dart';
 
 class HomePage extends StatefulWidget {
   final bool showBackButton;
-  const HomePage({super.key, this.showBackButton = false});
+  final bool forceNormalUser;
+  const HomePage({super.key, this.showBackButton = false, this.forceNormalUser = false});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -32,12 +34,11 @@ class _HomePageState extends State<HomePage> {
   // ── Profile ────────────────────────────────────────────────────────────────
   String _username = 'User';
   bool _isMenuOpen = false;
-  bool _isStudent = true;
+  bool _isStudent = false;
 
   // ── Search ─────────────────────────────────────────────────────────────────
   final TextEditingController _searchCtrl = TextEditingController();
-  List<Map<String, String>> _ytResults = [];
-  bool _searching = false;
+  List<Map<String, String>> _searchResults = [];
   Timer? _debounce;
 
   // ── Recent sessions ────────────────────────────────────────────────────────
@@ -62,8 +63,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadRole() async {
-    final role = await SessionStorageService.loadRole();
-    if (mounted) setState(() => _isStudent = role == 'student');
+    // Always show normal user nav — students have their own StudentAccountPage
   }
 
   Future<void> _loadRecent() async {
@@ -88,29 +88,20 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
     _debounce?.cancel();
     if (value.trim().isEmpty) {
-      setState(() {
-        _ytResults = [];
-        _searching = false;
-      });
+      setState(() => _searchResults = []);
       return;
     }
     _debounce = Timer(
-      const Duration(milliseconds: 600),
+      const Duration(milliseconds: 300),
       () => _runSearch(value),
     );
   }
 
-  Future<void> _runSearch(String query) async {
+  void _runSearch(String query) {
     if (query.trim().isEmpty) return;
-    setState(() => _searching = true);
-    final results = await YouTubeService.searchKaraokeVideos(
-      query: query.trim(),
-    );
+    final results = SongCatalogService.search(query.trim());
     if (!mounted) return;
-    setState(() {
-      _ytResults = results;
-      _searching = false;
-    });
+    setState(() => _searchResults = results);
   }
 
   bool get _isSearching => _searchCtrl.text.trim().isNotEmpty;
@@ -133,18 +124,34 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _openVideo(Map<String, String> video) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => KaraokeRecordingPage(
-          songTitle: video['title'] ?? '',
-          songArtist: video['channel'] ?? '',
-          songImage: video['thumbnail'] ?? '',
-          youtubeVideoId: video['videoId'] ?? '',
+  void _openSong(Map<String, String> song) {
+    final title = song['title'] ?? '';
+    final artist = song['artist'] ?? '';
+    final image = song['image'] ?? '';
+
+    if (SongAudioService.hasAudio(title)) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SongPlayerPage(
+            songTitle: title,
+            songArtist: artist,
+            songImage: image,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => KaraokeRecordingPage(
+            songTitle: title,
+            songArtist: artist,
+            songImage: image,
+          ),
+        ),
+      );
+    }
   }
 
   void _openSession(SessionResult s) {
@@ -172,13 +179,6 @@ class _HomePageState extends State<HomePage> {
     _loadRecent();
   }
 
-  void _shareVideo(Map<String, String> video) {
-    final text =
-        '🎤 "${video['title']}" — Karaoke\n'
-        'Watch: https://www.youtube.com/watch?v=${video['videoId']}\n\n'
-        'Shared via Huni Karaoke 🎵';
-    Share.share(text, subject: video['title'] ?? 'Karaoke Song');
-  }
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
@@ -362,8 +362,7 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () {
                       _searchCtrl.clear();
                       setState(() {
-                        _ytResults = [];
-                        _searching = false;
+                        _searchResults = [];
                       });
                     },
                   )
@@ -379,33 +378,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ── YouTube search results ─────────────────────────────────────────────────
+  // ── Search results ─────────────────────────────────────────────────────────
 
   Widget _buildSearchBody() {
-    if (_searching) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(
-              color: AppColors.primaryCyan,
-              strokeWidth: 2,
-            ),
-            SizedBox(height: 14),
-            Text(
-              'Searching YouTube…',
-              style: TextStyle(
-                color: Colors.white38,
-                fontSize: 13,
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_ytResults.isEmpty) {
+    if (_searchResults.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -417,7 +393,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'No karaoke videos found',
+              'No songs found',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.45),
                 fontSize: 14,
@@ -431,15 +407,15 @@ class _HomePageState extends State<HomePage> {
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      itemCount: _ytResults.length,
-      itemBuilder: (ctx, i) => _buildYtCard(_ytResults[i]),
+      itemCount: _searchResults.length,
+      itemBuilder: (ctx, i) => _buildSongCard(_searchResults[i]),
     );
   }
 
-  Widget _buildYtCard(Map<String, String> video) {
-    final thumb = video['thumbnail'] ?? '';
+  Widget _buildSongCard(Map<String, String> song) {
+    final image = song['image'] ?? '';
     return GestureDetector(
-      onTap: () => _openVideo(video),
+      onTap: () => _openSong(song),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
@@ -449,51 +425,48 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Row(
           children: [
-            // Thumbnail
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
                 left: Radius.circular(12),
               ),
-              child: thumb.isNotEmpty
+              child: image.isNotEmpty
                   ? Image.network(
-                      thumb,
-                      width: 110,
+                      image,
+                      width: 70,
                       height: 70,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, err, st) => _ytThumbPlaceholder(),
+                      errorBuilder: (_, __, ___) => _songPlaceholder(),
                     )
-                  : _ytThumbPlaceholder(),
+                  : _songPlaceholder(),
             ),
-
-            // Info
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
+                  horizontal: 12,
+                  vertical: 10,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      video['title'] ?? '',
-                      maxLines: 2,
+                      song['title'] ?? '',
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Roboto',
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      video['channel'] ?? '',
+                      song['artist'] ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 11,
+                        fontSize: 12,
                         fontFamily: 'Roboto',
                       ),
                     ),
@@ -501,30 +474,42 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-
-            // Actions
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.mic,
-                    color: AppColors.primaryCyan,
-                    size: 20,
-                  ),
-                  tooltip: 'Sing',
-                  onPressed: () => _openVideo(video),
+            if (SongAudioService.hasAudio(song['title'] ?? ''))
+              Container(
+                margin: const EdgeInsets.only(right: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryCyan.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.share_outlined,
-                    color: Colors.white.withValues(alpha: 0.4),
-                    size: 17,
-                  ),
-                  tooltip: 'Share',
-                  onPressed: () => _shareVideo(video),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.volume_up, color: AppColors.primaryCyan, size: 12),
+                    SizedBox(width: 3),
+                    Text(
+                      'Audio',
+                      style: TextStyle(
+                        color: AppColors.primaryCyan,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            IconButton(
+              icon: Icon(
+                SongAudioService.hasAudio(song['title'] ?? '')
+                    ? Icons.play_circle_filled
+                    : Icons.mic,
+                color: AppColors.primaryCyan,
+                size: 22,
+              ),
+              tooltip: SongAudioService.hasAudio(song['title'] ?? '')
+                  ? 'Play'
+                  : 'Sing',
+              onPressed: () => _openSong(song),
             ),
             const SizedBox(width: 4),
           ],
@@ -533,12 +518,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _ytThumbPlaceholder() => Container(
-    width: 110,
+  Widget _songPlaceholder() => Container(
+    width: 70,
     height: 70,
     color: const Color(0xFF1E1E1E),
     child: const Icon(
-      Icons.music_video_outlined,
+      Icons.music_note,
       color: AppColors.primaryCyan,
       size: 26,
     ),

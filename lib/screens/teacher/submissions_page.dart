@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
 import '../../services/session_storage_service.dart';
+import '../../services/submission_service.dart';
 import '../normal_user/recorded_karaoke_page.dart';
 
 // ── Data model ────────────────────────────────────────────────────────────────
@@ -49,28 +51,26 @@ class _SubmissionsPageState extends State<SubmissionsPage> {
   Future<void> _loadClasses() async {
     final cls = await SessionStorageService.loadClasses();
     if (mounted) {
+      final submissionSvc = context.read<SubmissionService>();
       setState(() {
         _classes = cls;
         _loading = false;
-        // Build placeholder submissions for each existing class.
         for (final c in cls) {
           final name = c['name'] as String? ?? 'Class';
-          final students = (c['students'] as List<dynamic>? ?? [])
-              .cast<String>();
-          if (_submissions[name] == null) {
-            _submissions[name] = students
-                .map(
-                  (s) => Submission(
-                    studentName: s,
-                    subject: 'Solfege',
-                    activity: 'Practice',
-                    date: '01/21/21',
-                    score: '10/10',
-                    className: name,
-                  ),
-                )
-                .toList();
-          }
+          final realSubs = submissionSvc.forClass(name);
+          _submissions[name] = realSubs
+              .map(
+                (s) => Submission(
+                  studentName: s.studentName,
+                  subject: s.activityType,
+                  activity: s.activityName,
+                  date:
+                      '${s.submittedAt.month.toString().padLeft(2, '0')}/${s.submittedAt.day.toString().padLeft(2, '0')}/${(s.submittedAt.year % 100).toString().padLeft(2, '0')}',
+                  score: '${s.score.round()}%',
+                  className: name,
+                ),
+              )
+              .toList();
         }
       });
     }

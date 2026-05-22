@@ -5,9 +5,10 @@ import '../../models/class_notification.dart';
 import '../../services/class_notifications_service.dart';
 import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
+import '../../services/submission_service.dart';
 import '../../widgets/profile_avatar.dart';
-import '../normal_user/karaoke_home_page.dart';
 import '../normal_user/karaoke_recording_page.dart';
+import '../normal_user/solfagepitch_page.dart';
 import 'practice_solfege_page.dart';
 import '../normal_user/karaoke_practice_mode_page.dart';
 import '../normal_user/home_page.dart';
@@ -37,7 +38,7 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
   /// Called by NotificationScreen when a student accepts an invite.
   /// EnrollmentService already updated the state — just jump to Classroom tab.
   void _onEnrollmentConfirmed() {
-    setState(() => _selectedIndex = 2);
+    setState(() => _selectedIndex = 1);
   }
 
   Widget _getScreen(EnrollmentService enrollment) {
@@ -47,15 +48,13 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
           onEnrollmentConfirmed: _onEnrollmentConfirmed,
         );
       case 1:
-        return const KaraokeHomePage(embedded: true);
-      case 2:
         return ClassroomScreen(
           isEnrolled: enrollment.isEnrolled,
           className: enrollment.primaryClass ?? 'Not Enrolled',
         );
-      case 3:
+      case 2:
         return const CalendarScreen();
-      case 4:
+      case 3:
         return const ProfileScreen();
       default:
         return ClassroomScreen(
@@ -91,7 +90,7 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const HomePage(),
+                          builder: (_) => const HomePage(forceNormalUser: true),
                         ),
                         (route) => false,
                       );
@@ -137,10 +136,9 @@ class _StudentAccountPageState extends State<StudentAccountPage> {
                   0,
                   badge: pendingCount,
                 ),
-                _buildNavItem(Icons.mic_none, 'Karaoke Mode', 1),
-                _buildNavItem(Icons.home_outlined, 'Home', 2),
-                _buildNavItem(Icons.calendar_today_outlined, 'Calendar', 3),
-                _buildNavItem(Icons.person_outline, 'Profile', 4),
+                _buildNavItem(Icons.home_outlined, 'Home', 1),
+                _buildNavItem(Icons.calendar_today_outlined, 'Calendar', 2),
+                _buildNavItem(Icons.person_outline, 'Profile', 3),
               ],
             ),
           ),
@@ -304,6 +302,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         deadline: n.deadline != null
                             ? _fmtDeadline(n.deadline!)
                             : null,
+                        maxScore: n.maxScore,
                         type: 'activity',
                         onConfirm: () {
                           notifSvc.declineNotification(n.id);
@@ -335,6 +334,7 @@ class _NotifCard extends StatelessWidget {
   final String name;
   final String action;
   final String? deadline;
+  final int? maxScore;
   final String type; // 'enrollment' | 'activity'
   final VoidCallback onConfirm; // enrollment→Accept, activity→Dismiss
   final VoidCallback onDelete; // enrollment→Delete, activity→Delete
@@ -343,6 +343,7 @@ class _NotifCard extends StatelessWidget {
     required this.name,
     required this.action,
     this.deadline,
+    this.maxScore,
     required this.type,
     required this.onConfirm,
     required this.onDelete,
@@ -385,12 +386,21 @@ class _NotifCard extends StatelessWidget {
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (type == 'activity' && deadline != null) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    'Deadline: $deadline',
-                    style: const TextStyle(color: _cyan, fontSize: 11),
-                  ),
+                if (type == 'activity') ...[
+                  if (deadline != null) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      'Deadline: $deadline',
+                      style: const TextStyle(color: _cyan, fontSize: 11),
+                    ),
+                  ],
+                  if (maxScore != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Max Score: $maxScore',
+                      style: const TextStyle(color: _cyan, fontSize: 11),
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -763,13 +773,19 @@ class ClassroomScreen extends StatelessWidget {
       'title': 'Lesson 1: Solfege Drill',
       'subLessons': [
         {'number': '1.1', 'title': 'Practice Solfege'},
-        {'number': '1.1', 'title': 'Solfege Activity'},
+        {'number': '1.2', 'title': 'Solfege Activity'},
       ],
     },
     {
       'title': 'Lesson 2: Karaoke Practice',
       'subLessons': [
         {'number': '2.1', 'title': 'Karaoke Practice'},
+      ],
+    },
+    {
+      'title': 'Lesson 3: Solfege Pitch',
+      'subLessons': [
+        {'number': '3.1', 'title': 'Solfege Pitch'},
       ],
     },
   ];
@@ -955,6 +971,9 @@ class StudentLessonDetailPage extends StatelessWidget {
           maxScore: 100,
         );
         break;
+      case 'Solfege Pitch':
+        page = const SolfegePitchPage();
+        break;
     }
 
     if (page != null) {
@@ -1051,49 +1070,6 @@ class StudentLessonDetailPage extends StatelessWidget {
                 );
               },
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildStudentNav(context),
-    );
-  }
-
-  Widget _buildStudentNav(BuildContext context) {
-    return Container(
-      color: _navBg,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(Icons.notifications_outlined, 'Notification'),
-              _navItem(Icons.mic_none, 'Karaoke Mode'),
-              _navItem(
-                Icons.home_outlined,
-                'Home',
-                onTap: () => Navigator.pop(context),
-              ),
-              _navItem(Icons.calendar_today_outlined, 'Calendar'),
-              _navItem(Icons.person_outline, 'Profile'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white70, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 10),
           ),
         ],
       ),
@@ -1424,10 +1400,39 @@ class _StudentSolfegeActivityPageState
 
                   // Submit button
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () async {
+                      final enrollment = context.read<EnrollmentService>();
+                      final username =
+                          await SessionStorageService.loadUsername() ??
+                          'Student';
+                      final className =
+                          enrollment.primaryClass ?? 'Unknown Class';
+
+                      await SubmissionService().addSubmission(
+                        StudentSubmission(
+                          id: '${DateTime.now().millisecondsSinceEpoch}',
+                          studentName: username,
+                          className: className,
+                          activityName: 'Solfege Activity',
+                          activityType: 'Solfege',
+                          score: _score,
+                          submittedAt: DateTime.now(),
+                        ),
+                      );
+
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Submitted successfully!'),
+                          backgroundColor: _cyan,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A2A2A),
-                      foregroundColor: Colors.white,
+                      backgroundColor: _cyan,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -1449,7 +1454,6 @@ class _StudentSolfegeActivityPageState
           ),
         ],
       ),
-      bottomNavigationBar: _buildStudentNav(context),
     );
   }
 
@@ -1473,47 +1477,6 @@ class _StudentSolfegeActivityPageState
     );
   }
 
-  Widget _buildStudentNav(BuildContext context) {
-    return Container(
-      color: _navBg,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(Icons.notifications_outlined, 'Notification'),
-              _navItem(Icons.mic_none, 'Karaoke Mode'),
-              _navItem(
-                Icons.home_outlined,
-                'Home',
-                onTap: () => Navigator.pop(context),
-              ),
-              _navItem(Icons.calendar_today_outlined, 'Calendar'),
-              _navItem(Icons.person_outline, 'Profile'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white70, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 10),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // ==================== CALENDAR SCREEN ====================
@@ -2321,39 +2284,6 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
           ],
         ),
       ),
-      // Keep the student bottom nav in the full calendar too
-      bottomNavigationBar: Container(
-        color: _navBg,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _fcNavItem(
-                  context,
-                  Icons.notifications_outlined,
-                  'Notification',
-                ),
-                _fcNavItem(context, Icons.mic_none, 'Karaoke Mode'),
-                _fcNavItem(
-                  context,
-                  Icons.home_outlined,
-                  'Home',
-                  onTap: () => Navigator.pop(context),
-                ),
-                _fcNavItem(
-                  context,
-                  Icons.calendar_today_outlined,
-                  'Calendar',
-                  active: true,
-                ),
-                _fcNavItem(context, Icons.person_outline, 'Profile'),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -2420,32 +2350,6 @@ class _FullCalendarPageState extends State<FullCalendarPage> {
     );
   }
 
-  Widget _fcNavItem(
-    BuildContext context,
-    IconData icon,
-    String label, {
-    VoidCallback? onTap,
-    bool active = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: active ? _cyan : Colors.white70, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: active ? _cyan : Colors.white70,
-              fontSize: 10,
-              fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // ==================== PROFILE SCREEN ====================

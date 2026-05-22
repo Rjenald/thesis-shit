@@ -14,6 +14,7 @@ class ClassNotification {
   final NotificationType type;
   final String? activityName;
   final DateTime? deadline;
+  final int? maxScore;
 
   ClassNotification({
     required this.id,
@@ -26,6 +27,7 @@ class ClassNotification {
     this.type = NotificationType.enrollmentRequest,
     this.activityName,
     this.deadline,
+    this.maxScore,
   });
 
   ClassNotification copyWith({
@@ -39,6 +41,7 @@ class ClassNotification {
     NotificationType? type,
     String? activityName,
     DateTime? deadline,
+    int? maxScore,
   }) {
     return ClassNotification(
       id: id ?? this.id,
@@ -51,6 +54,7 @@ class ClassNotification {
       type: type ?? this.type,
       activityName: activityName ?? this.activityName,
       deadline: deadline ?? this.deadline,
+      maxScore: maxScore ?? this.maxScore,
     );
   }
 
@@ -66,6 +70,7 @@ class ClassNotification {
       'type': type.name,
       'activityName': activityName,
       'deadline': deadline?.toIso8601String(),
+      'maxScore': maxScore,
     };
   }
 
@@ -86,6 +91,7 @@ class ClassNotification {
       deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline'] as String)
           : null,
+      maxScore: json['maxScore'] as int?,
     );
   }
 }

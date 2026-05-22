@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
 import '../../data/tagalog_bisaya_songs.dart';
 import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
+import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
+import '../../services/submission_service.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
@@ -113,6 +116,25 @@ class _ResultsPageState extends State<ResultsPage> {
     if (_saved || _saving) return;
     setState(() => _saving = true);
     await SessionStorageService.saveSession(widget.session);
+
+    if (widget.isAssignment) {
+      final enrollment = context.read<EnrollmentService>();
+      final username =
+          await SessionStorageService.loadUsername() ?? 'Student';
+      final className = enrollment.primaryClass ?? 'Unknown Class';
+      await SubmissionService().addSubmission(
+        StudentSubmission(
+          id: '${DateTime.now().millisecondsSinceEpoch}',
+          studentName: username,
+          className: className,
+          activityName: widget.session.songTitle,
+          activityType: 'Karaoke',
+          score: widget.session.score,
+          submittedAt: DateTime.now(),
+        ),
+      );
+    }
+
     if (!mounted) return;
     setState(() {
       _saved = true;
@@ -120,13 +142,15 @@ class _ResultsPageState extends State<ResultsPage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check, color: Colors.white, size: 18),
-            SizedBox(width: 8),
+            const Icon(Icons.check, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
             Text(
-              'Session saved to Library',
-              style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+              widget.isAssignment
+                  ? 'Submitted to teacher!'
+                  : 'Session saved to Library',
+              style: const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
             ),
           ],
         ),

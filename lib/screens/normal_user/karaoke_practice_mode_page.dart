@@ -280,49 +280,6 @@ class KaraokePracticeModePage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      color: const Color(0xFF2A2A2A),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(Icons.notifications_outlined, 'Notification'),
-              _navItem(Icons.mic_none, 'Karaoke Mode'),
-              _navItem(
-                Icons.home_outlined,
-                'Home',
-                onTap: () => Navigator.pop(context),
-              ),
-              _navItem(Icons.calendar_today_outlined, 'Calendar'),
-              _navItem(Icons.person_outline, 'Profile'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white70, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 10),
-          ),
-        ],
-      ),
     );
   }
 }

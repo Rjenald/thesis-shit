@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../services/class_notifications_service.dart';
+import '../../models/class_notification.dart';
 import '../teacher/solfege_drill_mode_page.dart';
 
 /// Practice Solfege page — student view with instruction and assignment.
@@ -16,6 +18,25 @@ class PracticeSolfegePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final className = classData['name'] as String? ?? '';
+
+    // Find the latest solfege assignment for this class
+    final notifications = ClassNotificationsService().notifications;
+    ClassNotification? assignment;
+    for (final n in notifications.reversed) {
+      if (n.className == className &&
+          n.type == NotificationType.activityAssignment &&
+          (n.activityName == 'Solfege Activity' ||
+              (n.activityName ?? '').contains('Solfege'))) {
+        assignment = n;
+        break;
+      }
+    }
+
+    final maxScore = assignment?.maxScore ?? 100;
+    final deadline = assignment?.deadline;
+    final deadlineText = deadline != null
+        ? '${_monthName(deadline.month)} ${deadline.day}'
+        : 'No deadline set';
 
     return Scaffold(
       backgroundColor: AppColors.bgDark,
@@ -200,7 +221,7 @@ class PracticeSolfegePage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '100',
+                              '$maxScore',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 13,
@@ -223,7 +244,7 @@ class PracticeSolfegePage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'March 21',
+                              deadlineText,
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 13,
@@ -242,36 +263,14 @@ class PracticeSolfegePage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      height: 70,
-      color: AppColors.bottomNavBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(Icons.notifications_outlined),
-          _navIcon(Icons.home_outlined, onTap: () => Navigator.pop(context)),
-          _navIcon(Icons.person_outline),
-        ],
-      ),
-    );
-  }
-
-  Widget _navIcon(IconData icon, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: AppColors.grey.withValues(alpha: 0.5),
-          size: 26,
-        ),
-      ),
-    );
+  String _monthName(int month) {
+    const months = [
+      '', 'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    return months[month];
   }
 }
