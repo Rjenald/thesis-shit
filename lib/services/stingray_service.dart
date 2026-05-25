@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 /// Contact: https://www.stingray.com/streaming-distribution/formats/api-delivery/
 ///
 /// When [apiKey] is empty the service returns null and the app falls back
-/// to YouTube → Deezer automatically.
+/// to the built-in audio service automatically.
 class StingrayService {
   // ── PUT YOUR STINGRAY API KEY HERE ────────────────────────────────────────
   static const String apiKey = ''; // e.g. 'sk_live_xxxxxxxxxxxx'

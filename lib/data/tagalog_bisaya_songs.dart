@@ -1063,7 +1063,6 @@ class KaraokeSong {
   });
 
   String get displayName => '$title - $artist';
-  String get youtubeQuery => '$title $artist karaoke';
 
   @override
   String toString() => displayName;

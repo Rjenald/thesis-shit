@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../constants/app_colors.dart';
@@ -30,7 +31,7 @@ class SongPlayerPage extends StatefulWidget {
 
 class _SongPlayerPageState extends State<SongPlayerPage> {
   final AudioPlayer _player = AudioPlayer();
-  final AudioService _micService = AudioService();
+  AudioService? _micService;
 
   bool _isPlaying = false;
   bool _isRecording = false;
@@ -39,7 +40,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   List<LrcLine> _lyrics = [];
   bool _lyricsLoading = true;
-  int _currentLyricIdx = 0;
+  int _currentLyricIdx = -1;
   final ScrollController _lyricsScroll = ScrollController();
 
   final List<double> _rawHz = [];
@@ -48,11 +49,37 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   final ValueNotifier<NoteResult?> _pitchNotifier = ValueNotifier(null);
 
+  // Live pitch log (shown in table while recording)
+  final List<_PitchEntry> _pitchLog = [];
+
+  // Equalizer bars
+  Timer? _eqTimer;
+  final List<double> _eqBars = List.filled(24, 0.15);
+  final List<double> _eqTargets = List.filled(24, 0.15);
+  final _rng = math.Random();
+
   @override
   void initState() {
     super.initState();
     _initAudio();
     _loadLyrics();
+    _startEqualizer();
+  }
+
+  void _startEqualizer() {
+    _eqTimer = Timer.periodic(const Duration(milliseconds: 60), (_) {
+      if (!mounted) return;
+      setState(() {
+        for (int i = 0; i < _eqBars.length; i++) {
+          if (_isPlaying) {
+            _eqTargets[i] = 0.15 + _rng.nextDouble() * 0.85;
+          } else {
+            _eqTargets[i] = 0.15;
+          }
+          _eqBars[i] += (_eqTargets[i] - _eqBars[i]) * 0.25;
+        }
+      });
+    });
   }
 
   Future<void> _initAudio() async {
@@ -86,7 +113,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
   Future<void> _loadLyrics() async {
-    // Try local lyrics first (always available offline)
     final local = LocalSongLyrics.getLyrics(widget.songTitle);
     if (local != null && local.isNotEmpty) {
       if (!mounted) return;
@@ -96,22 +122,29 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       });
       return;
     }
-    // Fall back to online lyrics API
-    final lines = await LyricsService.fetchLyrics(
-      title: widget.songTitle,
-      artist: widget.songArtist,
-    );
+
+    try {
+      final online = await LyricsService.fetchLyrics(
+        title: widget.songTitle,
+        artist: widget.songArtist,
+      );
+      if (online.isNotEmpty && mounted) {
+        setState(() {
+          _lyrics = online;
+          _lyricsLoading = false;
+        });
+        return;
+      }
+    } catch (_) {}
+
     if (!mounted) return;
-    setState(() {
-      _lyrics = lines;
-      _lyricsLoading = false;
-    });
+    setState(() => _lyricsLoading = false);
   }
 
   void _updateLyricIndex(Duration pos) {
     if (_lyrics.isEmpty) return;
     final ms = pos.inMilliseconds;
-    int idx = 0;
+    int idx = -1;
     for (int i = 0; i < _lyrics.length; i++) {
       if (_lyrics[i].timestamp.inMilliseconds <= ms) {
         idx = i;
@@ -120,14 +153,15 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       }
     }
     if (idx != _currentLyricIdx) {
-      setState(() => _currentLyricIdx = idx);
-      _scrollToLyric(idx);
+      _currentLyricIdx = idx;
+      if (mounted) setState(() {});
+      if (idx >= 0) _scrollToLyric(idx);
     }
   }
 
   void _scrollToLyric(int idx) {
     if (!_lyricsScroll.hasClients) return;
-    const rowH = 52.0;
+    const rowH = 48.0;
     final offset =
         (idx * rowH) -
         (_lyricsScroll.position.viewportDimension / 2 - rowH / 2);
@@ -155,8 +189,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
   Future<void> _startMic() async {
-    final ok = await _micService.start();
+    _micService = AudioService();
+    final ok = await _micService!.start();
     if (!ok) {
+      _micService?.dispose();
+      _micService = null;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Microphone permission denied')),
@@ -164,11 +201,44 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       }
       return;
     }
-    _micSub = _micService.results.listen((result) {
+
+    _micSub = _micService!.results.listen((result) {
       if (!mounted) return;
       _rawHz.add(result?.frequency ?? 0);
       _rawCents.add(result?.cents ?? 0);
       _pitchNotifier.value = result;
+
+      // Add to live pitch log
+      if (result != null) {
+        final feedback = result.feedback;
+        String pitch;
+        String direction;
+        switch (feedback) {
+          case PitchFeedback.correct:
+            pitch = 'In Tune';
+            direction = '-';
+            break;
+          case PitchFeedback.tooLow:
+            pitch = 'Flat';
+            direction = 'Too Low';
+            break;
+          case PitchFeedback.tooHigh:
+            pitch = 'Sharp';
+            direction = 'Too High';
+            break;
+          case PitchFeedback.noSignal:
+            return; // Don't log silence
+        }
+        setState(() {
+          _pitchLog.add(_PitchEntry(
+            time: _fmtDuration(_position),
+            pitch: pitch,
+            direction: direction,
+          ));
+          // Keep only last 50 entries
+          if (_pitchLog.length > 50) _pitchLog.removeAt(0);
+        });
+      }
     });
     setState(() => _isRecording = true);
 
@@ -180,7 +250,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   Future<void> _stopMic() async {
     await _micSub?.cancel();
     _micSub = null;
-    await _micService.stop();
+    await _micService?.stop();
+    _micService?.dispose();
+    _micService = null;
     _pitchNotifier.value = null;
     setState(() => _isRecording = false);
   }
@@ -235,9 +307,10 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   @override
   void dispose() {
+    _eqTimer?.cancel();
     _player.dispose();
     _micSub?.cancel();
-    _micService.dispose();
+    _micService?.dispose();
     _pitchNotifier.dispose();
     _lyricsScroll.dispose();
     super.dispose();
@@ -249,6 +322,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     return '$m:$s';
   }
 
+  // ── BUILD ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -256,11 +331,35 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       body: SafeArea(
         child: Column(
           children: [
+            // ── Header: "← Record" ──
             _buildHeader(),
-            _buildSongInfo(),
+
+            // ── Equalizer bars ──
+            _buildEqualizer(),
+
+            // ── Song info card ──
+            _buildSongInfoCard(),
+
+            // ── Lyrics area ──
             Expanded(child: _buildLyricsPanel()),
-            if (_isRecording) _buildLivePitch(),
-            _buildProgressBar(),
+
+            // ── Live pitch results table ──
+            if (_pitchLog.isNotEmpty) _buildPitchTable(),
+
+            // ── Timer ──
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Text(
+                '${_fmtDuration(_position)} / ${_fmtDuration(_duration)}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ),
+
+            // ── Controls: Play / Record / Stop ──
             _buildControls(),
             const SizedBox(height: 16),
           ],
@@ -271,89 +370,83 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      padding: const EdgeInsets.fromLTRB(4, 8, 16, 0),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-            onPressed: () {
-              _player.stop();
-              Navigator.pop(context);
-            },
-          ),
-          const Expanded(
-            child: Text(
-              'Now Playing',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.stop_circle_outlined, color: Colors.redAccent, size: 24),
-            tooltip: 'Finish & See Results',
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
             onPressed: () {
               _player.stop();
               _stopMic();
-              _showResults();
+              Navigator.pop(context);
             },
           ),
+          const Text(
+            'Record',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          const Spacer(),
         ],
       ),
     );
   }
 
-  Widget _buildSongInfo() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  Widget _buildEqualizer() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 60,
       child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: const Color(0xFF1E1E1E),
-              image: widget.songImage.isNotEmpty
-                  ? DecorationImage(
-                      image: NetworkImage(widget.songImage),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: List.generate(
+          _eqBars.length,
+          (i) => Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1),
+              child: Container(
+                height: _eqBars[i] * 55,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
-            child: widget.songImage.isEmpty
-                ? const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 28)
-                : null,
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.songTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto',
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.songArtist,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 14,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSongInfoCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Title: ${widget.songTitle}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          Text(
+            'Artist: ${widget.songArtist}',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 13,
+              fontFamily: 'Roboto',
             ),
           ),
         ],
@@ -380,219 +473,191 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         ),
       );
     }
-    return ListView.builder(
-      controller: _lyricsScroll,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      itemCount: _lyrics.length,
-      itemBuilder: (context, index) {
-        final isCurrent = index == _currentLyricIdx;
-        return Container(
-          height: 52,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            _lyrics[index].text,
-            style: TextStyle(
-              color: isCurrent
-                  ? AppColors.primaryCyan
-                  : Colors.white.withValues(alpha: 0.5),
-              fontSize: isCurrent ? 18 : 15,
-              fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-              fontFamily: 'Roboto',
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListView.builder(
+        controller: _lyricsScroll,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: _lyrics.length,
+        itemBuilder: (context, index) {
+          final isCurrent = index == _currentLyricIdx;
+          final isPast = index < _currentLyricIdx;
+          return Container(
+            height: 48,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _lyrics[index].text,
+              style: TextStyle(
+                color: isCurrent
+                    ? AppColors.primaryCyan
+                    : isPast
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : Colors.white.withValues(alpha: 0.6),
+                fontSize: isCurrent ? 17 : 14,
+                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                fontFamily: 'Roboto',
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildLivePitch() {
-    return ValueListenableBuilder<NoteResult?>(
-      valueListenable: _pitchNotifier,
-      builder: (context, result, _) {
-        final note = result?.noteName ?? '--';
-        final cents = result?.cents ?? 0;
-        final feedback = result?.feedback ?? PitchFeedback.noSignal;
+  Widget _buildPitchTable() {
+    // Show last 4 entries
+    final entries = _pitchLog.length > 4
+        ? _pitchLog.sublist(_pitchLog.length - 4)
+        : _pitchLog;
+    final startIdx = _pitchLog.length > 4 ? _pitchLog.length - 4 : 0;
 
-        Color feedbackColor;
-        String feedbackText;
-        switch (feedback) {
-          case PitchFeedback.correct:
-            feedbackColor = const Color(0xFF4CAF50);
-            feedbackText = 'In Tune';
-            break;
-          case PitchFeedback.tooHigh:
-            feedbackColor = const Color(0xFFFF9800);
-            feedbackText = 'Sharp (+${cents.abs().round()}¢)';
-            break;
-          case PitchFeedback.tooLow:
-            feedbackColor = const Color(0xFFF44336);
-            feedbackText = 'Flat (${cents.round()}¢)';
-            break;
-          case PitchFeedback.noSignal:
-            feedbackColor = Colors.grey;
-            feedbackText = 'Sing...';
-            break;
-        }
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: entries.asMap().entries.map((entry) {
+          final i = startIdx + entry.key;
+          final e = entry.value;
+          final isFlat = e.pitch == 'Flat';
+          final isSharp = e.pitch == 'Sharp';
+          final color = (isFlat || isSharp)
+              ? const Color(0xFFF44336)
+              : const Color(0xFF4CAF50);
 
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: feedbackColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: feedbackColor.withValues(alpha: 0.4)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.mic, color: feedbackColor, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    note,
-                    style: TextStyle(
-                      color: feedbackColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 24,
+                  child: Text(
+                    '${i + 1}.',
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
                       fontFamily: 'Roboto',
                     ),
                   ),
-                ],
-              ),
-              Text(
-                feedbackText,
-                style: TextStyle(
-                  color: feedbackColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto',
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildProgressBar() {
-    final totalMs = _duration.inMilliseconds.toDouble();
-    final posMs = _position.inMilliseconds.toDouble();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 3,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-              activeTrackColor: AppColors.primaryCyan,
-              inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
-              thumbColor: AppColors.primaryCyan,
-            ),
-            child: Slider(
-              value: totalMs > 0 ? posMs.clamp(0, totalMs) : 0,
-              max: totalMs > 0 ? totalMs : 1,
-              onChanged: (v) {
-                _player.seek(Duration(milliseconds: v.round()));
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _fmtDuration(_position),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 11,
-                    fontFamily: 'Roboto',
+                SizedBox(
+                  width: 50,
+                  child: Text(
+                    e.time,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    e.pitch,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
                   ),
                 ),
                 Text(
-                  _fmtDuration(_duration),
+                  e.direction,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 11,
+                    color: color.withValues(alpha: 0.75),
+                    fontSize: 12,
                     fontFamily: 'Roboto',
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+          );
+        }).toList(),
       ),
     );
   }
 
   Widget _buildControls() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Rewind 10s
-          IconButton(
-            onPressed: () {
-              final newPos = _position - const Duration(seconds: 10);
-              _player.seek(newPos < Duration.zero ? Duration.zero : newPos);
-            },
-            icon: const Icon(Icons.replay_10, color: Colors.white70, size: 32),
-          ),
-
-          // Play/Pause
+          // Play / Pause
           GestureDetector(
             onTap: _togglePlay,
             child: Container(
-              width: 60,
-              height: 60,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryCyan,
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.black,
+                color: Colors.white,
                 size: 32,
               ),
             ),
           ),
 
-          // Forward 10s
-          IconButton(
-            onPressed: () {
-              final newPos = _position + const Duration(seconds: 10);
-              _player.seek(newPos > _duration ? _duration : newPos);
-            },
-            icon: const Icon(Icons.forward_10, color: Colors.white70, size: 32),
-          ),
-
-          // Mic toggle
+          // Record (red circle)
           GestureDetector(
             onTap: _toggleMic,
             child: Container(
-              width: 50,
-              height: 50,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color: _isRecording
-                    ? Colors.redAccent
-                    : Colors.white.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: _isRecording
-                      ? Colors.redAccent
-                      : AppColors.primaryCyan,
-                  width: 2,
+                border: Border.all(color: Colors.white, width: 3),
+              ),
+              child: Center(
+                child: Container(
+                  width: _isRecording ? 24 : 44,
+                  height: _isRecording ? 24 : 44,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(
+                      _isRecording ? 4 : 22,
+                    ),
+                  ),
                 ),
               ),
-              child: Icon(
-                _isRecording ? Icons.mic_off : Icons.mic,
-                color: _isRecording ? Colors.white : AppColors.primaryCyan,
-                size: 24,
+            ),
+          ),
+
+          // Stop → go to results
+          GestureDetector(
+            onTap: () {
+              _player.stop();
+              _stopMic();
+              if (_rawHz.isNotEmpty) {
+                _showResults();
+              } else {
+                Navigator.pop(context);
+              }
+            },
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.stop,
+                color: Colors.white,
+                size: 30,
               ),
             ),
           ),
@@ -600,4 +665,15 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       ),
     );
   }
+}
+
+class _PitchEntry {
+  final String time;
+  final String pitch;
+  final String direction;
+  const _PitchEntry({
+    required this.time,
+    required this.pitch,
+    required this.direction,
+  });
 }

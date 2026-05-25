@@ -2,7 +2,7 @@
 /// for offline karaoke use.
 ///
 /// In this prototype the "download" is metadata-only (title + artist +
-/// language stored in SharedPreferences).  The YouTube video is streamed at
+/// language stored in SharedPreferences).  The audio is streamed at
 /// play-time; this service simply lets the UI track and filter which songs the
 /// user has marked as saved locally.
 library;

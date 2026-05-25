@@ -2,20 +2,18 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
-import 'karaoke_recording_page.dart';
+import 'song_player_page.dart';
 
 class KaraokeSongDetailPage extends StatefulWidget {
   final String songTitle;
   final String songArtist;
   final String songImage;
-  final String youtubeId;
 
   const KaraokeSongDetailPage({
     super.key,
     required this.songTitle,
     required this.songArtist,
     required this.songImage,
-    this.youtubeId = '',
   });
 
   @override
@@ -169,7 +167,7 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
               ),
             ),
 
-            // Start recording button
+            // Play button
             Padding(
               padding: const EdgeInsets.all(20),
               child: ElevatedButton(
@@ -177,7 +175,7 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => KaraokeRecordingPage(
+                      builder: (_) => SongPlayerPage(
                         songTitle: widget.songTitle,
                         songArtist: widget.songArtist,
                         songImage: widget.songImage,
@@ -200,10 +198,10 @@ class _KaraokeSongDetailPageState extends State<KaraokeSongDetailPage> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.mic, size: 24),
+                    Icon(Icons.play_arrow, size: 24),
                     SizedBox(width: 8),
                     Text(
-                      'Start Recording',
+                      'Play Song',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

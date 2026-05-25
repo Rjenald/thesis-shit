@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import '../models/youtube_karaoke_session.dart';
+import '../models/timed_lyric_line.dart';
 
 class LyricsSyncService {
   /// Get currently active lyric line index based on video time

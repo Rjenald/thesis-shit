@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
-import 'karaoke_recording_page.dart';
+import 'song_player_page.dart';
 
 /// Karaoke Practice Mode — student intro view with instruction and assignment.
 /// Matches Figma design for Lesson 2: Karaoke Practice
@@ -133,11 +133,10 @@ class KaraokePracticeModePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => KaraokeRecordingPage(
+                          builder: (_) => SongPlayerPage(
                             songTitle: songTitle,
                             songArtist: songArtist,
                             songImage: songImage,
-                            isAssignment: true,
                           ),
                         ),
                       );

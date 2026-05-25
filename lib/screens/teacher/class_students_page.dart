@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
 
 /// Students management page for a specific class.
@@ -56,45 +57,65 @@ class _ClassStudentsPageState extends State<ClassStudentsPage> {
         backgroundColor: AppColors.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
-          'Add Student',
+          'Enroll Student',
           style: TextStyle(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
             fontFamily: 'Roboto',
           ),
         ),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          style: const TextStyle(color: AppColors.white, fontSize: 13),
-          decoration: InputDecoration(
-            hintText: 'Student name or ID',
-            hintStyle: TextStyle(
-              color: AppColors.grey.withValues(alpha: 0.4),
-              fontSize: 12,
-            ),
-            filled: true,
-            fillColor: AppColors.inputBg,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: AppColors.primaryCyan,
-                width: 1.5,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Enter the student\'s username to send an enrollment invite.',
+              style: TextStyle(
+                color: AppColors.grey.withValues(alpha: 0.7),
+                fontSize: 12,
+                fontFamily: 'Roboto',
               ),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 11,
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              style: const TextStyle(color: AppColors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Student username',
+                hintStyle: TextStyle(
+                  color: AppColors.grey.withValues(alpha: 0.4),
+                  fontSize: 12,
+                ),
+                prefixIcon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.grey.withValues(alpha: 0.5),
+                  size: 20,
+                ),
+                filled: true,
+                fillColor: AppColors.inputBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: AppColors.primaryCyan,
+                    width: 1.5,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
         actions: [
           TextButton(
@@ -111,10 +132,49 @@ class _ClassStudentsPageState extends State<ClassStudentsPage> {
             onPressed: () async {
               final name = ctrl.text.trim();
               if (name.isNotEmpty && !_students.contains(name)) {
+                // Add student to class list
                 setState(() => _students.add(name));
                 await _persist();
+
+                // Send enrollment invite
+                final teacherName =
+                    await SessionStorageService.loadUsername() ?? 'Teacher';
+                EnrollmentService().sendInvite(
+                  teacherName: teacherName,
+                  className: _className,
+                  studentName: name,
+                );
+
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Enrollment invite sent to $name',
+                        style: const TextStyle(fontFamily: 'Roboto'),
+                      ),
+                      backgroundColor: AppColors.primaryCyan,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              } else if (name.isNotEmpty && _students.contains(name)) {
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '$name is already in this class',
+                        style: const TextStyle(fontFamily: 'Roboto'),
+                      ),
+                      backgroundColor: Colors.orange,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
               }
-              if (ctx.mounted) Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryCyan,
@@ -125,7 +185,7 @@ class _ClassStudentsPageState extends State<ClassStudentsPage> {
               ),
             ),
             child: const Text(
-              'Add',
+              'Send Invite',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontFamily: 'Roboto',
@@ -299,10 +359,10 @@ class _ClassStudentsPageState extends State<ClassStudentsPage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.add, color: AppColors.primaryCyan, size: 16),
+                  Icon(Icons.person_add_outlined, color: AppColors.primaryCyan, size: 16),
                   SizedBox(width: 4),
                   Text(
-                    'Add Student',
+                    'Enroll Student',
                     style: TextStyle(
                       color: AppColors.primaryCyan,
                       fontWeight: FontWeight.w600,

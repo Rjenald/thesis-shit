@@ -12,7 +12,6 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/profile_avatar.dart';
 import 'favorites_page.dart';
 import 'library_page.dart';
-import 'karaoke_recording_page.dart';
 import 'song_player_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
@@ -129,36 +128,23 @@ class _HomePageState extends State<HomePage> {
     final artist = song['artist'] ?? '';
     final image = song['image'] ?? '';
 
-    if (SongAudioService.hasAudio(title)) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SongPlayerPage(
-            songTitle: title,
-            songArtist: artist,
-            songImage: image,
-          ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SongPlayerPage(
+          songTitle: title,
+          songArtist: artist,
+          songImage: image,
         ),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => KaraokeRecordingPage(
-            songTitle: title,
-            songArtist: artist,
-            songImage: image,
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   void _openSession(SessionResult s) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => KaraokeRecordingPage(
+        builder: (_) => SongPlayerPage(
           songTitle: s.songTitle,
           songArtist: s.songArtist,
           songImage: s.songImage,

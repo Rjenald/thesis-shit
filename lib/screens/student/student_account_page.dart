@@ -7,7 +7,7 @@ import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
 import '../../services/submission_service.dart';
 import '../../widgets/profile_avatar.dart';
-import '../normal_user/karaoke_recording_page.dart';
+import '../normal_user/song_player_page.dart';
 import '../normal_user/solfagepitch_page.dart';
 import 'practice_solfege_page.dart';
 import '../normal_user/karaoke_practice_mode_page.dart';
@@ -659,7 +659,7 @@ class _StudentKaraokeModeScreenState extends State<StudentKaraokeModeScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => KaraokeRecordingPage(
+                        builder: (_) => SongPlayerPage(
                           songTitle: song.title,
                           songArtist: song.artist,
                           songImage: '',

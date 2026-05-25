@@ -12,6 +12,7 @@ class SongCatalogService {
       'artist': 'Darren Espanto',
       'image':
           'https://tse4.mm.bing.net/th/id/OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
+      'hasAudio': 'true',
     },
     {
       'title': 'Nasa Iyo Na Ang Lahat',
@@ -25,12 +26,14 @@ class SongCatalogService {
       'artist': 'Rob Daniel',
       'image':
           'https://tse3.mm.bing.net/th/id/OIP.4AnzA3S0-AUEBFjst492KwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3',
+      'hasAudio': 'true',
     },
     {
       'title': 'Fallen',
       'artist': 'Lola Amour',
       'image':
           'https://images.genius.com/b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
+      'hasAudio': 'true',
     },
     {
       'title': 'Binibini',

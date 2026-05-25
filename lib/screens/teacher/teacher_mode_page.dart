@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../constants/app_colors.dart';
 import '../../data/lyrics.dart';
 import '../../models/session_result.dart';
+import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
 
 /// MAPEH Teacher Mode — Huni dark theme + Figma layout (no Live Pitch).
@@ -1694,11 +1695,24 @@ class _TeacherModePageState extends State<TeacherModePage> {
           content: _classForm(nameCtrl, stuCtrl, students, selSongs, setL),
           onSave: () async {
             if (nameCtrl.text.trim().isEmpty) return;
+            final className = nameCtrl.text.trim();
             await SessionStorageService.addClass({
-              'name': nameCtrl.text.trim(),
+              'name': className,
               'students': students,
               'assignedSongs': selSongs,
             });
+
+            // Send enrollment invites to all students
+            final teacherName =
+                await SessionStorageService.loadUsername() ?? 'Teacher';
+            for (final student in students) {
+              EnrollmentService().sendInvite(
+                teacherName: teacherName,
+                className: className,
+                studentName: student,
+              );
+            }
+
             if (ctx.mounted) Navigator.pop(ctx);
             _load();
           },
@@ -1711,7 +1725,10 @@ class _TeacherModePageState extends State<TeacherModePage> {
   void _showEditClassDialog(int index, Map<String, dynamic> cls) {
     final nameCtrl = TextEditingController(text: cls['name'] as String? ?? '');
     final stuCtrl = TextEditingController();
-    final students = List<String>.from(cls['students'] as List<dynamic>? ?? []);
+    final existingStudents = List<String>.from(
+      cls['students'] as List<dynamic>? ?? [],
+    );
+    final students = List<String>.from(existingStudents);
     final selSongs = List<String>.from(
       cls['assignedSongs'] as List<dynamic>? ?? [],
     );
@@ -1723,11 +1740,29 @@ class _TeacherModePageState extends State<TeacherModePage> {
           title: 'Edit Class',
           content: _classForm(nameCtrl, stuCtrl, students, selSongs, setL),
           onSave: () async {
+            final className = nameCtrl.text.trim();
             await SessionStorageService.updateClass(index, {
-              'name': nameCtrl.text.trim(),
+              'name': className,
               'students': students,
               'assignedSongs': selSongs,
             });
+
+            // Send enrollment invites only for newly added students
+            final newStudents = students
+                .where((s) => !existingStudents.contains(s))
+                .toList();
+            if (newStudents.isNotEmpty) {
+              final teacherName =
+                  await SessionStorageService.loadUsername() ?? 'Teacher';
+              for (final student in newStudents) {
+                EnrollmentService().sendInvite(
+                  teacherName: teacherName,
+                  className: className,
+                  studentName: student,
+                );
+              }
+            }
+
             if (ctx.mounted) Navigator.pop(ctx);
             _load();
           },

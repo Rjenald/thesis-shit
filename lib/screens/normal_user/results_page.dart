@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
@@ -7,7 +8,9 @@ import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
 import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
+import '../../services/song_audio_service.dart';
 import '../../services/submission_service.dart';
+import 'song_player_page.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
@@ -27,11 +30,20 @@ class _ResultsPageState extends State<ResultsPage> {
   bool _saved = false;
   bool _saving = false;
   bool _downloaded = false;
+  AudioPlayer? _listenPlayer;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _autoDownload());
+  }
+
+  @override
+  void dispose() {
+    _listenPlayer?.stop();
+    _listenPlayer?.dispose();
+    super.dispose();
   }
 
   Future<void> _autoDownload() async {
@@ -72,14 +84,50 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
+  Future<void> _toggleListen() async {
+    if (_isListening) {
+      await _listenPlayer?.stop();
+      _listenPlayer?.dispose();
+      _listenPlayer = null;
+      setState(() => _isListening = false);
+      return;
+    }
+
+    final audioUrl = SongAudioService.getAudioUrl(widget.session.songTitle);
+    if (audioUrl == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No audio available for this song')),
+        );
+      }
+      return;
+    }
+
+    _listenPlayer = AudioPlayer();
+    try {
+      await _listenPlayer!.setUrl(audioUrl);
+      _listenPlayer!.playerStateStream.listen((state) {
+        if (!mounted) return;
+        if (state.processingState == ProcessingState.completed) {
+          setState(() => _isListening = false);
+          _listenPlayer?.dispose();
+          _listenPlayer = null;
+        }
+      });
+      await _listenPlayer!.play();
+      setState(() => _isListening = true);
+    } catch (_) {
+      _listenPlayer?.dispose();
+      _listenPlayer = null;
+    }
+  }
+
   void _shareSong() {
     final s = widget.session;
     final scoreInt = s.score.round();
     final text =
         'I just sang "${s.songTitle}" by ${s.songArtist} on Huni Karaoke!\n'
         'Score: $scoreInt% - ${_feedbackLabel(scoreInt)}\n\n'
-        'Search on YouTube: https://www.youtube.com/results?search_query='
-        '${Uri.encodeComponent('${s.songTitle} ${s.songArtist} karaoke')}\n\n'
         'Try it on Huni Karaoke App';
     Share.share(text, subject: '${s.songTitle} - My Karaoke Score');
   }
@@ -88,29 +136,12 @@ class _ResultsPageState extends State<ResultsPage> {
   static const _offTuneColor = Color(0xFFF44336);
   static const _silentColor = Color(0xFF757575);
 
-  Color _lineColor(LyricPitchData line) {
-    switch (line.status) {
-      case LineStatus.correct:
-        return _onTuneColor;
-      case LineStatus.flat:
-      case LineStatus.sharp:
-        return _offTuneColor;
-      case LineStatus.noSignal:
-        return _silentColor;
-    }
-  }
-
   String _feedbackLabel(int scoreInt) {
     if (scoreInt >= 80) return 'Good';
     if (scoreInt >= 60) return 'Fair';
     return 'Needs Practice';
   }
 
-  String _formatTime(int seconds) {
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    return s == 0 ? '${m}m' : '${m}m${s}s';
-  }
 
   Future<void> _saveSession() async {
     if (_saved || _saving) return;
@@ -294,8 +325,6 @@ class _ResultsPageState extends State<ResultsPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   const SizedBox(height: 8),
-                  _buildHeatmap(s),
-                  const SizedBox(height: 16),
                   _buildFeedbackRow(scoreInt, s),
                   const SizedBox(height: 20),
                   _buildLyricsResults(s),
@@ -390,56 +419,6 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  Widget _buildHeatmap(SessionResult s) {
-    final lines = s.lyricResults.where((l) => l.lyricText.isNotEmpty).toList();
-    final duration = s.durationSeconds > 0 ? s.durationSeconds : 210;
-
-    final ticks = <int>[];
-    for (int t = 30; t <= duration; t += 30) {
-      ticks.add(t);
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            _legendDot(_offTuneColor, 'Flat / Sharp'),
-            const SizedBox(width: 16),
-            _legendDot(_onTuneColor, 'On Tune'),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: SizedBox(
-            height: 36,
-            width: double.infinity,
-            child: lines.isEmpty
-                ? Container(color: Colors.white12)
-                : CustomPaint(painter: _HeatmapPainter(lines, _lineColor)),
-          ),
-        ),
-        const SizedBox(height: 4),
-        if (ticks.isNotEmpty)
-          Row(
-            children: ticks.map((t) {
-              return Expanded(
-                child: Text(
-                  _formatTime(t),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 9,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-      ],
-    );
-  }
 
   Widget _buildFeedbackRow(int scoreInt, SessionResult s) {
     final flatnessPct = s.avgFlatPercent.toStringAsFixed(0);
@@ -686,196 +665,136 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  Widget _legendDot(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 11,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildActionButtons(BuildContext context, SessionResult s) {
     final btnShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(10),
     );
 
-    final tryAgainBtn = Expanded(
-      child: OutlinedButton(
-        onPressed: () => Navigator.pop(context),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: Colors.white24),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: btnShape,
-        ),
-        child: const Text(
-          'Try Again',
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Row(
-        children: widget.isAssignment
-            ? [
-                tryAgainBtn,
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _saving
-                        ? null
-                        : () async {
-                            final nav = Navigator.of(context);
-                            await _saveSession();
-                            if (!mounted) return;
-                            nav.popUntil(
-                              (r) => r.isFirst || r.settings.name == '/',
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _saved
-                          ? _onTuneColor
-                          : AppColors.primaryCyan,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: btnShape,
-                      elevation: 0,
-                    ),
-                    child: _saving
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
-                          )
-                        : Text(
-                            _saved ? 'Submitted' : 'Submit',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ]
-            : [
-                tryAgainBtn,
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 46,
-                  child: ElevatedButton(
-                    onPressed: _downloaded ? null : _autoDownload,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _downloaded
-                          ? _onTuneColor.withValues(alpha: 0.15)
-                          : const Color(0xFF2A2A2A),
-                      foregroundColor: _downloaded
-                          ? _onTuneColor
-                          : Colors.white,
-                      padding: EdgeInsets.zero,
-                      shape: btnShape,
-                      elevation: 0,
-                    ),
-                    child: Icon(
-                      _downloaded
-                          ? Icons.download_done_rounded
-                          : Icons.download_outlined,
-                      size: 20,
+        children: [
+          // Try Again button
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () {
+                _listenPlayer?.stop();
+                _listenPlayer?.dispose();
+                _listenPlayer = null;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SongPlayerPage(
+                      songTitle: widget.session.songTitle,
+                      songArtist: widget.session.songArtist,
+                      songImage: widget.session.songImage,
+                      isAssignment: widget.isAssignment,
                     ),
                   ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white24),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: btnShape,
+              ),
+              child: const Text(
+                'Try Again',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 46,
-                  child: ElevatedButton(
-                    onPressed: _shareSong,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A2A2A),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.zero,
-                      shape: btnShape,
-                      elevation: 0,
-                    ),
-                    child: const Icon(Icons.share_outlined, size: 20),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Listen button
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _toggleListen,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isListening
+                    ? const Color(0xFFFF9800)
+                    : const Color(0xFF2A2A2A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: btnShape,
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _isListening ? Icons.stop : Icons.headphones,
+                    size: 18,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _saving ? null : _saveSession,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _saved
-                          ? _onTuneColor
-                          : AppColors.primaryCyan,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: btnShape,
-                      elevation: 0,
+                  const SizedBox(width: 6),
+                  Text(
+                    _isListening ? 'Stop' : 'Listen',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
                     ),
-                    child: _saving
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
-                          )
-                        : Text(
-                            _saved ? 'Saved' : 'Save',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Save / Submit button
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _saving
+                  ? null
+                  : widget.isAssignment
+                      ? () async {
+                          final nav = Navigator.of(context);
+                          await _saveSession();
+                          if (!mounted) return;
+                          nav.popUntil(
+                            (r) => r.isFirst || r.settings.name == '/',
+                          );
+                        }
+                      : _saveSession,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _saved
+                    ? _onTuneColor
+                    : AppColors.primaryCyan,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: btnShape,
+                elevation: 0,
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black,
+                      ),
+                    )
+                  : Text(
+                      _saved
+                          ? (widget.isAssignment ? 'Submitted' : 'Saved')
+                          : (widget.isAssignment ? 'Submit' : 'Save'),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _HeatmapPainter extends CustomPainter {
-  final List<LyricPitchData> lines;
-  final Color Function(LyricPitchData) colorFor;
-
-  const _HeatmapPainter(this.lines, this.colorFor);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (lines.isEmpty) return;
-    final segW = size.width / lines.length;
-    for (int i = 0; i < lines.length; i++) {
-      final paint = Paint()..color = colorFor(lines[i]);
-      canvas.drawRect(Rect.fromLTWH(i * segW, 0, segW - 1, size.height), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_HeatmapPainter old) => old.lines.length != lines.length;
-}
