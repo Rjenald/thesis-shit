@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 /// API service for the Huni backend (PHP/MySQL on XAMPP).
@@ -126,6 +127,26 @@ class ApiService {
       return {'success': false, 'error': 'Server timed out. Check your XAMPP/Apache is running.'};
     } catch (e) {
       return {'success': false, 'error': 'Cannot reach server. Check API URL and Apache status.'};
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────
+  // UPLOAD RECORDING + ANALYZE
+  static Future<Map<String, dynamic>> uploadRecording(File audioFile) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse("http://localhost/huni_api/upload_recording.php"),
+      );
+      request.files.add(await http.MultipartFile.fromPath('audio', audioFile.path));
+      var response = await request.send();
+      final respStr = await response.stream.bytesToString();
+      final body = _safeDecode(respStr);
+      return body ?? {'success': false, 'error': 'Invalid server response.'};
+    } on TimeoutException {
+      return {'success': false, 'error': 'Server timed out. Check backend.'};
+    } catch (e) {
+      return {'success': false, 'error': 'Cannot reach backend. Check API URL and Apache status.'};
     }
   }
 

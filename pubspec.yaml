@@ -24,9 +24,8 @@ dependencies:
   youtube_player_flutter: ^9.1.3
   image_picker: ^1.1.2
 
- 
   tflite_flutter: ^0.12.1
-    
+  whisper_ggml: ^1.3.0
 
 dev_dependencies:
   flutter_test:
@@ -54,3 +53,4 @@ flutter:
     - assets/logo.png
     - assets/videos/lifetime_benben.mp4
     - assets/models/huni_crepe.tflite
+    - assets/models/ggml-tagalog-q8_0.bin

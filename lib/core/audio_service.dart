@@ -1,10 +1,16 @@
 /// AudioService — streams mic PCM through the on-device CREPE TFLite model
 /// and emits NoteResult events.
 ///
-/// Primary:  On-device CREPE TFLite (huni_crepe.tflite) — highest accuracy.
-/// Fallback: On-device YIN pitch detector — works if model fails to load.
+/// ── WHAT'S NEW ─────────────────────────────────────────────────────────────
+/// Added a parallel `pitchFrames` stream that emits timestamped pitch frames:
 ///
-/// No WebSocket or internet connection required.
+///     PitchFrame(timeSec, hz, note, confidence)
+///
+/// These frames are used by the karaoke recording flow to group CREPE pitches
+/// inside each word's time range AFTER Whisper finishes transcribing.
+///
+/// The existing `results` and `rawBytes` streams are unchanged so every other
+/// part of the app (live note display, RMS bars, etc.) keeps working.
 library;
 
 import 'dart:async';
@@ -17,44 +23,52 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'local_pitch_detector.dart';
 import 'note_utils.dart';
 
+/// One timestamped pitch reading produced by CREPE (or YIN fallback).
+/// `timeSec` is RELATIVE to the moment recording started.
+class PitchFrame {
+  final double timeSec;
+  final double hz;
+  final String note;       // e.g. "G4", or "" if no signal
+  final double confidence; // 0..1
+
+  const PitchFrame({
+    required this.timeSec,
+    required this.hz,
+    required this.note,
+    required this.confidence,
+  });
+}
+
 class AudioService {
-  // ── Sample rate ─────────────────────────────────────────────────────────────
-  // CREPE requires exactly 16kHz. We record at 16kHz directly.
+  // ── Sample rate ───────────────────────────────────────────────────────────
   static const int _sampleRate = 16000;
 
-  // ── CREPE constants ─────────────────────────────────────────────────────────
-  // These must match exactly how the model was trained in Colab.
-  static const int _frameSize = 1024;   // samples per CREPE input frame
-  static const int _hopSize   = 160;    // samples to advance each frame (10ms)
-  static const int _nBins     = 360;    // CREPE output bins
-  static const double _minPitchHz = 32.70;   // C1 — lowest CREPE can detect
-  static const double _maxPitchHz = 1975.5;  // B6 — highest CREPE can detect
+  // ── CREPE constants ───────────────────────────────────────────────────────
+  static const int _frameSize = 1024;
+  static const int _hopSize   = 160;     // ~10 ms hop → 100 frames/sec
+  static const int _nBins     = 360;
+  static const double _minPitchHz = 32.70;
+  static const double _maxPitchHz = 1975.5;
 
-  // ── Tuning constants ────────────────────────────────────────────────────────
-
-
-  /// Minimum CREPE confidence to accept a result.
-  /// Below this = noise, silence, or uncertain — discard.
+  // ── Tuning constants ──────────────────────────────────────────────────────
   static const double _minConfidence = 0.55;
-
-  /// Minimum time between emitted results (rate limiter).
-  /// 80 ms = ~12 Hz update rate. Fast enough for UI, not too noisy.
   static const Duration _minEmitInterval = Duration(milliseconds: 80);
 
-  // ── Internal state ──────────────────────────────────────────────────────────
+  // ── Internal state ────────────────────────────────────────────────────────
   final _recorder = AudioRecorder();
-  Interpreter? _interpreter;           // CREPE TFLite model
-  bool _crepeLoaded = false;           // true if model loaded successfully
-  bool _useLocalFallback = false;      // true if falling back to YIN
+  Interpreter? _interpreter;
+  bool _crepeLoaded = false;
+  bool _useLocalFallback = false;
 
   StreamSubscription<List<int>>? _audioSub;
 
-  final _resultController = StreamController<NoteResult?>.broadcast();
-  Stream<NoteResult?> get results => _resultController.stream;
+  final _resultController     = StreamController<NoteResult?>.broadcast();
+  final _bytesController      = StreamController<List<int>>.broadcast();
+  final _pitchFrameController = StreamController<PitchFrame>.broadcast();
 
-  // Raw PCM bytes stream — for external consumers
-  final _bytesController = StreamController<List<int>>.broadcast();
-  Stream<List<int>> get rawBytes => _bytesController.stream;
+  Stream<NoteResult?> get results     => _resultController.stream;
+  Stream<List<int>>   get rawBytes    => _bytesController.stream;
+  Stream<PitchFrame>  get pitchFrames => _pitchFrameController.stream;
 
   bool _isRunning = false;
   bool _disposed  = false;
@@ -62,43 +76,37 @@ class AudioService {
   final LocalPitchDetector _localDetector = LocalPitchDetector();
   double? _targetFreq;
 
-  // Rolling audio buffer — accumulates PCM samples between chunks
   final List<double> _buffer = [];
 
-  // Rate-limiter state
+  // Total samples consumed since recording started — used to compute the
+  // absolute timestamp of each CREPE frame.
+  int _samplesConsumed = 0;
+
   DateTime _lastEmit = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get isRunning => _isRunning;
 
-  // ── Public API ──────────────────────────────────────────────────────────────
+  // ── Public API ────────────────────────────────────────────────────────────
 
-  /// Pre-load the CREPE model without starting the microphone.
-  /// Call this in initState() so the model is ready when user hits Record.
   Future<void> preloadCrepe() async {
     await _loadCrepeModel();
   }
 
-  /// Request mic permission, load CREPE model, start streaming.
-  /// Returns false only if microphone permission is denied.
   Future<bool> start({double? targetFreq}) async {
     if (_disposed || _isRunning) return _isRunning;
 
-    _targetFreq  = targetFreq;
-    _lastEmit    = DateTime.fromMillisecondsSinceEpoch(0);
+    _targetFreq      = targetFreq;
+    _lastEmit        = DateTime.fromMillisecondsSinceEpoch(0);
+    _samplesConsumed = 0;
     _buffer.clear();
     _localDetector.reset();
 
-    // ── 1. Mic permission ───────────────────────────────────────────────────
     final status = await Permission.microphone.request();
     if (!status.isGranted || _disposed) return false;
 
-    // ── 2. Load CREPE TFLite model (if not already loaded) ─────────────────
-    if (!_crepeLoaded) {
-      await _loadCrepeModel();
-    }
+    if (!_crepeLoaded) await _loadCrepeModel();
 
     if (!_crepeLoaded) {
-      // Model failed to load — use YIN local detector as fallback
       _useLocalFallback = true;
       print('⚠️ CREPE model not available — using local YIN fallback');
     } else {
@@ -106,20 +114,17 @@ class AudioService {
       print('✅ CREPE model ready — using on-device pitch detection');
     }
 
-    // ── 3. Start microphone PCM stream at 16kHz ─────────────────────────────
     const config = RecordConfig(
       encoder: AudioEncoder.pcm16bits,
-      sampleRate: _sampleRate,          // 16kHz — required by CREPE
-      numChannels: 1,                   // mono
+      sampleRate: _sampleRate,
+      numChannels: 1,
       autoGain: false,
       echoCancel: false,
       noiseSuppress: false,
     );
 
     if (_disposed) return false;
-
     final stream = await _recorder.startStream(config);
-
     if (_disposed) {
       await _recorder.stop();
       return false;
@@ -127,31 +132,32 @@ class AudioService {
 
     _isRunning = true;
 
-    // ── 4. Process PCM bytes as they arrive from the microphone ─────────────
     _audioSub = stream.listen(
       (List<int> bytes) {
         if (_disposed) return;
 
-        // Broadcast raw PCM bytes to any external listeners
-        if (!_bytesController.isClosed) {
-          _bytesController.add(bytes);
-        }
+        if (!_bytesController.isClosed) _bytesController.add(bytes);
 
         if (_useLocalFallback) {
-          // ── YIN fallback path ─────────────────────────────────────────────
+          // YIN fallback path — no per-frame timestamp, so we synthesize one
+          // from the running sample counter.
           final hz = _localDetector.process(bytes);
-          if (hz == null) return; // buffer not full yet
+          _samplesConsumed += bytes.length ~/ 2; // 2 bytes per sample
+          final t = _samplesConsumed / _sampleRate.toDouble();
+
+          if (hz == null) return;
           if (hz > 0) {
-            _emitIfReady(analyzeFrequency(
-              hz,
-              targetFreq: _targetFreq,
-              confidence: 1.0,
+            final result = analyzeFrequency(
+              hz, targetFreq: _targetFreq, confidence: 1.0,
+            );
+            _pitchFrameController.add(PitchFrame(
+              timeSec: t, hz: hz, note: result.fullName, confidence: 1.0,
             ));
+            _emitIfReady(result);
           } else {
-            _emitIfReady(null); // silence
+            _emitIfReady(null);
           }
         } else {
-          // ── CREPE on-device path ──────────────────────────────────────────
           _processPcmBytes(bytes);
         }
       },
@@ -163,7 +169,7 @@ class AudioService {
     return true;
   }
 
-  // ── CREPE model loading ─────────────────────────────────────────────────────
+  // ── CREPE model loading ───────────────────────────────────────────────────
 
   Future<void> _loadCrepeModel() async {
     try {
@@ -171,42 +177,34 @@ class AudioService {
         'assets/models/huni_crepe.tflite',
       );
       _crepeLoaded = true;
-      print('✅ CREPE TFLite model loaded');
-      print('   Input shape  : ${_interpreter!.getInputTensor(0).shape}');
-      print('   Output shape : ${_interpreter!.getOutputTensor(0).shape}');
     } catch (e) {
       _crepeLoaded = false;
       _useLocalFallback = true;
       print('❌ Failed to load CREPE model: $e');
-      print('   Falling back to local YIN detector');
     }
   }
 
-  // ── CREPE inference pipeline ────────────────────────────────────────────────
+  // ── CREPE inference pipeline ──────────────────────────────────────────────
 
-  /// Convert raw PCM bytes → float samples → buffer → run CREPE per frame.
   void _processPcmBytes(List<int> bytes) {
-    // Step 1: Convert PCM16 bytes to float32 samples
-    // PCM16 = 2 bytes per sample, little-endian, range -32768 to 32767
+    // PCM16 → float32, normalized to [-1, 1]
     for (int i = 0; i + 1 < bytes.length; i += 2) {
       final int raw = bytes[i] | (bytes[i + 1] << 8);
-      // Convert unsigned to signed
       final int signed = raw > 32767 ? raw - 65536 : raw;
-      // Normalize to -1.0 to 1.0
       _buffer.add(signed / 32768.0);
     }
 
-    // Step 2: Process every complete 1024-sample frame
     while (_buffer.length >= _frameSize) {
-      // Extract one frame
       final frame = _buffer.sublist(0, _frameSize);
-
-      // Slide window forward by hopSize (10ms)
       _buffer.removeRange(0, _hopSize);
 
-      // Step 3: Run CREPE on this frame
-      final result = _runCrepe(frame);
+      // Timestamp = number of samples consumed BEFORE this frame's center,
+      // divided by the sample rate. Using the frame start as t is fine for
+      // word-level grouping (we're not doing forced alignment).
+      final tSec = _samplesConsumed / _sampleRate.toDouble();
+      _samplesConsumed += _hopSize;
 
+      final result = _runCrepe(frame, tSec);
       if (result != null) {
         _emitIfReady(result);
       } else {
@@ -215,39 +213,22 @@ class AudioService {
     }
   }
 
-  /// Run CREPE model on one 1024-sample frame.
-  /// Returns a NoteResult or null if no pitch detected.
-  NoteResult? _runCrepe(List<double> frame) {
+  NoteResult? _runCrepe(List<double> frame, double tSec) {
     if (_interpreter == null || !_crepeLoaded) return null;
 
-    // Step 1: Normalize the frame
-    // Subtract mean, divide by std — same as training preprocessing
-    double mean = frame.reduce((a, b) => a + b) / frame.length;
-    List<double> centered = frame.map((s) => s - mean).toList();
+    // Z-score normalize the frame (same prep as the original CREPE training).
+    final mean = frame.reduce((a, b) => a + b) / frame.length;
+    final centered = frame.map((s) => s - mean).toList();
+    final variance =
+        centered.map((s) => s * s).reduce((a, b) => a + b) / centered.length;
+    final std = sqrt(variance);
 
-    double variance = centered
-        .map((s) => s * s)
-        .reduce((a, b) => a + b) / centered.length;
-    double std = sqrt(variance);
+    if (std <= 1e-6) return null; // silent frame
+    final normalized = centered.map((s) => s / std).toList();
 
-    List<double> normalized;
-    if (std > 1e-6) {
-      normalized = centered.map((s) => s / std).toList();
-    } else {
-      // Silent frame — std is near zero, no signal
-      return null;
-    }
-
-    // Step 2: Prepare input tensor — shape [1, 1024, 1]
-    // CREPE expects (batch, samples, channels)
-    final input = [
-      normalized.map((s) => [s]).toList()
-    ];
-
-    // Step 3: Prepare output tensor — shape [1, 360]
+    final input = [normalized.map((s) => [s]).toList()];
     final output = [List<double>.filled(_nBins, 0.0)];
 
-    // Step 4: Run inference
     try {
       _interpreter!.run(input, output);
     } catch (e) {
@@ -255,54 +236,53 @@ class AudioService {
       return null;
     }
 
-    // Step 5: Read 360 bin probabilities
     final bins = output[0];
 
-    // Step 6: Find the bin with highest confidence
     int maxBin = 0;
     double maxConf = bins[0];
     for (int i = 1; i < _nBins; i++) {
       if (bins[i] > maxConf) {
         maxConf = bins[i];
-        maxBin  = i;
+        maxBin = i;
       }
     }
 
-    // Step 7: Gate on minimum confidence
-    // Below 0.55 = noise, silence, or uncertain transition
     if (maxConf < _minConfidence) return null;
 
-    // Step 8: Convert bin index → Hz
-    // CREPE covers C1 (32.7 Hz) to B6 (1975.5 Hz) across 360 bins
     final cents = maxBin * (6000.0 / (_nBins - 1));
-    final hz    = _minPitchHz * pow(2, cents / 1200.0);
+    final hz = _minPitchHz * pow(2, cents / 1200.0);
 
-    // Step 9: Sanity check — pitch must be in human singing range
     if (hz < _minPitchHz || hz > _maxPitchHz) return null;
 
-    // Step 10: Convert Hz → NoteResult (note name, cents, flat/sharp)
-    return analyzeFrequency(
-      hz,
-      targetFreq: _targetFreq,
-      confidence: maxConf,
+    final result = analyzeFrequency(
+      hz.toDouble(), targetFreq: _targetFreq, confidence: maxConf,
     );
+
+    // Broadcast the timestamped frame.
+    if (!_pitchFrameController.isClosed) {
+      _pitchFrameController.add(PitchFrame(
+        timeSec: tSec,
+        hz: hz.toDouble(),
+        note: result.fullName,
+        confidence: maxConf,
+      ));
+    }
+
+    return result;
   }
 
-  // ── Private helpers ─────────────────────────────────────────────────────────
+  // ── Private helpers ───────────────────────────────────────────────────────
 
-  /// Emit a result only if the rate-limiter allows it.
-  /// Prevents flooding the UI at 100+ Hz.
   void _emitIfReady(NoteResult? result) {
     if (_disposed) return;
     final now = DateTime.now();
     if (now.difference(_lastEmit) < _minEmitInterval) return;
     _lastEmit = now;
-    _resultController.add(result);
+    if (!_resultController.isClosed) _resultController.add(result);
   }
 
-  // ── Lifecycle ───────────────────────────────────────────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-  /// Stop recording. Safe to call multiple times.
   Future<void> stop() async {
     if (!_isRunning) return;
     _isRunning = false;
@@ -315,17 +295,17 @@ class AudioService {
     await _recorder.stop();
   }
 
-  /// Dispose the service. Safe to call even if stop() was not called.
   void dispose() {
     if (_disposed) return;
-    _disposed   = true;
-    _isRunning  = false;
+    _disposed = true;
+    _isRunning = false;
 
     _audioSub?.cancel();
     _audioSub = null;
 
     _resultController.close();
     _bytesController.close();
+    _pitchFrameController.close();
     _buffer.clear();
 
     _interpreter?.close();
