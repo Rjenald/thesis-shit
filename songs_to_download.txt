@@ -1,0 +1,1016 @@
+﻿================================================
+SONGS THAT NEED MP3 FILES
+Put them in: web\audio\ folder
+File naming: exact song title.mp3
+================================================
+
+=== TAGALOG (385) ===
+
+1. Pangarap Ko Ang Iyo - Regine Velasquez
+2. Mula Sa Puso - Regine Velasquez
+3. Nagsisimula - Regine Velasquez
+4. Salamat - Regine Velasquez
+5. Nandito Ako - Regine Velasquez
+6. Kumusta Ka - Regine Velasquez
+7. Hiram - Regine Velasquez
+8. Sandalan - Regine Velasquez
+9. Sana Maulit Muli - Regine Velasquez
+10. Nahihirapan - Regine Velasquez
+11. Pag-ibig Ko Sa Iyo - Regine Velasquez
+12. Mr. DJ - Sharon Cuneta
+13. Kahit Maputi Na Ang Buhok Ko - Sharon Cuneta
+14. Pangarap Na Bituin - Sharon Cuneta
+15. Till I Met You - Sharon Cuneta
+16. Basta Ikaw - Sharon Cuneta
+17. Ikaw Ang Mahal Ko - Sharon Cuneta
+18. Anak - Freddie Aguilar
+19. Magdamag - Freddie Aguilar
+20. Pagbigyan - Freddie Aguilar
+21. Nais Ko - Freddie Aguilar
+22. Natutulog Ba Ang Diyos - Gary Valenciano
+23. Huwag Na Huwag Mong Sasabihin - Gary Valenciano
+24. Kilometro - Gary Valenciano
+25. Hataw Na - Gary Valenciano
+26. You Are My Song - Martin Nievera
+27. Be My Lady - Martin Nievera
+28. Ikaw Pala - Martin Nievera
+29. Bukas - Martin Nievera
+30. Kailangan Ko\'y Ikaw - Martin Nievera
+31. Ngayon At Kailanman - Basil Valdez
+32. Kaibigan - Basil Valdez
+33. Buhay Ko - Basil Valdez
+34. Di Na Natututo - Apo Hiking Society
+35. Batang-Bata Ka Pa - Apo Hiking Society
+36. Pag-ibig - Apo Hiking Society
+37. Sa Ugoy ng Duyan - Apo Hiking Society
+38. American Junk - Apo Hiking Society
+39. Beautiful Girl - Jose Mari Chan
+40. A Perfect Christmas - Jose Mari Chan
+41. Can We Just Stop and Talk a While - Jose Mari Chan
+42. Constant Change - Jose Mari Chan
+43. Ang Sarap Ng Buhay - Lea Salonga
+44. Kahit Saan - Lea Salonga
+45. Isang Libo\'t Isang Gabi - Lea Salonga
+46. Saan Ka Man Naroroon - Ogie Alcasid
+47. Nandyan Ka Ba - Ogie Alcasid
+48. Tuwing Bumalik Ka - Ogie Alcasid
+49. Mano Mano - Ogie Alcasid
+50. Ikaw Lamang - Lani Misalucha
+51. Nais Ko - Lani Misalucha
+52. Bukas Na Lang Kita Mahalin - Lani Misalucha
+53. Ang Pipit - Pilita Corrales
+54. Bayan Ko - Pilita Corrales
+55. Kanlungan - Noel Cabangon
+56. Handog - Noel Cabangon
+57. Nais Ko - Bamboo
+58. Baliw - Bamboo
+59. Tulog Na Lang - Bamboo
+60. Hallelujah - Bamboo
+61. Buloy - Parokya ni Edgar
+62. Harana - Parokya ni Edgar
+63. Iniotso - Parokya ni Edgar
+64. Gitara - Parokya ni Edgar
+65. Tambay - Sponge Cola
+66. Langit - Sponge Cola
+67. Plabaya - Sponge Cola
+68. Magbalik - Callalily
+69. Sangkatauhan - Callalily
+70. Pagdating ng Panahon - Aiza Seguerra
+71. Kahanga-hanga - Aiza Seguerra
+72. Walang Iwanan - Aiza Seguerra
+73. Jeepney - Yeng Constantino
+74. Ikaw - Yeng Constantino
+75. Hawak Kamay - Yeng Constantino
+76. Hanggang - Kyla
+77. Tapat - Kyla
+78. Pag-ibig Natin - Kyla
+79. Hinahanap Kita - Jireh Lim
+80. Halayo - Jireh Lim
+81. Ikaw Na - Jireh Lim
+82. Hanggang Ngayon - Orange & Lemons
+83. Pinoy Ako - Orange & Lemons
+84. Sirens - Gloc-9
+85. Upuan - Gloc-9
+86. Tao Lang - Gloc-9
+87. Narda - Kamikazee
+88. Masaya - Kamikazee
+89. Akoy Iisa - Imago
+90. Nagsimula Sa Iyo - Imago
+91. Tuwing Ulan at Tag-araw - Sarah Geronimo
+92. Kilometro - Sarah Geronimo
+93. Ako Si Sarah G - Sarah Geronimo
+94. Can This Be Love - Sarah Geronimo
+95. Sana Ako Na Lang - KZ Tandingan
+96. You Made Me Stronger - KZ Tandingan
+97. Pag Uusapan - Morissette Amon
+98. Torete - Morissette Amon
+99. Araw Araw - Morissette Amon
+100. This Time - Darren Espanto
+101. Di Ko Kaya - Darren Espanto
+102. Isip Ko ay Ikaw - Zsa Zsa Padilla
+103. Ikaw Ang Mahal Ko - Zsa Zsa Padilla
+104. Mahal Kita Walang Iba - Angeline Quinto
+105. Ililigtas Ka Niya - Angeline Quinto
+106. Fallin\' In - Janno Gibbs
+107. Kung Tayo\'y Magkakalayo - Janno Gibbs
+108. 214 - Rivermaya
+109. Himala - Rivermaya
+110. Kung Ayaw Mo Na - Rivermaya
+111. Para Sa\'yo - Rivermaya
+112. Ang Huling El Bimbo - Eraserheads
+113. Ligaya - Eraserheads
+114. Pare Ko - Eraserheads
+115. With A Smile - Eraserheads
+116. Alapaap - Eraserheads
+117. So Slow - Freestyle
+118. Before I Let You Go - Freestyle
+119. Forevermore - Side A
+120. Ikaw - Side A
+121. Get Ready - Side A
+122. Muling Ibalik - True Faith
+123. Huwag Na Huwag Mong Sasabihin - True Faith
+124. Tayong Dalawa - Pops Fernandez
+125. Mahal Kita - Pops Fernandez
+126. Anong Nangyari Sa Ating Dalawa - Ariel Rivera
+127. Sana Kahit Minsan - Ariel Rivera
+128. Tadhana - Donna Cruz
+129. Kapag Tumibok Ang Puso - Donna Cruz
+130. Super Love - Sheryn Regis
+131. Ikaw Ang Aking Mahal - Sheryn Regis
+132. Kathang Isip - Ben&Ben
+133. Pagtingin - Ben&Ben
+134. Leaves - Ben&Ben
+135. Di Ka Sayang - Ben&Ben
+136. Pasalubong - Ben&Ben
+137. Maybe The Night - Ben&Ben
+138. Araw-Araw - Ben&Ben
+139. Mundo - Ben&Ben
+140. Liwanag Sa Dilim - Ben&Ben
+141. Tagpuan - Moira dela Torre
+142. Malaya - Moira dela Torre
+143. Patawad Paalam - Moira dela Torre
+144. Paubaya - Moira dela Torre
+145. Sigurado - Moira dela Torre
+146. Sana - Moira dela Torre
+147. Pano - Arthur Nery
+148. Enemy - Arthur Nery
+149. Sawa Ka Na Ba - Arthur Nery
+150. Balikan - Arthur Nery
+151. Kalinga - Arthur Nery
+152. Nangangamba - Zack Tabudlo
+153. Habang Buhay - Zack Tabudlo
+154. Give Me Your Forever - Zack Tabudlo
+155. Binibini - Zack Tabudlo
+156. Ere - Juan Karlos
+157. Buwan - Juan Karlos
+158. Palagi - Juan Karlos
+159. Buong Buhay - Juan Karlos
+160. Gento - SB19
+161. Mapa - SB19
+162. What? - SB19
+163. Go Up - SB19
+164. Bazinga - SB19
+165. Huling Sandali - December Avenue
+166. Sa Ngalan ng Pag-ibig - December Avenue
+167. Kung \'Di Rin Lang Ikaw - December Avenue
+168. Bulong - December Avenue
+169. Burn - December Avenue
+170. Na Na Na - BINI
+171. Pantropiko - BINI
+172. Salamin Salamin - BINI
+173. Lagi - BINI
+174. Come Inside of My Heart - IV of Spades
+175. Mundo - IV of Spades
+176. Bata Bata - IV of Spades
+177. Pag Ibig Ko Sa Iyo - Freddie Aguilar
+178. Ikaw Ang Aking Pangarap - Regine Velasquez
+179. Mahal Kita - Martin Nievera
+180. Ngayon - Sharon Cuneta
+181. Sayo Lamang - Lea Salonga
+182. Kung Kailangan Mo Ako - Basil Valdez
+183. Mahal Ko Ikaw - Gary Valenciano
+184. Ibibigay Ko Sa Iyo - Ariel Rivera
+185. Tuwing Kita\'y Nakikita - Sharon Cuneta
+186. Umaasa - Elmo Magalona
+187. Sariling Multo - SUD
+188. Laging Nariyan - Michael Pangilinan
+189. Kung Kaya Mo - Darren Espanto
+190. Piliin Mo Ang Pilipinas - Various Artists
+191. Ako\'y Sa Iyo - Ogie Alcasid
+192. Maging Sino Ka Man - Regine Velasquez
+193. Luha - Aegis
+194. Halik - Aegis
+195. Yaya - Aegis
+196. Basang Basa Sa Ulan - Rivermaya
+197. Minsan - Eraserheads
+198. Huwag Ka Nang Umiyak - Parokya ni Edgar
+199. Akala Ko - Cueshe
+200. Stay - Cueshe
+201. Puso - Sponge Cola
+202. Kahit Na - South Border
+203. Rainbow - South Border
+204. You\'re My All In All - South Border
+205. Ikaw Nga - Willie Revillame
+206. Maliw - MYMP
+207. Tell Me - MYMP
+208. No Erase - MYMP
+209. Sana Ay Ikaw Na Nga - Rey Valera
+210. Kung Tayo Ay Magkakalayo - Rey Valera
+211. Nais Ko - Renz Verano
+212. Mahal Kita - Zsa Zsa Padilla
+213. Yakap - Moira dela Torre
+214. Pag-ibig - Ben&Ben
+215. Tahanan - Ben&Ben
+216. Nakikinig Ka Ba - Ben&Ben
+217. Sa Susunod Na Habang Buhay - Ben&Ben
+218. Sawa - Denise Julia
+219. NKNK - Denise Julia
+220. Uhaw - Dilaw
+221. Dito Ka Lang - Dilaw
+222. Pano - Zack Tabudlo
+223. Sa Isang Sulyap Mo - Zack Tabudlo
+224. Paalam - Zack Tabudlo
+225. Kung Di Tayo Natutong Umibig - December Avenue
+226. Kahit Ayaw Mo Na - Juan Karlos
+227. Langga - SB19
+228. WYAT - SB19
+229. Love Goes - Arthur Nery
+230. Dito Na Lang - Arthur Nery
+231. Bawat Daan - Moira dela Torre
+232. Di Ko Kaya - KZ Tandingan
+233. Pwede Ba - Swavesound
+234. Kung Ako Na Lang Sana - Erik Santos
+235. Ikaw - Erik Santos
+236. Tuloy Na Tuloy Pa Rin Ang Pasko - Jose Mari Chan
+237. Pasko Na Sinta Ko - Jose Mari Chan
+238. Ang Pasko Ay Sumapit - Traditional
+239. Maligayang Pasko - Traditional
+240. Hanggang - Wency Cornejo
+241. Bakit Ngayon Ka Lang - Freestyle
+242. Sana Ol - Moira dela Torre
+243. Ikaw at Ako - Inigo Pascual
+244. Dati - Sam Concepcion
+245. Kapag Ako Ay Nahulog Na - Kyla
+246. Sana Ikaw Na Nga - Bugoy Drilon
+247. Palagi - TJ Monterde
+248. Ikaw At Ako - TJ Monterde
+249. Kung Kaya Ko Lang - TJ Monterde
+250. Sundo - Unique Salonga
+251. Magmahal Muli - Unique Salonga
+252. Kahit Na Ayaw Mo Na - Unique Salonga
+253. Tayong Dalawa - Michael Pangilinan
+254. Babalik Ka Rin - Michael Pangilinan
+255. Kung Akin Ang Mundo - Michael Pangilinan
+256. Simpleng Tao - Siakol
+257. Nandito Ako - Siakol
+258. Bakit Pa - Brownman Revival
+259. Laklak - Brownman Revival
+260. Pag-ibig Ko\'y Huwag Nang Ibalik - Andrew E
+261. Humanap Ka Ng Panget - Andrew E
+262. Tatlong Beses Sa Isang Linggo - Vhong Navarro
+263. Pagmamahal - Rocky
+264. Ang Huling El Bimbo - Eraserheads
+265. Kaibigan - Eraserheads
+266. Overdrive - Eraserheads
+267. Munting Tinig - Chito Miranda
+268. Nosi Ba Lasi - Parokya ni Edgar
+269. Your Universe - Rico Blanco
+270. Wag Na Wag Mong Isisip - Rico Blanco
+271. Antukin - Rico Blanco
+272. Takipsilim - Bamboo
+273. Ulan - Rivermaya
+274. Awit Ng Kabataan - Regine Velasquez
+275. Kapag Ako Ay Nag-iisa - Lani Misalucha
+276. Tatakpan Ko Ng Langit - Angeline Quinto
+277. Tagpuan - Moira Dela Torre
+278. Torete - Moonstar88
+279. Paubaya - Moira Dela Torre
+280. Patawad - Moira Dela Torre
+281. Sundo - Moira Dela Torre
+282. GENTO - SB19
+283. Bazinga - SB19
+284. What? - SB19
+285. Mapa - SB19
+286. Alab - SB19
+287. Go Up - SB19
+288. I Want You - SB19
+289. Pagtingin - Ben&Ben
+290. Lifetime - Ben&Ben
+291. Leaves - Ben&Ben
+292. Araw-Araw - Ben&Ben
+293. Kathang Isip - Ben&Ben
+294. Sa Susunod Na Habang Buhay - Ben&Ben
+295. Di Ka Sayang - Ben&Ben
+296. Maging Sino Ka Man - Ben&Ben
+297. Pantropiko - BINI
+298. Salamin Salamin - BINI
+299. Karera - BINI
+300. Lagi - BINI
+301. Na Na Na - BINI
+302. Huwag Muna Tayong Umuwi - BINI
+303. Cherry On Top - BINI
+304. Mundo - IV of Spades
+305. Bawat Kaluluwa - IV of Spades
+306. Ilaw Sa Daan - IV of Spades
+307. Come Inside of My Heart - IV of Spades
+308. Where Have You Been My Disco - IV of Spades
+309. Tingin - Cup of Joe
+310. Buhol-Buhol - Cup of Joe
+311. Pansamantala - Cup of Joe
+312. Pagsamo - Arthur Nery
+313. Higa - Arthur Nery
+314. Binhi - Arthur Nery
+315. Pelikula - Arthur Nery
+316. Life Puzzle - Arthur Nery
+317. Pano - Zack Tabudlo
+318. Habang Buhay - Zack Tabudlo
+319. Isa Pa - Zack Tabudlo
+320. Give Me Your Forever - Zack Tabudlo
+321. Hindi Ko Kaya - Zack Tabudlo
+322. Ang Huling El Bimbo - Eraserheads
+323. With A Smile - Eraserheads
+324. Ligaya - Eraserheads
+325. Pare Ko - Eraserheads
+326. Magasin - Eraserheads
+327. Huwag Mo Nang Itanong - Eraserheads
+328. Torpedo - Eraserheads
+329. Minsan - Eraserheads
+330. Ulan - Rivermaya
+331. Himala - Rivermaya
+332. Kisapmata - Rivermaya
+333. Balisong - Rivermaya
+334. 241 - Rivermaya
+335. Harana - Parokya ni Edgar
+336. Buloy - Parokya ni Edgar
+337. Halaga - Parokya ni Edgar
+338. Your Song - Parokya ni Edgar
+339. Picha Pie - Parokya ni Edgar
+340. Inuman Na - Parokya ni Edgar
+341. Pasensya Ka Na - Silent Sanctuary
+342. Sa \'Yo - Silent Sanctuary
+343. Ikaw Lamang - Silent Sanctuary
+344. Bumalik Ka Na Sa Akin - Silent Sanctuary
+345. The Day You Said Goodnight - Hale
+346. Kahit Pa - Hale
+347. Kung Wala Ka - Hale
+348. Blue Sky - Hale
+349. Kahit Ayaw Mo Na - This Band
+350. Hindi Na Bale - This Band
+351. Mahika - Adie & Janine Berdin
+352. Oks Lang - John Roa
+353. Ere - Juan Karlos
+354. Buwan - Juan Karlos
+355. Demonyo - Juan Karlos
+356. Ilang Araw - Juan Karlos
+357. Malayo Ka Man - TJ Monterde
+358. Ikaw At Ako - TJ Monterde
+359. Palagi - TJ Monterde
+360. Kailan - Smokey Mountain
+361. Da Coconut Nut - Smokey Mountain
+362. Paraiso - Smokey Mountain
+363. Narda - Kamikazee
+364. Huling Sayaw - Kamikazee
+365. Halik - Kamikazee
+366. Hanggang - Wency Cornejo
+367. Mahal Kita Pero - Janella Salvador
+368. Paraluman - Adie
+369. Dungaw - Adie
+370. Tahanan - Adie
+371. PFLY - Lola Amour
+372. Raining in Manila - Lola Amour
+373. Pwede Ba - Lola Amour
+374. Aaminin - December Avenue
+375. Sa Ngalan ng Pag-ibig - December Avenue
+376. Huling Sandali - December Avenue
+377. Bulong - December Avenue
+378. Kumakatok - December Avenue
+379. Dulo - December Avenue
+380. Kung Di Rin Lang Ikaw - December Avenue ft. Moira
+381. Ikaw Lang Ang Iibigin - Juris
+382. Forevermore - Side A
+383. Set Fire To The Rain - Side A
+384. So Slow - Side A
+385. Tayong Dalawa - Marion Aunor
+
+=== BISAYA (129) ===
+
+1. Matud Nila - Yoyoy Villame
+2. Wakwak - Yoyoy Villame
+3. Alingasngos - Yoyoy Villame
+4. Maayong Buntag Cebu - Yoyoy Villame
+5. Bisaya Ako - Yoyoy Villame
+6. Sa Langit Ng Pag-Ibig - Tropavibes
+7. Tinuod - Tropavibes
+8. Ikaw Ug Ako - Tropavibes
+9. Babalikoon - Tropavibes
+10. Bag-ong Simula - Tropavibes
+11. Ang Akong Pag-ampo - Bugoy Drilon
+12. Gugma Nako - Bugoy Drilon
+13. Dandansoy - Traditional Bisaya
+14. Rosas Pandan - Traditional Bisaya
+15. Usahay - Traditional Bisaya
+16. Ili-ili Tulog Anay - Traditional Bisaya
+17. Palay - Traditional Bisaya
+18. Manang Biday - Traditional Bisaya
+19. Sa Kabukiran - Traditional Bisaya
+20. Sakal Sa Sakal - Nonong Buendia
+21. Mahal Ko Ikaw - Nonong Buendia
+22. Gugma Natong Duha - Jon Santos
+23. Dili Ta Mapugngan - Jon Santos
+24. Sana Ngayong Pasko - Jed Madela
+25. Dungog Sa Ginoo - Jed Madela
+26. Magpabilin - Bryan Termulo
+27. Hapit Na Ang Pasko - Bryan Termulo
+28. Ikaw Lamang - Mr. Suave
+29. Para Sa\'yo - Mr. Suave
+30. Problema - Jovit Baldivino
+31. Gugma - Jovit Baldivino
+32. Sugot - Judal
+33. Apoy - Judal
+34. Dugaan Sang Puso - Celeste Legaspi
+35. Kading Sa Kasing - Richard Kalonji
+36. Dawel - Abe Sarao
+37. Hardin Sang Pag-Ibig - Abe Sarao
+38. Amahan - Gloc-9 feat. Lirah
+39. Kay Ganda ng Ating Musika - Bisaya Artists
+40. Nangutana Ko Sa Bitoon - Traditional Bisaya
+41. Ako Ang Imoha - Tropavibes
+42. Wala Nay Laing - Jon Santos
+43. Hinigugma Ko Ikaw - Bryan Termulo
+44. Taas Ang Iyong Ngalan - Jed Madela
+45. Bitoon - Traditional Bisaya
+46. Gimingaw Ko Nimo - Tropavibes
+47. Tabang Ko - Bugoy Drilon
+48. Ikaw Ra - Jon Santos
+49. Dili Nako Maka Kalimot - Bryan Termulo
+50. Hisgot Ko Nimo - Jovit Baldivino
+51. Inyong Kasingkasing - Traditional Bisaya
+52. Bulad - Bisaya Folk
+53. Gugma Ko - Mr. Suave
+54. Mahal Ta Ka - Yoyoy Villame
+55. Tiaw Lang - Yoyoy Villame
+56. Ang Saging - Yoyoy Villame
+57. Buslot Ang Bulsa - Yoyoy Villame
+58. Kuha Ta\'g Litrato - Yoyoy Villame
+59. Ako Nimo - Tropavibes
+60. Sayo Na Lang - Tropavibes
+61. Maghigugmaanay - Bisaya Folk
+62. Pag-asay - Bryan Termulo
+63. Ampo - Bisaya Gospel
+64. Atong Gugma - Tropavibes
+65. Malinaw - Jon Santos
+66. Sa Imong Pangandoy - Bryan Termulo
+67. Nakita Ka - Bugoy Drilon
+68. Langit Sa Kalibutan - Jed Madela
+69. Ikaw Ang Akong Kinabuhi - Jon Santos
+70. Pag-uswag - Bisaya Artists
+71. Taga-Bisaya Kita - Traditional Bisaya
+72. Handum - Tropavibes
+73. Mao Kaha Ni - Bisaya Folk
+74. Unsaon Nako - Jovit Baldivino
+75. Dughan - Bryan Termulo
+76. Nalimtan Ka - Tropavibes
+77. Bulawan - Bisaya Folk
+78. Sa Imong Pangandoy - Jon Santos
+79. Langit Ka Nako - Mr. Suave
+80. Tagsa Ra Ka - Bugoy Drilon
+81. Ug Ikaw Ra - Bryan Termulo
+82. Sulamiton Ko - Traditional Bisaya
+83. Araw ng Pasko - Jed Madela
+84. Simbahon Nato Siya - Bisaya Gospel
+85. Hinigugma Ko - Yoyoy Villame
+86. Sayo Ra Gyud - Tropavibes
+87. Kahayag - Jed Madela
+88. Mao Diay - Kuya Bryan
+89. Gimingaw Ko Nimo - Kuya Bryan
+90. Pasensya Na - Kuya Bryan
+91. Usahay - Kuya Bryan
+92. Chismosa - Kuya Bryan
+93. Halad - Kuya Bryan
+94. Puhon - Kuya Bryan
+95. Nagpalayo - Jhay-know
+96. Sayo Na Tanan - Jhay-know
+97. Nabuang - Jhay-know
+98. Sayang Kaayo - Jhay-know
+99. Makaako - Jhay-know
+100. Akong Gugma - Jhay-know
+101. Palangga Ta Ka - Labi Band
+102. Guwapo - Labi Band
+103. Higda Na - Labi Band
+104. Awit Sa Gugma - Victory Band
+105. Sa Akong Heart - Victory Band
+106. Maayo Man Ko - Victory Band
+107. Kinsa Ka Ba - Max Surban
+108. Ang Gugma Sa Dalagang Pilipinha - Max Surban
+109. Rosing - Max Surban
+110. Matud Nila - Max Surban
+111. Balak - Winset Jacot
+112. Labyu Langga - Winset Jacot
+113. Mahal Na Mahal - Winset Jacot
+114. Unsa Man Ning Feeling - Medyo Maldito
+115. Nahigugma Ko Nimo - Medyo Maldito
+116. Huwag Ka Nang Umiyak - Medyo Maldito
+117. Dili Ko Kaya - Jacky Chang
+118. Ikaw Ra Jud - Jacky Chang
+119. Ambot Nimo - Jacky Chang
+120. Sayong Daplin - Lemarc
+121. Lahi - Lemarc
+122. Gihandom - Lemarc
+123. Amung Panimalay - Bisrock
+124. Tanan Na Lang - Bisrock
+125. Luoy Ko Nimo - Kuya Bryan
+126. Gihandom Tika - Victory Band
+127. Gugma Wala - Labi Band
+128. Bisaya Gyud Ko - Bisrock
+129. Nganong Ikaw - Kuya Bryan
+
+=== ENGLISH (484) ===
+
+1. I Will Always Love You - Whitney Houston
+2. Greatest Love of All - Whitney Houston
+3. I Have Nothing - Whitney Houston
+4. Run to You - Whitney Houston
+5. One Moment in Time - Whitney Houston
+6. I Wanna Dance with Somebody - Whitney Houston
+7. Hero - Mariah Carey
+8. Always Be My Baby - Mariah Carey
+9. We Belong Together - Mariah Carey
+10. Emotions - Mariah Carey
+11. Fantasy - Mariah Carey
+12. All I Want for Christmas Is You - Mariah Carey
+13. My Heart Will Go On - Celine Dion
+14. Because You Loved Me - Celine Dion
+15. The Power of Love - Celine Dion
+16. Think Twice - Celine Dion
+17. All By Myself - Celine Dion
+18. To Love You More - Celine Dion
+19. Hotel California - Eagles
+20. Desperado - Eagles
+21. Take It Easy - Eagles
+22. Lyin\' Eyes - Eagles
+23. Livin\' on a Prayer - Bon Jovi
+24. It\'s My Life - Bon Jovi
+25. Always - Bon Jovi
+26. Wanted Dead or Alive - Bon Jovi
+27. You Give Love a Bad Name - Bon Jovi
+28. Don\'t Stop Believin\' - Journey
+29. Faithfully - Journey
+30. Open Arms - Journey
+31. Any Way You Want It - Journey
+32. Billie Jean - Michael Jackson
+33. Thriller - Michael Jackson
+34. Beat It - Michael Jackson
+35. Man in the Mirror - Michael Jackson
+36. Earth Song - Michael Jackson
+37. Black or White - Michael Jackson
+38. Smooth Criminal - Michael Jackson
+39. Hello - Adele
+40. Rolling in the Deep - Adele
+41. Someone Like You - Adele
+42. Skyfall - Adele
+43. Set Fire to the Rain - Adele
+44. Easy On Me - Adele
+45. Perfect - Ed Sheeran
+46. Shape of You - Ed Sheeran
+47. Thinking Out Loud - Ed Sheeran
+48. A-Team - Ed Sheeran
+49. Photograph - Ed Sheeran
+50. Castle on the Hill - Ed Sheeran
+51. Just the Way You Are - Bruno Mars
+52. Count on Me - Bruno Mars
+53. Grenade - Bruno Mars
+54. When I Was Your Man - Bruno Mars
+55. Treasure - Bruno Mars
+56. The Lazy Song - Bruno Mars
+57. Locked Out of Heaven - Bruno Mars
+58. Love Story - Taylor Swift
+59. Shake It Off - Taylor Swift
+60. Blank Space - Taylor Swift
+61. You Belong With Me - Taylor Swift
+62. Bad Blood - Taylor Swift
+63. Anti-Hero - Taylor Swift
+64. Cruel Summer - Taylor Swift
+65. Halo - BeyoncÃ©
+66. Love on Top - BeyoncÃ©
+67. Crazy in Love - BeyoncÃ©
+68. Listen - BeyoncÃ©
+69. Irreplaceable - BeyoncÃ©
+70. Levitating - Dua Lipa
+71. Don\'t Start Now - Dua Lipa
+72. New Rules - Dua Lipa
+73. Break My Heart - Dua Lipa
+74. Physical - Dua Lipa
+75. Blinding Lights - The Weeknd
+76. Save Your Tears - The Weeknd
+77. Starboy - The Weeknd
+78. Can\'t Feel My Face - The Weeknd
+79. Baby - Justin Bieber
+80. Love Yourself - Justin Bieber
+81. Sorry - Justin Bieber
+82. Peaches - Justin Bieber
+83. No Tears Left to Cry - Ariana Grande
+84. thank u next - Ariana Grande
+85. Problem - Ariana Grande
+86. One Last Time - Ariana Grande
+87. Dangerous Woman - Ariana Grande
+88. Stay With Me - Sam Smith
+89. Writing\'s on the Wall - Sam Smith
+90. I\'m Not the Only One - Sam Smith
+91. Unholy - Sam Smith
+92. Bad Romance - Lady Gaga
+93. Just Dance - Lady Gaga
+94. Poker Face - Lady Gaga
+95. Edge of Glory - Lady Gaga
+96. Shallow - Lady Gaga
+97. Firework - Katy Perry
+98. Roar - Katy Perry
+99. Dark Horse - Katy Perry
+100. Teenage Dream - Katy Perry
+101. Last Friday Night - Katy Perry
+102. All of Me - John Legend
+103. Ordinary People - John Legend
+104. You & I - John Legend
+105. Your Song - Elton John
+106. Rocket Man - Elton John
+107. Tiny Dancer - Elton John
+108. Crocodile Rock - Elton John
+109. Circle of Life - Elton John
+110. Dancing Queen - ABBA
+111. Mamma Mia - ABBA
+112. Fernando - ABBA
+113. Waterloo - ABBA
+114. The Winner Takes It All - ABBA
+115. Let It Be - The Beatles
+116. Hey Jude - The Beatles
+117. Yesterday - The Beatles
+118. Come Together - The Beatles
+119. Ob-La-Di Ob-La-Da - The Beatles
+120. Yellow - Coldplay
+121. Fix You - Coldplay
+122. The Scientist - Coldplay
+123. Clocks - Coldplay
+124. A Sky Full of Stars - Coldplay
+125. Viva la Vida - Coldplay
+126. In the End - Linkin Park
+127. Numb - Linkin Park
+128. Crawling - Linkin Park
+129. Breaking the Habit - Linkin Park
+130. Faint - Linkin Park
+131. Radioactive - Imagine Dragons
+132. Demons - Imagine Dragons
+133. Believer - Imagine Dragons
+134. Thunder - Imagine Dragons
+135. Payphone - Maroon 5
+136. Moves Like Jagger - Maroon 5
+137. Sugar - Maroon 5
+138. She Will Be Loved - Maroon 5
+139. This Love - Maroon 5
+140. Apologize - OneRepublic
+141. Counting Stars - OneRepublic
+142. Secrets - OneRepublic
+143. Stop and Stare - OneRepublic
+144. I\'m Yours - Jason Mraz
+145. I Won\'t Give Up - Jason Mraz
+146. Lucky - Jason Mraz
+147. Attention - Charlie Puth
+148. We Don\'t Talk Anymore - Charlie Puth
+149. One Call Away - Charlie Puth
+150. Treat You Better - Shawn Mendes
+151. Stitches - Shawn Mendes
+152. In My Blood - Shawn Mendes
+153. Mercy - Shawn Mendes
+154. Havana - Camila Cabello
+155. SeÃ±orita - Camila Cabello
+156. Never Be the Same - Camila Cabello
+157. Bad Guy - Billie Eilish
+158. Happier Than Ever - Billie Eilish
+159. Ocean Eyes - Billie Eilish
+160. Someone You Loved - Lewis Capaldi
+161. Before You Go - Lewis Capaldi
+162. Watermelon Sugar - Harry Styles
+163. Adore You - Harry Styles
+164. As It Was - Harry Styles
+165. Drivers License - Olivia Rodrigo
+166. Good 4 U - Olivia Rodrigo
+167. Deja Vu - Olivia Rodrigo
+168. Take Me to Church - Hozier
+169. Someone New - Hozier
+170. Isn\'t She Lovely - Stevie Wonder
+171. I Just Called to Say I Love You - Stevie Wonder
+172. Superstition - Stevie Wonder
+173. Boulevard of Broken Dreams - Green Day
+174. Wake Me Up When September Ends - Green Day
+175. Good Riddance - Green Day
+176. Umbrella - Rihanna
+177. Diamonds - Rihanna
+178. We Found Love - Rihanna
+179. Stay - Rihanna
+180. Say You Won\'t Let Go - James Arthur
+181. Impossible - James Arthur
+182. Riptide - Vance Joy
+183. Hey Soul Sister - Train
+184. Drops of Jupiter - Train
+185. Circles - Post Malone
+186. Sunflower - Post Malone
+187. Rockstar - Post Malone
+188. Better Now - Post Malone
+189. God\'s Plan - Drake
+190. One Dance - Drake
+191. Hotline Bling - Drake
+192. Yeah! - Usher
+193. Burn - Usher
+194. Confessions Part II - Usher
+195. So Sick - Ne-Yo
+196. Miss Independent - Ne-Yo
+197. Because of You - Ne-Yo
+198. With You - Chris Brown
+199. Fine China - Chris Brown
+200. Forever - Chris Brown
+201. Super Bass - Nicki Minaj
+202. Starships - Nicki Minaj
+203. HUMBLE. - Kendrick Lamar
+204. DNA. - Kendrick Lamar
+205. Closer - The Chainsmokers
+206. Something Just Like This - The Chainsmokers
+207. Don\'t Let Me Down - The Chainsmokers
+208. Summer - Calvin Harris
+209. This Is What You Came For - Calvin Harris
+210. Feel So Close - Calvin Harris
+211. A Thousand Years - Christina Perri
+212. Jar of Hearts - Christina Perri
+213. Human - Christina Perri
+214. Skinny Love - Bon Iver
+215. Holocene - Bon Iver
+216. Creep - Radiohead
+217. Karma Police - Radiohead
+218. Smells Like Teen Spirit - Nirvana
+219. Come as You Are - Nirvana
+220. Wonderwall - Oasis
+221. Don\'t Look Back in Anger - Oasis
+222. Champagne Supernova - Oasis
+223. Mr. Brightside - The Killers
+224. Human - The Killers
+225. Somebody That I Used to Know - Gotye
+226. Pumped Up Kicks - Foster the People
+227. Ho Hey - The Lumineers
+228. Stubborn Love - The Lumineers
+229. Ophelia - The Lumineers
+230. Little Talks - Of Monsters and Men
+231. King of Anything - Sara Bareilles
+232. Brave - Sara Bareilles
+233. Love Song - Sara Bareilles
+234. Poker Face - Lady Gaga
+235. Born This Way - Lady Gaga
+236. Million Reasons - Lady Gaga
+237. The Dance - Garth Brooks
+238. Friends in Low Places - Garth Brooks
+239. I Will Survive - Gloria Gaynor
+240. Stayin\' Alive - Bee Gees
+241. How Deep Is Your Love - Bee Gees
+242. Night Fever - Bee Gees
+243. Don\'t You Want Me - Human League
+244. Take On Me - a-ha
+245. Africa - Toto
+246. Rosanna - Toto
+247. Eye of the Tiger - Survivor
+248. Don\'t Stop Me Now - Queen
+249. Bohemian Rhapsody - Queen
+250. We Are the Champions - Queen
+251. Somebody to Love - Queen
+252. Radio Ga Ga - Queen
+253. Under Pressure - Queen
+254. Sweet Home Alabama - Lynyrd Skynyrd
+255. Free Bird - Lynyrd Skynyrd
+256. Born to Run - Bruce Springsteen
+257. Dancing in the Dark - Bruce Springsteen
+258. Piano Man - Billy Joel
+259. We Didn\'t Start the Fire - Billy Joel
+260. It\'s Still Rock and Roll to Me - Billy Joel
+261. Against All Odds - Phil Collins
+262. In the Air Tonight - Phil Collins
+263. Another Day in Paradise - Phil Collins
+264. Nothing\'s Gonna Stop Us Now - Starship
+265. Every Breath You Take - The Police
+266. Roxanne - The Police
+267. Message in a Bottle - The Police
+268. Sweet Child O\' Mine - Guns N\' Roses
+269. November Rain - Guns N\' Roses
+270. Paradise City - Guns N\' Roses
+271. Don\'t Cry - Guns N\' Roses
+272. I\'d Do Anything for Love - Meat Loaf
+273. Total Eclipse of the Heart - Bonnie Tyler
+274. Islands in the Stream - Kenny Rogers
+275. Lady - Kenny Rogers
+276. The Gambler - Kenny Rogers
+277. Jolene - Dolly Parton
+278. I Will Always Love You - Dolly Parton
+279. Stand By Me - Ben E. King
+280. Unchained Melody - The Righteous Brothers
+281. Can\'t Help Falling in Love - Elvis Presley
+282. Suspicious Minds - Elvis Presley
+283. Jailhouse Rock - Elvis Presley
+284. My Way - Frank Sinatra
+285. New York New York - Frank Sinatra
+286. Fly Me to the Moon - Frank Sinatra
+287. Wonderful Tonight - Eric Clapton
+288. Tears in Heaven - Eric Clapton
+289. Layla - Eric Clapton
+290. With or Without You - U2
+291. One - U2
+292. Sunday Bloody Sunday - U2
+293. Pride (In the Name of Love) - U2
+294. Losing My Religion - R.E.M.
+295. Everybody Hurts - R.E.M.
+296. More Than a Feeling - Boston
+297. Don\'t Stop (Believin\') - Journey
+298. Summer of \'69 - Bryan Adams
+299. Have You Ever Really Loved a Woman - Bryan Adams
+300. Everything I Do I Do It for You - Bryan Adams
+301. Run to You - Bryan Adams
+302. Right Here Waiting - Richard Marx
+303. Endless Summer Nights - Richard Marx
+304. Now and Forever - Richard Marx
+305. To Be with You - Mr. Big
+306. Wild World - Mr. Big
+307. I Still Believe - Mariah Carey
+308. Vision of Love - Mariah Carey
+309. Dreamlover - Mariah Carey
+310. Without You - Mariah Carey
+311. Butterfly - Mariah Carey
+312. Run the World (Girls) - BeyoncÃ©
+313. Single Ladies - BeyoncÃ©
+314. Lemonade - BeyoncÃ©
+315. Formation - BeyoncÃ©
+316. Sorry (BeyoncÃ©) - BeyoncÃ©
+317. Flowers - Miley Cyrus
+318. Wrecking Ball - Miley Cyrus
+319. The Climb - Miley Cyrus
+320. Midnight Rain - Taylor Swift
+321. Lavender Haze - Taylor Swift
+322. Style - Taylor Swift
+323. All Too Well - Taylor Swift
+324. Enchanted - Taylor Swift
+325. Cardigan - Taylor Swift
+326. august - Taylor Swift
+327. evermore - Taylor Swift
+328. willow - Taylor Swift
+329. Lose You to Love Me - Selena Gomez
+330. The Heart Wants What It Wants - Selena Gomez
+331. Come & Get It - Selena Gomez
+332. Slow Down - Selena Gomez
+333. Dance Monkey - Tones and I
+334. Dynamite - BTS
+335. Boy With Luv - BTS
+336. Butter - BTS
+337. Permission to Dance - BTS
+338. Spring Day - BTS
+339. Feel Special - TWICE
+340. Fancy - TWICE
+341. What is Love? - TWICE
+342. Kill This Love - BLACKPINK
+343. DDU-DU DDU-DU - BLACKPINK
+344. Pink Venom - BLACKPINK
+345. Shut Down - BLACKPINK
+346. CRAZY - LE SSERAFIM
+347. Perfect Night - LE SSERAFIM
+348. Beautiful Stranger - Halsey
+349. Without Me - Halsey
+350. Nightmare - Halsey
+351. Positions - Ariana Grande
+352. 7 rings - Ariana Grande
+353. God is a woman - Ariana Grande
+354. Watermelon Sugar - Harry Styles
+355. Golden - Harry Styles
+356. Late Night Talking - Harry Styles
+357. Matilda - Harry Styles
+358. Sign of the Times - Harry Styles
+359. Sour Candy - Lady Gaga
+360. Always Remember Us This Way - Lady Gaga
+361. Hold My Hand - Lady Gaga
+362. Heal - Tom Odell
+363. Another Love - Tom Odell
+364. Grow as We Go - Ben Platt
+365. Run Away with Me - Carly Rae Jepsen
+366. Call Me Maybe - Carly Rae Jepsen
+367. Emotion - Carly Rae Jepsen
+368. Teenage Dirtbag - Wheatus
+369. Mr. Jones - Counting Crows
+370. Accidentally in Love - Counting Crows
+371. More Than Words - Extreme
+372. Hole Hearted - Extreme
+373. Iris - Goo Goo Dolls
+374. Slide - Goo Goo Dolls
+375. Shimmer - Fuel
+376. Hemorrhage - Fuel
+377. I Don\'t Want to Miss a Thing - Aerosmith
+378. Dream On - Aerosmith
+379. Angel - Aerosmith
+380. Zombie - The Cranberries
+381. Linger - The Cranberries
+382. Dreams - The Cranberries
+383. When You Say Nothing at All - Ronan Keating
+384. Life Is a Rollercoaster - Ronan Keating
+385. A Moment Like This - Kelly Clarkson
+386. Stronger - Kelly Clarkson
+387. Since U Been Gone - Kelly Clarkson
+388. Breakaway - Kelly Clarkson
+389. Behind These Hazel Eyes - Kelly Clarkson
+390. I Knew You Were Trouble - Taylor Swift
+391. Mean - Taylor Swift
+392. Back to December - Taylor Swift
+393. The Story of Us - Taylor Swift
+394. Sparks Fly - Taylor Swift
+395. Speak Now - Taylor Swift
+396. Cornelia Street - Taylor Swift
+397. exile - Taylor Swift
+398. Betty - Taylor Swift
+399. Treacherous - Taylor Swift
+400. Bad Guy - Billie Eilish
+401. Happier Than Ever - Billie Eilish
+402. Lovely - Billie Eilish & Khalid
+403. Ocean Eyes - Billie Eilish
+404. When The Party\'s Over - Billie Eilish
+405. Everything I Wanted - Billie Eilish
+406. Birds Of A Feather - Billie Eilish
+407. Drivers License - Olivia Rodrigo
+408. Good 4 U - Olivia Rodrigo
+409. Deja Vu - Olivia Rodrigo
+410. Traitor - Olivia Rodrigo
+411. Vampire - Olivia Rodrigo
+412. Happier - Olivia Rodrigo
+413. Watermelon Sugar - Harry Styles
+414. As It Was - Harry Styles
+415. Adore You - Harry Styles
+416. Sign of the Times - Harry Styles
+417. Falling - Harry Styles
+418. Levitating - Dua Lipa
+419. Don\'t Start Now - Dua Lipa
+420. New Rules - Dua Lipa
+421. One Kiss - Dua Lipa
+422. Break My Heart - Dua Lipa
+423. Blinding Lights - The Weeknd
+424. Save Your Tears - The Weeknd
+425. Starboy - The Weeknd
+426. Die For You - The Weeknd
+427. Can\'t Feel My Face - The Weeknd
+428. Espresso - Sabrina Carpenter
+429. Please Please Please - Sabrina Carpenter
+430. Nonsense - Sabrina Carpenter
+431. Feather - Sabrina Carpenter
+432. Good Luck Babe - Chappell Roan
+433. HOT TO GO! - Chappell Roan
+434. Pink Pony Club - Chappell Roan
+435. Heat Waves - Glass Animals
+436. Believer - Imagine Dragons
+437. Thunder - Imagine Dragons
+438. Demons - Imagine Dragons
+439. Natural - Imagine Dragons
+440. Whatever It Takes - Imagine Dragons
+441. Enemy - Imagine Dragons
+442. Circles - Post Malone
+443. Sunflower - Post Malone
+444. Rockstar - Post Malone
+445. Better Now - Post Malone
+446. Someone You Loved - Lewis Capaldi
+447. Before You Go - Lewis Capaldi
+448. Bruises - Lewis Capaldi
+449. Forget Me - Lewis Capaldi
+450. Beautiful Things - Benson Boone
+451. In the Stars - Benson Boone
+452. Slow It Down - Benson Boone
+453. Take Me to Church - Hozier
+454. Too Sweet - Hozier
+455. From the Start - Laufey
+456. Letter to My 13 Year Old Self - Laufey
+457. Goddess - Laufey
+458. Heather - Conan Gray
+459. Maniac - Conan Gray
+460. Astronomy - Conan Gray
+461. Total Eclipse of the Heart - Bonnie Tyler
+462. Take On Me - a-ha
+463. Livin\' On A Prayer - Bon Jovi
+464. You Give Love A Bad Name - Bon Jovi
+465. Bed of Roses - Bon Jovi
+466. Always - Bon Jovi
+467. Here I Go Again - Whitesnake
+468. Every Breath You Take - The Police
+469. Don\'t Stop Believin\' - Journey
+470. Open Arms - Journey
+471. Faithfully - Journey
+472. Separate Ways - Journey
+473. Careless Whisper - George Michael
+474. Last Christmas - Wham!
+475. Africa - Toto
+476. Rosanna - Toto
+477. Sweet Child O\' Mine - Guns N\' Roses
+478. November Rain - Guns N\' Roses
+479. Patience - Guns N\' Roses
+480. Wrecking Ball - Miley Cyrus
+481. Flowers - Miley Cyrus
+482. Midnight Rain - Taylor Swift
+483. Lavender Haze - Taylor Swift
+484. Anti-Hero - Taylor Swift
+
+================================================
+TOTAL: 998 songs need MP3 files
+================================================
