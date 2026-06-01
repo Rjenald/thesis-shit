@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -15,11 +16,13 @@ import 'song_player_page.dart';
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
   final bool isAssignment;
+  final Uint8List? recordedVoiceWav;
 
   const ResultsPage({
     super.key,
     required this.session,
     this.isAssignment = false,
+    this.recordedVoiceWav,
   });
 
   @override
@@ -93,19 +96,31 @@ class _ResultsPageState extends State<ResultsPage> {
       return;
     }
 
-    final audioUrl = SongAudioService.getAudioUrl(widget.session.songTitle);
-    if (audioUrl == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No audio available for this song')),
-        );
-      }
-      return;
-    }
-
     _listenPlayer = AudioPlayer();
+
     try {
-      await _listenPlayer!.setUrl(audioUrl);
+      // Play recorded voice if available
+      if (widget.recordedVoiceWav != null) {
+        await _listenPlayer!.setAudioSource(
+          _WavAudioSource(widget.recordedVoiceWav!),
+        );
+      } else {
+        // Fallback: play original song
+        final audioUrl =
+            SongAudioService.getAudioUrl(widget.session.songTitle);
+        if (audioUrl == null) {
+          _listenPlayer?.dispose();
+          _listenPlayer = null;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No recording available')),
+            );
+          }
+          return;
+        }
+        await _listenPlayer!.setUrl(audioUrl);
+      }
+
       _listenPlayer!.playerStateStream.listen((state) {
         if (!mounted) return;
         if (state.processingState == ProcessingState.completed) {
@@ -539,128 +554,184 @@ class _ResultsPageState extends State<ResultsPage> {
     final singable = s.lyricResults
         .where((l) => l.lyricText.isNotEmpty)
         .toList();
-    final totalSec = s.durationSeconds;
-    final perLine = singable.isEmpty ? 0 : totalSec ~/ singable.length;
 
-    const headerStyle = TextStyle(
-      color: Colors.white38,
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      fontFamily: 'Roboto',
-      letterSpacing: 0.4,
-    );
+    if (singable.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+          'No lyric data recorded',
+          style: TextStyle(color: Colors.white38, fontFamily: 'Roboto'),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Section title
         Padding(
-          padding: const EdgeInsets.only(bottom: 6),
+          padding: const EdgeInsets.only(bottom: 10),
           child: Row(
-            children: const [
-              SizedBox(width: 28, child: Text('#', style: headerStyle)),
-              SizedBox(width: 56, child: Text('Time', style: headerStyle)),
-              Expanded(child: Text('Pitch', style: headerStyle)),
-              SizedBox(
-                width: 80,
-                child: Text(
-                  'Direction',
-                  style: headerStyle,
-                  textAlign: TextAlign.right,
+            children: [
+              const Icon(Icons.lyrics_outlined, color: Colors.white54, size: 16),
+              const SizedBox(width: 6),
+              const Text(
+                'Lyrics Performance',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto',
+                  letterSpacing: 0.3,
                 ),
               ),
+              const Spacer(),
+              // Legend
+              _legendDot(_onTuneColor, 'In Tune'),
+              const SizedBox(width: 10),
+              _legendDot(_offTuneColor, 'Off Pitch'),
+              const SizedBox(width: 10),
+              _legendDot(_silentColor, 'No Signal'),
             ],
           ),
         ),
         const Divider(color: Colors.white10, height: 1),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
+        // Each lyric line with pitch status
         ...singable.asMap().entries.map((entry) {
           final i = entry.key;
           final line = entry.value;
-          final sec = perLine * (i + 1);
-          final m = sec ~/ 60;
-          final s2 = sec % 60;
-          final ts =
-              '${m.toString().padLeft(2, '0')}:${s2.toString().padLeft(2, '0')}';
 
-          String pitch, direction;
+          String statusLabel;
+          IconData statusIcon;
           Color color;
           switch (line.status) {
             case LineStatus.correct:
-              pitch = 'In Tune';
-              direction = '-';
+              statusLabel = 'In Tune';
+              statusIcon = Icons.check_circle;
               color = _onTuneColor;
               break;
             case LineStatus.flat:
-              pitch = 'Flat';
-              direction = 'Too Low';
+              statusLabel = 'Flat';
+              statusIcon = Icons.arrow_downward;
               color = _offTuneColor;
               break;
             case LineStatus.sharp:
-              pitch = 'Sharp';
-              direction = 'Too High';
+              statusLabel = 'Sharp';
+              statusIcon = Icons.arrow_upward;
               color = _offTuneColor;
               break;
             case LineStatus.noSignal:
-              pitch = 'No Signal';
-              direction = '-';
+              statusLabel = 'No Signal';
+              statusIcon = Icons.mic_off;
               color = _silentColor;
               break;
           }
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 7),
+          // Skip intro markers from display
+          final isIntro = line.lyricText.contains('Intro') ||
+              line.lyricText.contains('♪');
+
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: color.withValues(alpha: 0.2),
+                width: 0.5,
+              ),
+            ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Line number
                 SizedBox(
-                  width: 28,
+                  width: 24,
                   child: Text(
-                    '${i + 1}.',
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 13,
+                    '${i + 1}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 11,
                       fontFamily: 'Roboto',
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: 56,
-                  child: Text(
-                    ts,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
-                ),
+                // Lyric text
                 Expanded(
                   child: Text(
-                    pitch,
+                    isIntro ? '♪ Intro ♪' : line.lyricText,
                     style: TextStyle(
-                      color: color,
+                      color: line.status == LineStatus.correct
+                          ? Colors.white
+                          : line.status == LineStatus.noSignal
+                              ? Colors.white.withValues(alpha: 0.4)
+                              : Colors.white.withValues(alpha: 0.85),
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: line.status == LineStatus.correct
+                          ? FontWeight.w500
+                          : FontWeight.normal,
                       fontFamily: 'Roboto',
+                      fontStyle: isIntro ? FontStyle.italic : FontStyle.normal,
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: 80,
-                  child: Text(
-                    direction,
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      color: color.withValues(alpha: 0.75),
-                      fontSize: 13,
-                      fontFamily: 'Roboto',
-                    ),
+                const SizedBox(width: 8),
+                // Status badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, color: color, size: 12),
+                      const SizedBox(width: 3),
+                      Text(
+                        statusLabel,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           );
         }),
+      ],
+    );
+  }
+
+  Widget _legendDot(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 9,
+            fontFamily: 'Roboto',
+          ),
+        ),
       ],
     );
   }
@@ -712,7 +783,7 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
           const SizedBox(width: 8),
 
-          // Listen button
+          // Listen button — plays recorded voice or original song
           Expanded(
             child: ElevatedButton(
               onPressed: _toggleListen,
@@ -729,12 +800,20 @@ class _ResultsPageState extends State<ResultsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    _isListening ? Icons.stop : Icons.headphones,
+                    _isListening
+                        ? Icons.stop
+                        : (widget.recordedVoiceWav != null
+                            ? Icons.record_voice_over
+                            : Icons.headphones),
                     size: 18,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    _isListening ? 'Stop' : 'Listen',
+                    _isListening
+                        ? 'Stop'
+                        : (widget.recordedVoiceWav != null
+                            ? 'My Voice'
+                            : 'Listen'),
                     style: const TextStyle(
                       fontSize: 14,
                       fontFamily: 'Roboto',
@@ -794,6 +873,25 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Custom audio source for playing WAV bytes directly via just_audio.
+class _WavAudioSource extends StreamAudioSource {
+  final Uint8List _bytes;
+  _WavAudioSource(this._bytes);
+
+  @override
+  Future<StreamAudioResponse> request([int? start, int? end]) async {
+    start ??= 0;
+    end ??= _bytes.length;
+    return StreamAudioResponse(
+      sourceLength: _bytes.length,
+      contentLength: end - start,
+      offset: start,
+      stream: Stream.value(List<int>.from(_bytes.sublist(start, end))),
+      contentType: 'audio/wav',
     );
   }
 }

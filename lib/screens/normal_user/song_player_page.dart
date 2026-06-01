@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../constants/app_colors.dart';
@@ -51,6 +52,10 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   // Live pitch log (shown in table while recording)
   final List<_PitchEntry> _pitchLog = [];
+
+  // Voice recording — raw PCM bytes for WAV playback on results
+  StreamSubscription<List<int>>? _bytesSub;
+  final List<int> _recordedPcm = [];
 
   // Equalizer bars
   Timer? _eqTimer;
@@ -152,6 +157,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         break;
       }
     }
+
+    // Show first lyric immediately when playing starts
+    if (idx == -1 &&
+        _isPlaying &&
+        _lyrics.first.timestamp.inMilliseconds == 0) {
+      idx = 0;
+    }
+
     if (idx != _currentLyricIdx) {
       _currentLyricIdx = idx;
       if (mounted) setState(() {});
@@ -202,6 +215,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       return;
     }
 
+    // Record raw PCM bytes for WAV playback on results
+    _recordedPcm.clear();
+    _bytesSub = _micService!.rawBytes.listen((bytes) {
+      _recordedPcm.addAll(bytes);
+    });
+
     _micSub = _micService!.results.listen((result) {
       if (!mounted) return;
       _rawHz.add(result?.frequency ?? 0);
@@ -248,6 +267,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
   Future<void> _stopMic() async {
+    await _bytesSub?.cancel();
+    _bytesSub = null;
     await _micSub?.cancel();
     _micSub = null;
     await _micService?.stop();
@@ -268,6 +289,16 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       return;
     }
 
+    // Build WAV from recorded PCM bytes
+    Uint8List? recordedWav;
+    if (_recordedPcm.isNotEmpty) {
+      recordedWav = _buildWavBytes(
+        _recordedPcm,
+        sampleRate: 16000,
+        channels: 1,
+      );
+    }
+
     final session = SessionResult(
       songTitle: widget.songTitle,
       songArtist: widget.songArtist,
@@ -281,7 +312,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       context,
       MaterialPageRoute(
         builder: (_) =>
-            ResultsPage(session: session, isAssignment: widget.isAssignment),
+            ResultsPage(
+              session: session,
+              isAssignment: widget.isAssignment,
+              recordedVoiceWav: recordedWav,
+            ),
       ),
     );
   }
@@ -305,10 +340,57 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }).whereType<LyricPitchData>().toList();
   }
 
+  // ── WAV builder (same logic as recording page) ──
+  Uint8List _buildWavBytes(
+    List<int> pcm, {
+    required int sampleRate,
+    required int channels,
+  }) {
+    const bitsPerSample = 16;
+    final byteRate = sampleRate * channels * bitsPerSample ~/ 8;
+    final blockAlign = channels * bitsPerSample ~/ 8;
+    final dataLength = pcm.length;
+    final buf = ByteData(44 + dataLength);
+
+    // RIFF chunk
+    buf.setUint8(0, 0x52);
+    buf.setUint8(1, 0x49);
+    buf.setUint8(2, 0x46);
+    buf.setUint8(3, 0x46);
+    buf.setUint32(4, 36 + dataLength, Endian.little);
+    buf.setUint8(8, 0x57);
+    buf.setUint8(9, 0x41);
+    buf.setUint8(10, 0x56);
+    buf.setUint8(11, 0x45);
+    // fmt sub-chunk
+    buf.setUint8(12, 0x66);
+    buf.setUint8(13, 0x6D);
+    buf.setUint8(14, 0x74);
+    buf.setUint8(15, 0x20);
+    buf.setUint32(16, 16, Endian.little);
+    buf.setUint16(20, 1, Endian.little);
+    buf.setUint16(22, channels, Endian.little);
+    buf.setUint32(24, sampleRate, Endian.little);
+    buf.setUint32(28, byteRate, Endian.little);
+    buf.setUint16(32, blockAlign, Endian.little);
+    buf.setUint16(34, bitsPerSample, Endian.little);
+    // data sub-chunk
+    buf.setUint8(36, 0x64);
+    buf.setUint8(37, 0x61);
+    buf.setUint8(38, 0x74);
+    buf.setUint8(39, 0x61);
+    buf.setUint32(40, dataLength, Endian.little);
+    for (int i = 0; i < dataLength; i++) {
+      buf.setUint8(44 + i, pcm[i] & 0xFF);
+    }
+    return buf.buffer.asUint8List();
+  }
+
   @override
   void dispose() {
     _eqTimer?.cancel();
     _player.dispose();
+    _bytesSub?.cancel();
     _micSub?.cancel();
     _micService?.dispose();
     _pitchNotifier.dispose();
@@ -391,6 +473,31 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             ),
           ),
           const Spacer(),
+          if (_isRecording)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.mic, color: Colors.white, size: 13),
+                  SizedBox(width: 3),
+                  Text(
+                    'REC',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -433,20 +540,28 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Title: ${widget.songTitle}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontFamily: 'Roboto',
+          Expanded(
+            child: Text(
+              'Title: ${widget.songTitle}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontFamily: 'Roboto',
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            'Artist: ${widget.songArtist}',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 13,
-              fontFamily: 'Roboto',
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Artist: ${widget.songArtist}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 13,
+                fontFamily: 'Roboto',
+              ),
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

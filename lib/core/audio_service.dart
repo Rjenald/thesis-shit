@@ -79,7 +79,7 @@ class AudioService {
       numChannels: 1,
       autoGain: false,
       echoCancel: false,
-      noiseSuppress: true,
+      noiseSuppress: false,
     );
 
     final stream = await _recorder.startStream(config);
