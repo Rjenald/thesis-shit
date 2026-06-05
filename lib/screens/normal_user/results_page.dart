@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -99,11 +100,11 @@ class _ResultsPageState extends State<ResultsPage> {
     _listenPlayer = AudioPlayer();
 
     try {
-      // Play recorded voice if available
+      // Play recorded voice if available (as base64 data URI)
       if (widget.recordedVoiceWav != null) {
-        await _listenPlayer!.setAudioSource(
-          _WavAudioSource(widget.recordedVoiceWav!),
-        );
+        final b64 = base64Encode(widget.recordedVoiceWav!);
+        final dataUri = 'data:audio/wav;base64,$b64';
+        await _listenPlayer!.setUrl(dataUri);
       } else {
         // Fallback: play original song
         final audioUrl =
@@ -340,6 +341,8 @@ class _ResultsPageState extends State<ResultsPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   const SizedBox(height: 8),
+                  _buildRankDisplay(scoreInt),
+                  const SizedBox(height: 12),
                   _buildFeedbackRow(scoreInt, s),
                   const SizedBox(height: 20),
                   _buildLyricsResults(s),
@@ -434,6 +437,93 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
+
+  // ── RANK DISPLAY — S+/S/A/B/C/D ──
+  Widget _buildRankDisplay(int scoreInt) {
+    String rank;
+    Color rankColor;
+    String rankLabel;
+
+    if (scoreInt >= 95) {
+      rank = 'S+';
+      rankColor = const Color(0xFFFFD700);
+      rankLabel = 'Superstar!';
+    } else if (scoreInt >= 90) {
+      rank = 'S';
+      rankColor = const Color(0xFFFFD700);
+      rankLabel = 'Amazing!';
+    } else if (scoreInt >= 80) {
+      rank = 'A';
+      rankColor = const Color(0xFF4CAF50);
+      rankLabel = 'Great Job!';
+    } else if (scoreInt >= 65) {
+      rank = 'B';
+      rankColor = const Color(0xFF2196F3);
+      rankLabel = 'Good';
+    } else if (scoreInt >= 50) {
+      rank = 'C';
+      rankColor = const Color(0xFFFF9800);
+      rankLabel = 'Fair';
+    } else {
+      rank = 'D';
+      rankColor = const Color(0xFFF44336);
+      rankLabel = 'Keep Practicing';
+    }
+
+    return Center(
+      child: Column(
+        children: [
+          // Rank circle
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: rankColor.withValues(alpha: 0.12),
+              border: Border.all(color: rankColor, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: rankColor.withValues(alpha: 0.35),
+                  blurRadius: 20,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                rank,
+                style: TextStyle(
+                  color: rankColor,
+                  fontSize: rank.length > 1 ? 26 : 36,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            rankLabel,
+            style: TextStyle(
+              color: rankColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$scoreInt%',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 28,
+              fontWeight: FontWeight.w300,
+              fontFamily: 'Roboto',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildFeedbackRow(int scoreInt, SessionResult s) {
     final flatnessPct = s.avgFlatPercent.toStringAsFixed(0);
@@ -873,25 +963,6 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Custom audio source for playing WAV bytes directly via just_audio.
-class _WavAudioSource extends StreamAudioSource {
-  final Uint8List _bytes;
-  _WavAudioSource(this._bytes);
-
-  @override
-  Future<StreamAudioResponse> request([int? start, int? end]) async {
-    start ??= 0;
-    end ??= _bytes.length;
-    return StreamAudioResponse(
-      sourceLength: _bytes.length,
-      contentLength: end - start,
-      offset: start,
-      stream: Stream.value(List<int>.from(_bytes.sublist(start, end))),
-      contentType: 'audio/wav',
     );
   }
 }
