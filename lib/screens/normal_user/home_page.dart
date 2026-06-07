@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
 import '../../models/session_result.dart';
 import '../../services/session_storage_service.dart';
@@ -16,14 +15,10 @@ import 'song_player_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
 import '../shared/start_page.dart';
-import 'notifications_page.dart';
-import '../student/student_account_page.dart';
-import '../teacher/teacher_account_page.dart';
 
 class HomePage extends StatefulWidget {
   final bool showBackButton;
-  final bool forceNormalUser;
-  const HomePage({super.key, this.showBackButton = false, this.forceNormalUser = false});
+  const HomePage({super.key, this.showBackButton = false});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -33,7 +28,6 @@ class _HomePageState extends State<HomePage> {
   // ── Profile ────────────────────────────────────────────────────────────────
   String _username = 'User';
   bool _isMenuOpen = false;
-  bool _isStudent = false;
 
   // ── Search ─────────────────────────────────────────────────────────────────
   final TextEditingController _searchCtrl = TextEditingController();
@@ -49,7 +43,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUsername();
-    _loadRole();
     _loadRecent();
     _initNotifications();
   }
@@ -59,10 +52,6 @@ class _HomePageState extends State<HomePage> {
     if (mounted && name != null && name.isNotEmpty) {
       setState(() => _username = name);
     }
-  }
-
-  Future<void> _loadRole() async {
-    // Always show normal user nav — students have their own StudentAccountPage
   }
 
   Future<void> _loadRecent() async {
@@ -192,7 +181,6 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: 0,
         onTap: _onItemTapped,
-        isStudent: _isStudent,
       ),
     );
   }
@@ -247,57 +235,6 @@ class _HomePageState extends State<HomePage> {
           // Right: notifications + profile avatar
           Row(
             children: [
-              if (_isStudent)
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsPage(),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Stack(
-                      children: [
-                        Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white.withValues(alpha: 0.6),
-                          size: 24,
-                        ),
-                        Consumer<ClassNotificationsService>(
-                          builder: (ctx, svc, child) {
-                            final n = svc.unreadCount;
-                            if (n == 0) return const SizedBox.shrink();
-                            return Positioned(
-                              top: 0,
-                              right: 0,
-                              child: Container(
-                                width: 18,
-                                height: 18,
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    n > 9 ? '9+' : '$n',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Roboto',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => setState(() => _isMenuOpen = !_isMenuOpen),
                 child: ProfileAvatar(username: _username, radius: 20),
@@ -690,403 +627,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ── Role login popup ────────────────────────────────────────────────────────
-
-  void _showRoleLoginDialog(String role) {
-    final usernameCtrl = TextEditingController();
-    final passwordCtrl = TextEditingController();
-    final confirmPasswordCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final teacherIdCtrl = TextEditingController();
-    bool obscure = true;
-    bool obscureConfirm = true;
-    bool loading = false;
-    bool isRegisterMode = false;
-    String? errorMsg;
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setDialogState) {
-            final roleLabel = role == 'student' ? 'Student' : 'Teacher';
-            final title = isRegisterMode
-                ? 'Register as $roleLabel'
-                : 'Log in as $roleLabel';
-
-            return Dialog(
-              backgroundColor: const Color(0xFF1A1A1A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 40,
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        role == 'student'
-                            ? Icons.school_outlined
-                            : Icons.person_outline,
-                        color: AppColors.primaryCyan,
-                        size: 40,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      if (errorMsg != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            errorMsg!,
-                            style: const TextStyle(
-                              color: Colors.redAccent,
-                              fontSize: 12,
-                              fontFamily: 'Roboto',
-                            ),
-                          ),
-                        ),
-                      _buildDialogField(usernameCtrl, 'Username'),
-                      const SizedBox(height: 12),
-                      if (isRegisterMode) ...[
-                        _buildDialogField(emailCtrl, 'Email'),
-                        const SizedBox(height: 12),
-                      ],
-                      _buildDialogPasswordField(
-                        passwordCtrl,
-                        'Password',
-                        obscure,
-                        () => setDialogState(() => obscure = !obscure),
-                      ),
-                      const SizedBox(height: 12),
-                      if (isRegisterMode) ...[
-                        _buildDialogPasswordField(
-                          confirmPasswordCtrl,
-                          'Confirm Password',
-                          obscureConfirm,
-                          () => setDialogState(
-                              () => obscureConfirm = !obscureConfirm),
-                        ),
-                        const SizedBox(height: 12),
-                        if (role == 'teacher') ...[
-                          _buildDialogField(
-                              teacherIdCtrl, 'Teacher ID Number'),
-                          const SizedBox(height: 12),
-                        ],
-                      ],
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: loading
-                              ? null
-                              : () {
-                                  if (isRegisterMode) {
-                                    _performRoleRegister(
-                                      ctx,
-                                      role,
-                                      usernameCtrl.text.trim(),
-                                      passwordCtrl.text,
-                                      confirmPasswordCtrl.text,
-                                      emailCtrl.text.trim(),
-                                      teacherIdCtrl.text.trim(),
-                                      setDialogState,
-                                      (msg) => setDialogState(
-                                          () => errorMsg = msg),
-                                      (val) => setDialogState(
-                                          () => loading = val),
-                                    );
-                                  } else {
-                                    _performRoleLogin(
-                                      ctx,
-                                      role,
-                                      usernameCtrl.text.trim(),
-                                      passwordCtrl.text,
-                                      setDialogState,
-                                      (msg) => setDialogState(
-                                          () => errorMsg = msg),
-                                      (val) => setDialogState(
-                                          () => loading = val),
-                                    );
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryCyan,
-                            foregroundColor: Colors.black,
-                            disabledBackgroundColor:
-                                AppColors.primaryCyan.withValues(alpha: 0.5),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
-                          child: loading
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.black,
-                                  ),
-                                )
-                              : Text(
-                                  isRegisterMode ? 'Register' : 'Login',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () {
-                          setDialogState(() {
-                            isRegisterMode = !isRegisterMode;
-                            errorMsg = null;
-                          });
-                        },
-                        child: Text.rich(
-                          TextSpan(
-                            text: isRegisterMode
-                                ? 'Already have an account? '
-                                : "Don't have an account? ",
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 13,
-                              fontFamily: 'Roboto',
-                            ),
-                            children: [
-                              TextSpan(
-                                text: isRegisterMode ? 'Login' : 'Register',
-                                style: const TextStyle(
-                                  color: AppColors.primaryCyan,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildDialogField(TextEditingController ctrl, String hint) {
-    return TextField(
-      controller: ctrl,
-      textInputAction: TextInputAction.next,
-      style: const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: Colors.white.withValues(alpha: 0.4),
-          fontFamily: 'Roboto',
-        ),
-        filled: true,
-        fillColor: const Color(0xFF2A2A2A),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDialogPasswordField(
-    TextEditingController ctrl,
-    String hint,
-    bool obscure,
-    VoidCallback toggleObscure,
-  ) {
-    return TextField(
-      controller: ctrl,
-      obscureText: obscure,
-      textInputAction: TextInputAction.next,
-      style: const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: Colors.white.withValues(alpha: 0.4),
-          fontFamily: 'Roboto',
-        ),
-        filled: true,
-        fillColor: const Color(0xFF2A2A2A),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            obscure ? Icons.visibility_off : Icons.visibility,
-            color: Colors.white38,
-            size: 20,
-          ),
-          onPressed: toggleObscure,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _performRoleLogin(
-    BuildContext dialogContext,
-    String role,
-    String username,
-    String password,
-    StateSetter setDialogState,
-    void Function(String?) setError,
-    void Function(bool) setLoading,
-  ) async {
-    if (username.isEmpty || password.isEmpty) {
-      setError('Please enter username and password.');
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
-
-    // Check teacher-created student accounts
-    if (role == 'student') {
-      final studentAccount =
-          await SessionStorageService.authenticateStudent(username, password);
-      if (studentAccount != null) {
-        await SessionStorageService.saveUsername(username);
-        await SessionStorageService.saveRole('student');
-        if (!mounted) return;
-        Navigator.pop(dialogContext);
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const StudentAccountPage()),
-          (r) => false,
-        );
-        return;
-      }
-    }
-
-    // Check local accounts
-    final account = await SessionStorageService.authenticateRegisteredAccount(
-        username, password);
-
-    if (account != null) {
-      await SessionStorageService.saveUsername(username);
-      await SessionStorageService.saveRole(role);
-      if (!mounted) return;
-      Navigator.pop(dialogContext);
-
-      Widget destination = role == 'teacher'
-          ? const TeacherAccountPage()
-          : const StudentAccountPage();
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => destination),
-        (r) => false,
-      );
-    } else {
-      setLoading(false);
-      setError('Invalid username or password.');
-    }
-  }
-
-  Future<void> _performRoleRegister(
-    BuildContext dialogContext,
-    String role,
-    String username,
-    String password,
-    String confirmPassword,
-    String email,
-    String teacherId,
-    StateSetter setDialogState,
-    void Function(String?) setError,
-    void Function(bool) setLoading,
-  ) async {
-    if (username.isEmpty || password.isEmpty) {
-      setError('Please fill in all required fields.');
-      return;
-    }
-    if (password != confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
-
-    final taken = await SessionStorageService.isUsernameTaken(username);
-    if (taken) {
-      setLoading(false);
-      setError('Username already taken. Try a different one.');
-      return;
-    }
-
-    await SessionStorageService.saveRegisteredAccount(
-      username: username,
-      password: password,
-      role: role,
-      email: email,
-    );
-
-    await SessionStorageService.saveUsername(username);
-    await SessionStorageService.saveRole(role);
-    if (!mounted) return;
-    Navigator.pop(dialogContext);
-
-    Widget destination = role == 'teacher'
-        ? const TeacherAccountPage()
-        : const StudentAccountPage();
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => destination),
-      (r) => false,
-    );
-  }
-
   // ── Profile menu overlay ───────────────────────────────────────────────────
 
   Widget _buildMenuOverlay() {
@@ -1176,16 +716,6 @@ class _HomePageState extends State<HomePage> {
                         builder: (_) => const RecentlyDeletedPage(),
                       ),
                     ),
-                  ),
-                  _menuItem(
-                    Icons.switch_account_outlined,
-                    'Log in as Student',
-                    () => _showRoleLoginDialog('student'),
-                  ),
-                  _menuItem(
-                    Icons.school_outlined,
-                    'Log in as Teacher',
-                    () => _showRoleLoginDialog('teacher'),
                   ),
                   _menuItem(Icons.logout, 'Logout', () async {
                     await SessionStorageService.saveUsername('');

@@ -40,7 +40,15 @@ class _ResultsPageState extends State<ResultsPage> {
   @override
   void initState() {
     super.initState();
+    // Auto-save session so it appears in "Recently Visited" on Home page
+    _autoSaveSession();
     WidgetsBinding.instance.addPostFrameCallback((_) => _autoDownload());
+  }
+
+  Future<void> _autoSaveSession() async {
+    if (_saved) return;
+    await SessionStorageService.saveSession(widget.session);
+    if (mounted) setState(() => _saved = true);
   }
 
   @override

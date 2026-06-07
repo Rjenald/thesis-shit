@@ -8,14 +8,19 @@ class SongAudioService {
     'Nasa Iyo Na Ang Lahat': 'Nasa Iyo Na Ang Lahat.mp3',
     'Ulap': 'Ulap.mp3',
     'Fallen': 'Fallen.mp3',
+    'Mula Sa Puso': 'Mula Sa Puso.mp3',
+    'Pangarap Ko Ang Iyo': 'Pangarap Ko Ang Iyo.mp3',
   };
 
   /// Returns the URL path to the audio file for playback.
   /// Files are served from web/audio/ folder.
+  /// Spaces in filenames are URL-encoded so browsers can fetch them.
   static String? getAudioUrl(String songTitle) {
     final file = _audioFiles[songTitle];
     if (file == null) return null;
-    return 'audio/$file';
+    // URL-encode the filename to handle spaces (e.g. "Nasa Iyo Na Ang Lahat.mp3")
+    final encoded = Uri.encodeFull('audio/$file');
+    return encoded;
   }
 
   static bool hasAudio(String songTitle) {

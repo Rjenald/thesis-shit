@@ -2,15 +2,13 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../constants/app_colors.dart';
 import '../../core/audio_service.dart';
 import '../../core/note_utils.dart';
+import '../../core/web_audio_fix.dart';
 import '../../models/session_result.dart';
 import '../../data/song_lyrics.dart';
 import '../../services/lyrics_service.dart';
 import '../../services/song_audio_service.dart';
-import '../../services/karaoke_video_service.dart';
 import 'results_page.dart';
 
 class SongPlayerPage extends StatefulWidget {
@@ -61,44 +59,30 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   Color _pitchColor = Colors.transparent;
   IconData _pitchIcon = Icons.mic_none;
 
-  // YouTube
-  YoutubePlayerController? _ytController;
+  // Scroll controller for lyrics auto-scroll
+  final ScrollController _lyricsScrollCtrl = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _initYouTube();
     _initAudio();
     _loadLyrics();
   }
 
-  void _initYouTube() {
-    final videoId = KaraokeVideoService.getVideoId(widget.songTitle);
-    if (videoId != null) {
-      _ytController = YoutubePlayerController(
-        initialVideoId: videoId,
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: true,
-          hideControls: true,
-          disableDragSeek: true,
-          loop: true,
-          showLiveFullscreenButton: false,
-          forceHD: false,
-          enableCaption: false,
-        ),
-      );
-    }
-  }
-
   Future<void> _initAudio() async {
     final audioUrl = SongAudioService.getAudioUrl(widget.songTitle);
-    if (audioUrl == null) return;
+    if (audioUrl == null) {
+      debugPrint('No audio URL for "${widget.songTitle}"');
+      return;
+    }
     try {
       await _player.setUrl(audioUrl);
+      await _player.setVolume(1.0);
       _duration = _player.duration ?? Duration.zero;
       setState(() {});
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Audio load failed: $e');
+    }
 
     _player.positionStream.listen((pos) {
       if (!mounted) return;
@@ -149,10 +133,21 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     if (idx != _currentLyricIdx) {
       _currentLyricIdx = idx;
       if (mounted) setState(() {});
+      _scrollToCurrentLyric();
     }
   }
 
-  /// How many words of the current line should be highlighted (word-by-word)
+  void _scrollToCurrentLyric() {
+    if (_currentLyricIdx < 0 || !_lyricsScrollCtrl.hasClients) return;
+    // Each lyric line is roughly 56px tall; center the current one
+    final targetOffset = (_currentLyricIdx * 56.0) - 120.0;
+    _lyricsScrollCtrl.animateTo(
+      targetOffset.clamp(0.0, _lyricsScrollCtrl.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   int _getHighlightedWordCount() {
     if (_currentLyricIdx < 0 || _currentLyricIdx >= _lyrics.length) return 0;
     final lineStart = _lyrics[_currentLyricIdx].timestamp.inMilliseconds;
@@ -170,10 +165,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   Future<void> _togglePlay() async {
     if (_isPlaying) {
       await _player.pause();
-      _ytController?.pause();
     } else {
       await _player.play();
-      _ytController?.play();
     }
   }
 
@@ -224,7 +217,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       }
     });
     setState(() => _isRecording = true);
-    if (!_isPlaying) { await _player.play(); _ytController?.play(); }
+
+    // Fix: Combat browser audio ducking
+    await Future.delayed(const Duration(milliseconds: 200));
+    await _player.setVolume(1.0);
+    fixWebAudioDucking();
+    final pos = _position;
+    await _player.seek(pos);
+    await _player.play();
   }
 
   Future<void> _stopMic() async {
@@ -300,13 +300,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   @override
   void dispose() {
-    _ytController?.dispose(); _player.dispose();
+    _player.dispose();
+    _lyricsScrollCtrl.dispose();
     _bytesSub?.cancel(); _micSub?.cancel(); _micService?.dispose();
     super.dispose();
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // BUILD
+  // BUILD — Spotify-style lyrics player
   // ══════════════════════════════════════════════════════════════════════════
 
   @override
@@ -317,8 +318,10 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         child: Column(
           children: [
             _buildHeader(),
-            // Video + lyrics overlay (fills main area)
-            Expanded(child: _buildVideoWithLyrics()),
+            // Song image + info
+            _buildSongInfo(),
+            // Scrolling lyrics (main area)
+            Expanded(child: _buildLyricsBody()),
             // Pitch + score bar
             if (_isRecording) _buildBottomInfo(),
             // Progress + controls
@@ -338,20 +341,20 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-            onPressed: () { _player.stop(); _ytController?.pause(); _stopMic(); Navigator.pop(context); },
+            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 28),
+            onPressed: () { _player.stop(); _stopMic(); Navigator.pop(context); },
           ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.songTitle,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Roboto'),
-                    overflow: TextOverflow.ellipsis),
-                Text(widget.songArtist,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11, fontFamily: 'Roboto'),
-                    overflow: TextOverflow.ellipsis),
-              ],
+            child: Text(
+              'NOW PLAYING',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+                letterSpacing: 1.5,
+              ),
             ),
           ),
           if (_isRecording)
@@ -363,176 +366,170 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
                 SizedBox(width: 3),
                 Text('REC', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'Roboto')),
               ]),
-            ),
+            )
+          else
+            const SizedBox(width: 40),
         ],
       ),
     );
   }
 
-  // ── VIDEO + LYRICS OVERLAY (like real karaoke TV) ──
-  Widget _buildVideoWithLyrics() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
+  // ── SONG INFO (album art + title like Spotify) ──
+  Widget _buildSongInfo() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 4),
+      child: Row(
         children: [
-          // ── Layer 1: Video background ──
-          _buildVideo(),
-
-          // ── Layer 2: Dark gradient at bottom for lyrics readability ──
-          Positioned(
-            left: 0, right: 0, bottom: 0,
-            height: 140,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.black.withValues(alpha: 0.9),
-                  ],
+          // Album art
+          Container(
+            width: 56, height: 56,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFF1A1A1A),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
-              ),
+              ],
             ),
+            clipBehavior: Clip.antiAlias,
+            child: widget.songImage.isNotEmpty
+                ? Image.network(widget.songImage, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _albumPlaceholder())
+                : _albumPlaceholder(),
           ),
-
-          // ── Layer 3: Lyrics at bottom (word-by-word karaoke) ──
-          Positioned(
-            left: 16, right: 16, bottom: 16,
-            child: _buildKaraokeLyrics(),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.songTitle,
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, fontFamily: 'Roboto'),
+                    overflow: TextOverflow.ellipsis, maxLines: 1),
+                const SizedBox(height: 2),
+                Text(widget.songArtist,
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13, fontFamily: 'Roboto'),
+                    overflow: TextOverflow.ellipsis, maxLines: 1),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildVideo() {
-    if (_ytController != null) {
-      return IgnorePointer(
-        child: YoutubePlayer(
-          controller: _ytController!,
-          showVideoProgressIndicator: false,
-          aspectRatio: 16 / 9,
-        ),
-      );
-    }
-    // Fallback gradient
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF0D1B2A), Color(0xFF1A0A3E), Color(0xFF0A2A4E), Color(0xFF0D1B2A)],
-        ),
-      ),
-      child: Center(
-        child: Icon(Icons.music_note, color: Colors.white.withValues(alpha: 0.1), size: 64),
-      ),
-    );
-  }
+  Widget _albumPlaceholder() => Container(
+    color: const Color(0xFF1E1E1E),
+    child: const Center(child: Icon(Icons.music_note, color: Color(0xFF00E5FF), size: 28)),
+  );
 
-  // ── KARAOKE LYRICS — word-by-word highlighting like real karaoke machine ──
-  Widget _buildKaraokeLyrics() {
+  // ── LYRICS BODY — Spotify-style scrolling lyrics ──
+  Widget _buildLyricsBody() {
     if (_lyricsLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
     }
     if (_lyrics.isEmpty) {
-      return Text('Sing along!',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 16, fontFamily: 'Roboto'));
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.lyrics_outlined, color: Colors.white.withValues(alpha: 0.15), size: 64),
+            const SizedBox(height: 16),
+            Text('No lyrics available',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 16, fontFamily: 'Roboto')),
+            const SizedBox(height: 6),
+            Text('Sing along to the music!',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.25), fontSize: 13, fontFamily: 'Roboto')),
+          ],
+        ),
+      );
     }
 
-    final idx = _currentLyricIdx < 0 ? 0 : _currentLyricIdx;
-    final currentText = idx < _lyrics.length ? _lyrics[idx].text : '';
-    final nextText = idx + 1 < _lyrics.length ? _lyrics[idx + 1].text : '';
     final highlightCount = _getHighlightedWordCount();
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // ── CURRENT LINE — word-by-word yellow highlight ──
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
-          child: _buildWordByWordLine(currentText, highlightCount, idx),
-        ),
-        if (nextText.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          // ── NEXT LINE — white, waiting ──
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: Text(
-              nextText,
-              key: ValueKey('next_${idx + 1}'),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
-                shadows: const [
-                  Shadow(offset: Offset(-1, -1), blurRadius: 1, color: Colors.black),
-                  Shadow(offset: Offset(1, 1), blurRadius: 1, color: Colors.black),
-                ],
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A0A0A),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ShaderMask(
+        shaderCallback: (bounds) => LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.08, 0.92, 1.0],
+        ).createShader(bounds),
+        blendMode: BlendMode.dstIn,
+        child: ListView.builder(
+          controller: _lyricsScrollCtrl,
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+          itemCount: _lyrics.length,
+          itemBuilder: (ctx, i) {
+            final isCurrent = i == _currentLyricIdx;
+            final isPast = _currentLyricIdx >= 0 && i < _currentLyricIdx;
+
+            if (isCurrent) {
+              return _buildCurrentLyricLine(i, highlightCount);
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                _lyrics[i].text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isPast
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : Colors.white.withValues(alpha: 0.45),
+                  fontSize: isPast ? 16 : 18,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto',
+                  height: 1.4,
+                ),
               ),
-            ),
-          ),
-        ],
-      ],
+            );
+          },
+        ),
+      ),
     );
   }
 
-  /// Builds a line where the first [highlightCount] words are yellow (sung)
-  /// and the rest are white (not yet sung) — like a real karaoke machine.
-  Widget _buildWordByWordLine(String text, int highlightCount, int lineIdx) {
+  /// Current lyric line — word-by-word highlight (green active, white upcoming)
+  Widget _buildCurrentLyricLine(int lineIdx, int highlightCount) {
+    final text = _lyrics[lineIdx].text;
     final words = text.split(' ');
 
-    const yellowShadows = [
-      Shadow(offset: Offset(-2, -2), blurRadius: 1, color: Colors.black),
-      Shadow(offset: Offset(2, -2), blurRadius: 1, color: Colors.black),
-      Shadow(offset: Offset(-2, 2), blurRadius: 1, color: Colors.black),
-      Shadow(offset: Offset(2, 2), blurRadius: 1, color: Colors.black),
-      Shadow(color: Color(0x99FFD700), blurRadius: 12),
-    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          children: words.asMap().entries.map((entry) {
+            final i = entry.key;
+            final word = entry.value;
+            final isSung = i < highlightCount;
+            final space = i < words.length - 1 ? ' ' : '';
 
-    const whiteShadows = [
-      Shadow(offset: Offset(-1.5, -1.5), blurRadius: 1, color: Colors.black),
-      Shadow(offset: Offset(1.5, -1.5), blurRadius: 1, color: Colors.black),
-      Shadow(offset: Offset(-1.5, 1.5), blurRadius: 1, color: Colors.black),
-      Shadow(offset: Offset(1.5, 1.5), blurRadius: 1, color: Colors.black),
-    ];
-
-    return RichText(
-      key: ValueKey('wbw_$lineIdx'),
-      textAlign: TextAlign.center,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      text: TextSpan(
-        children: words.asMap().entries.map((entry) {
-          final i = entry.key;
-          final word = entry.value;
-          final isSung = i < highlightCount;
-          final space = i < words.length - 1 ? ' ' : '';
-
-          return TextSpan(
-            text: '$word$space',
-            style: TextStyle(
-              color: isSung ? const Color(0xFFFFD700) : Colors.white,
-              fontSize: 20,
-              fontWeight: isSung ? FontWeight.w900 : FontWeight.w700,
-              fontFamily: 'Roboto',
-              letterSpacing: 0.3,
-              shadows: isSung ? yellowShadows : whiteShadows,
-            ),
-          );
-        }).toList(),
+            return TextSpan(
+              text: '$word$space',
+              style: TextStyle(
+                color: isSung ? const Color(0xFF1DB954) : Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                fontFamily: 'Roboto',
+                height: 1.4,
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -547,7 +544,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
       child: Row(
         children: [
-          // Score + Rank
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -575,10 +571,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
               ],
             ),
           ),
-
           const Spacer(),
-
-          // Pitch badge
           if (_pitchLabel.isNotEmpty)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -609,22 +602,24 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         ? (_position.inMilliseconds / _duration.inMilliseconds).clamp(0.0, 1.0) : 0.0;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-      child: Row(
+      child: Column(
         children: [
-          Text(_fmt(_position), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: p, minHeight: 3,
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E5FF)),
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: p, minHeight: 3,
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF1DB954)),
             ),
           ),
-          const SizedBox(width: 8),
-          Text(_fmt(_duration), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(_fmt(_position), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
+              Text(_fmt(_duration), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
+            ],
+          ),
         ],
       ),
     );
@@ -637,7 +632,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _ctrlBtn(icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, onTap: _togglePlay),
+          _ctrlBtn(icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, onTap: _togglePlay, size: 28),
           // Record button
           GestureDetector(
             onTap: _toggleMic,
@@ -657,15 +652,15 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             ),
           ),
           _ctrlBtn(icon: Icons.stop_rounded, onTap: () {
-            _player.stop(); _ytController?.pause(); _stopMic();
+            _player.stop(); _stopMic();
             _rawHz.isNotEmpty ? _showResults() : Navigator.pop(context);
-          }),
+          }, size: 28),
         ],
       ),
     );
   }
 
-  Widget _ctrlBtn({required IconData icon, required VoidCallback onTap}) {
+  Widget _ctrlBtn({required IconData icon, required VoidCallback onTap, double size = 24}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -674,7 +669,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
           color: Colors.white.withValues(alpha: 0.08), shape: BoxShape.circle,
           border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(icon, color: Colors.white, size: size),
       ),
     );
   }

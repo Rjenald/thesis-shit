@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../normal_user/home_page.dart';
 import 'register_page.dart';
-import '../teacher/teacher_account_page.dart';
-import '../student/student_account_page.dart';
 import '../../constants/app_colors.dart';
 import '../../services/session_storage_service.dart';
 
@@ -120,21 +118,6 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Check teacher-created student accounts first
-      final studentAccount =
-          await SessionStorageService.authenticateStudent(u, p);
-      if (studentAccount != null) {
-        await SessionStorageService.saveUsername(u);
-        await SessionStorageService.saveRole('student');
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const StudentAccountPage()),
-          (route) => false,
-        );
-        return;
-      }
-
       // Check locally registered accounts
       final account =
           await SessionStorageService.authenticateRegisteredAccount(u, p);
@@ -142,24 +125,13 @@ class _LoginPageState extends State<LoginPage> {
 
       if (account != null) {
         await SessionStorageService.saveUsername(u);
-
-        final role = (account['role'] as String?) ?? 'normal';
-        await SessionStorageService.saveRole(role);
+        await SessionStorageService.saveRole('normal');
 
         if (!mounted) return;
 
-        Widget destination;
-        if (role == 'teacher') {
-          destination = const TeacherAccountPage();
-        } else if (role == 'student') {
-          destination = const StudentAccountPage();
-        } else {
-          destination = const HomePage();
-        }
-
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => destination),
+          MaterialPageRoute(builder: (_) => const HomePage()),
           (route) => false,
         );
       } else {

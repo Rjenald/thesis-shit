@@ -1,5 +1,6 @@
 import 'package:final_thesis_ui/screens/normal_user/solfagepitch_page.dart';
 import 'package:final_thesis_ui/screens/normal_user/voice_classification_page.dart';
+import 'package:final_thesis_ui/screens/normal_user/music_lessons_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -83,6 +84,19 @@ class EducationModePage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const SolfegePitchPage(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    _EduButton(
+                      icon: Icons.menu_book_outlined,
+                      title: 'Music Lessons',
+                      subtitle: 'Breathing, warm-ups, pitch control & more',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MusicLessonsPage(),
                         ),
                       ),
                     ),

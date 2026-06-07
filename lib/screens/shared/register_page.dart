@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import '../normal_user/home_page.dart';
-import '../teacher/teacher_account_page.dart';
 import '../../constants/app_colors.dart';
 import '../../services/session_storage_service.dart';
 
@@ -81,30 +80,20 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
 
-  Future<void> _registerAndLogin(String role) async {
+  Future<void> _registerAndLogin() async {
     setState(() => _isLoading = true);
 
     try {
       await SessionStorageService.saveUsername('guest');
-      await SessionStorageService.saveRole(
-        role == 'teacher' ? 'teacher' : 'normal',
-      );
+      await SessionStorageService.saveRole('normal');
 
       if (!mounted) return;
 
-      if (role == 'teacher') {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const TeacherAccountPage()),
-          (route) => false,
-        );
-      } else {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-          (route) => false,
-        );
-      }
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+        (route) => false,
+      );
     } catch (e) {
       if (!mounted) return;
       _showError('Error: $e');
@@ -195,9 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => _registerAndLogin('normal'),
+                      onPressed: _isLoading ? null : _registerAndLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryCyan,
                         foregroundColor: Colors.black,
@@ -208,40 +195,22 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text(
-                        'Normal User',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(color: Colors.white24, thickness: 1),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => _registerAndLogin('teacher'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primaryCyan,
-                        side: const BorderSide(color: Colors.white54),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        'as Teacher',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Text(
+                              'Normal User',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 32),

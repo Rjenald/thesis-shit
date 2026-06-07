@@ -4,19 +4,15 @@ import '../screens/normal_user/home_page.dart';
 import '../screens/normal_user/library_page.dart';
 import '../screens/normal_user/record_selection_page.dart';
 import '../screens/normal_user/education_mode_page.dart';
-import '../screens/normal_user/notifications_page.dart';
-import '../screens/student/student_calendar_page.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final bool isStudent;
 
   const BottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
-    this.isStudent = false,
   });
 
   @override
@@ -43,17 +39,6 @@ class BottomNavBar extends StatelessWidget {
   }
 
   List<Widget> _buildNavItems(BuildContext context) {
-    if (isStudent) {
-      // Student account navigation (matches Figma design)
-      return [
-        _buildNavItem(Icons.home, 'Home', 0, context),
-        _buildNavItem(Icons.calendar_today, 'Calendar', 1, context),
-        _buildNavItem(Icons.music_note, 'Karaoke Mode', 2, context),
-        _buildNavItem(Icons.notifications, 'Notifications', 3, context),
-        _buildNavItem(Icons.person, 'Profile', 4, context),
-      ];
-    }
-    // Original user account navigation (unchanged)
     return [
       _buildNavItem(Icons.home, 'Home', 0, context),
       _buildNavItem(Icons.library_music, 'Library', 1, context),
@@ -74,30 +59,14 @@ class BottomNavBar extends StatelessWidget {
         if (index == currentIndex) return;
 
         Widget destination;
-        if (isStudent) {
-          // Student navigation routing
-          if (index == 0) {
-            destination = const HomePage();
-          } else if (index == 1) {
-            destination = const StudentCalendarPage();
-          } else if (index == 2) {
-            destination = const KaraokePage();
-          } else if (index == 3) {
-            destination = const NotificationsPage();
-          } else {
-            destination = const ProfilePage();
-          }
+        if (index == 0) {
+          destination = const HomePage();
+        } else if (index == 1) {
+          destination = const LibraryPage();
+        } else if (index == 2) {
+          destination = const RecordSelectionPage();
         } else {
-          // User account navigation routing (original)
-          if (index == 0) {
-            destination = const HomePage();
-          } else if (index == 1) {
-            destination = const LibraryPage();
-          } else if (index == 2) {
-            destination = const RecordSelectionPage();
-          } else {
-            destination = const EducationModePage();
-          }
+          destination = const EducationModePage();
         }
 
         // Slide left/right based on tab direction (higher index → from right)
@@ -144,100 +113,3 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 }
-
-class CalendarPage extends StatelessWidget {
-  const CalendarPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgDark,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgDark,
-        elevation: 0,
-        title: const Text(
-          'Calendar',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: AppColors.white,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: Text(
-              'Calendar feature coming soon',
-              style: TextStyle(
-                color: AppColors.grey.withValues(alpha: 0.6),
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: const BottomNavBar(
-        currentIndex: 1,
-        onTap: _noop,
-        isStudent: true,
-      ),
-    );
-  }
-}
-
-class KaraokePage extends StatelessWidget {
-  const KaraokePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const HomePage(showBackButton: true);
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgDark,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgDark,
-        elevation: 0,
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: AppColors.white,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: Text(
-              'Profile feature coming soon',
-              style: TextStyle(
-                color: AppColors.grey.withValues(alpha: 0.6),
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: const BottomNavBar(
-        currentIndex: 4,
-        onTap: _noop,
-        isStudent: true,
-      ),
-    );
-  }
-}
-
-void _noop(int _) {}
