@@ -44,7 +44,9 @@ class _LibraryPageState extends State<LibraryPage> {
     if (index == 0) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
+        MaterialPageRoute(
+          builder: (_) => const HomePage(forceNormalUser: true),
+        ),
         (route) => false,
       );
     } else if (index == 2) {

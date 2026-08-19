@@ -119,8 +119,10 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // Check locally registered accounts
-      final account =
-          await SessionStorageService.authenticateRegisteredAccount(u, p);
+      final account = await SessionStorageService.authenticateRegisteredAccount(
+        u,
+        p,
+      );
       if (!mounted) return;
 
       if (account != null) {
@@ -131,7 +133,9 @@ class _LoginPageState extends State<LoginPage> {
 
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(
+            builder: (_) => const HomePage(forceNormalUser: true),
+          ),
           (route) => false,
         );
       } else {
@@ -175,8 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (loadingProgress == null) return child;
                         return Container(color: Colors.black);
                       },
-                      errorBuilder: (_, _, _) =>
-                          Container(color: Colors.black),
+                      errorBuilder: (_, _, _) => Container(color: Colors.black),
                     ),
                   ),
                 ),
@@ -192,8 +195,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -262,7 +264,9 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: showUsernameError
                             ? const BorderSide(
-                                color: AppColors.errorRed, width: 1.5)
+                                color: AppColors.errorRed,
+                                width: 1.5,
+                              )
                             : BorderSide.none,
                       ),
                     ),
@@ -313,7 +317,9 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: showPasswordError
                             ? const BorderSide(
-                                color: AppColors.errorRed, width: 1.5)
+                                color: AppColors.errorRed,
+                                width: 1.5,
+                              )
                             : BorderSide.none,
                       ),
                     ),
@@ -326,8 +332,8 @@ class _LoginPageState extends State<LoginPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryCyan,
                         foregroundColor: Colors.black,
-                        disabledBackgroundColor:
-                            AppColors.primaryCyan.withValues(alpha: 0.5),
+                        disabledBackgroundColor: AppColors.primaryCyan
+                            .withValues(alpha: 0.5),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -356,8 +362,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const RegisterPage()),
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
                       );
                     },
                     child: Text.rich(

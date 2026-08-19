@@ -84,8 +84,9 @@ class CrepePitchService implements PitchDetectionService {
       sampleRate: 44100,
       numChannels: 1,
       autoGain: false,
-      echoCancel: true,
-      noiseSuppress: true,
+      // Left off deliberately — see the matching comment in AudioService.
+      echoCancel: false,
+      noiseSuppress: false,
       // Same fix as AudioService: don't let the recorder interrupt/duck
       // the karaoke playback when it starts.
       audioInterruption: AudioInterruptionMode.none,

@@ -82,11 +82,13 @@ class AudioService implements PitchDetectionService {
       sampleRate: _sampleRate,
       numChannels: 1,
       autoGain: false,
-      // Enabled so the phone's own speaker output (the backing track) gets
-      // filtered out of the mic input as much as the device's hardware/OS
-      // AEC supports, instead of bleeding into pitch detection as noise.
-      echoCancel: true,
-      noiseSuppress: true,
+      // Left off deliberately: echoCancel/noiseSuppress route through the
+      // device's hardware audio-effect chain, which is unreliable on some
+      // Android devices/emulators — it can silently produce NO audio at
+      // all instead of just filtering noise, which is worse than the
+      // backing-track bleed it was meant to fix.
+      echoCancel: false,
+      noiseSuppress: false,
       // Do NOT request Android audio focus when the mic starts — the default
       // (AudioInterruptionMode.pause) makes `record` request AUDIOFOCUS_GAIN,
       // which tells the karaoke player (just_audio/ExoPlayer) it lost focus

@@ -79,7 +79,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-
   Future<void> _registerAndLogin() async {
     setState(() => _isLoading = true);
 
@@ -91,7 +90,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
+        MaterialPageRoute(
+          builder: (_) => const HomePage(forceNormalUser: true),
+        ),
         (route) => false,
       );
     } catch (e) {
@@ -188,8 +189,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryCyan,
                         foregroundColor: Colors.black,
-                        disabledBackgroundColor:
-                            AppColors.primaryCyan.withValues(alpha: 0.5),
+                        disabledBackgroundColor: AppColors.primaryCyan
+                            .withValues(alpha: 0.5),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),

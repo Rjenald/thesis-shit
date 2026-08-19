@@ -134,7 +134,8 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const HomePage(),
+                              builder: (_) =>
+                                  const HomePage(forceNormalUser: true),
                             ),
                             (route) => false,
                           );
@@ -539,7 +540,6 @@ class _TeacherAccountPageState extends State<TeacherAccountPage> {
       ),
     );
   }
-
 
   Future<void> _logout() async {
     await SessionStorageService.saveUsername('');

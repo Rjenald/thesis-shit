@@ -18,7 +18,11 @@ import '../shared/start_page.dart';
 
 class HomePage extends StatefulWidget {
   final bool showBackButton;
-  const HomePage({super.key, this.showBackButton = false});
+  const HomePage({
+    super.key,
+    this.showBackButton = false,
+    required bool forceNormalUser,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -154,7 +158,6 @@ class _HomePageState extends State<HomePage> {
     _loadRecent();
   }
 
-
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -178,10 +181,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 0,
-        onTap: _onItemTapped,
-      ),
+      bottomNavigationBar: BottomNavBar(currentIndex: 0, onTap: _onItemTapped),
     );
   }
 
@@ -408,7 +408,11 @@ class _HomePageState extends State<HomePage> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.volume_up, color: AppColors.primaryCyan, size: 12),
+                    Icon(
+                      Icons.volume_up,
+                      color: AppColors.primaryCyan,
+                      size: 12,
+                    ),
                     SizedBox(width: 3),
                     Text(
                       'Audio',
@@ -445,11 +449,7 @@ class _HomePageState extends State<HomePage> {
     width: 70,
     height: 70,
     color: const Color(0xFF1E1E1E),
-    child: const Icon(
-      Icons.music_note,
-      color: AppColors.primaryCyan,
-      size: 26,
-    ),
+    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 26),
   );
 
   // ── Recently visited ───────────────────────────────────────────────────────

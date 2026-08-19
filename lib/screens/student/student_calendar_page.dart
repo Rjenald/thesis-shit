@@ -402,7 +402,6 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
       bottomNavigationBar: const BottomNavBar(
         currentIndex: 1,
         onTap: _noopCalendar,
-        isStudent: true,
       ),
     );
   }
