@@ -80,6 +80,24 @@ class AudioService {
       autoGain: false,
       echoCancel: false,
       noiseSuppress: false,
+      // Do NOT request Android audio focus when the mic starts — the default
+      // (AudioInterruptionMode.pause) makes `record` request AUDIOFOCUS_GAIN,
+      // which tells the karaoke player (just_audio/ExoPlayer) it lost focus
+      // and makes it pause/duck itself. `none` skips that request entirely,
+      // so the backing track keeps playing uninterrupted.
+      audioInterruption: AudioInterruptionMode.none,
+      // On iOS, `record` activates a shared AVAudioSession in `.playAndRecord`
+      // mode. Without `mixWithOthers`, activating it interrupts/deactivates
+      // any other app audio (the karaoke track), which is what caused the
+      // song to go silent as soon as recording started.
+      iosConfig: const IosRecordConfig(
+        categoryOptions: [
+          IosAudioCategoryOption.mixWithOthers,
+          IosAudioCategoryOption.defaultToSpeaker,
+          IosAudioCategoryOption.allowBluetooth,
+          IosAudioCategoryOption.allowBluetoothA2DP,
+        ],
+      ),
     );
 
     final stream = await _recorder.startStream(config);

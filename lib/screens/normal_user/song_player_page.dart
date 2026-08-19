@@ -218,13 +218,13 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     });
     setState(() => _isRecording = true);
 
-    // Fix: Combat browser audio ducking
-    await Future.delayed(const Duration(milliseconds: 200));
+    // Web only: browsers can duck <audio> elements when getUserMedia() is
+    // granted. Native platforms no longer need a workaround here now that
+    // AudioService.start() configures the recorder to not steal audio focus
+    // / interrupt the shared audio session (see audio_service.dart).
     await _player.setVolume(1.0);
     fixWebAudioDucking();
-    final pos = _position;
-    await _player.seek(pos);
-    await _player.play();
+    if (!_player.playing) await _player.play();
   }
 
   Future<void> _stopMic() async {
