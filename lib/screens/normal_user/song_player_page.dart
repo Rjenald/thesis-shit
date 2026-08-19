@@ -72,6 +72,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   // Scroll controller for lyrics auto-scroll
   final ScrollController _lyricsScrollCtrl = ScrollController();
 
+  // High-frequency updates (position ticks ~several times/sec, pitch
+  // results ~every 80ms) go through these instead of setState(), so only
+  // the small widgets that actually need to redraw every tick do —
+  // instead of rebuilding the whole page (lyrics list, header, controls)
+  // on every single tick, which was the main source of jank/lag.
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
+  final ValueNotifier<int> _scoreTick = ValueNotifier(0);
+
   @override
   void initState() {
     super.initState();
@@ -96,7 +104,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
     _player.positionStream.listen((pos) {
       if (!mounted) return;
-      setState(() => _position = pos);
+      _position = pos;
+      _positionNotifier.value = pos;
       _updateLyricIndex(pos);
     });
     _player.durationStream.listen((dur) {
@@ -158,15 +167,16 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
   }
 
-  int _getHighlightedWordCount() {
+  int _getHighlightedWordCount([Duration? at]) {
     if (_currentLyricIdx < 0 || _currentLyricIdx >= _lyrics.length) return 0;
+    final pos = at ?? _position;
     final lineStart = _lyrics[_currentLyricIdx].timestamp.inMilliseconds;
     final lineEnd = _currentLyricIdx + 1 < _lyrics.length
         ? _lyrics[_currentLyricIdx + 1].timestamp.inMilliseconds
         : lineStart + 5000;
     final dur = lineEnd - lineStart;
     if (dur <= 0) return 0;
-    final elapsed = _position.inMilliseconds - lineStart;
+    final elapsed = pos.inMilliseconds - lineStart;
     final progress = (elapsed / dur).clamp(0.0, 1.0);
     final words = _lyrics[_currentLyricIdx].text.split(' ');
     return (progress * words.length).ceil().clamp(0, words.length);
@@ -223,25 +233,24 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       _rawCents.add(result?.cents ?? 0);
       if (result != null && result.feedback != PitchFeedback.noSignal) {
         _totalDetections++;
-        setState(() {
-          if (result.feedback == PitchFeedback.correct) {
-            _correctCount++;
-            final ac = result.cents.abs();
-            if (ac <= 5) {
-              _pitchLabel = 'PERFECT'; _pitchColor = const Color(0xFF4CAF50);
-              _pitchIcon = Icons.star;
-            } else if (ac <= 10) {
-              _pitchLabel = 'GREAT'; _pitchColor = const Color(0xFF2196F3);
-              _pitchIcon = Icons.check_circle;
-            } else {
-              _pitchLabel = 'GOOD'; _pitchColor = const Color(0xFFFF9800);
-              _pitchIcon = Icons.thumb_up;
-            }
+        if (result.feedback == PitchFeedback.correct) {
+          _correctCount++;
+          final ac = result.cents.abs();
+          if (ac <= 5) {
+            _pitchLabel = 'PERFECT'; _pitchColor = const Color(0xFF4CAF50);
+            _pitchIcon = Icons.star;
+          } else if (ac <= 10) {
+            _pitchLabel = 'GREAT'; _pitchColor = const Color(0xFF2196F3);
+            _pitchIcon = Icons.check_circle;
           } else {
-            _pitchLabel = 'MISS'; _pitchColor = const Color(0xFFF44336);
-            _pitchIcon = Icons.close;
+            _pitchLabel = 'GOOD'; _pitchColor = const Color(0xFFFF9800);
+            _pitchIcon = Icons.thumb_up;
           }
-        });
+        } else {
+          _pitchLabel = 'MISS'; _pitchColor = const Color(0xFFF44336);
+          _pitchIcon = Icons.close;
+        }
+        _scoreTick.value++;
       }
     });
     setState(() => _isRecording = true);
@@ -378,6 +387,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   void dispose() {
     _player.dispose();
     _lyricsScrollCtrl.dispose();
+    _positionNotifier.dispose();
+    _scoreTick.dispose();
     _bytesSub?.cancel(); _micSub?.cancel(); _micService?.dispose();
     super.dispose();
   }
@@ -399,7 +410,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             // Scrolling lyrics (main area)
             Expanded(child: _buildLyricsBody()),
             // Pitch + score bar
-            if (_isRecording) _buildBottomInfo(),
+            if (_isRecording)
+              ValueListenableBuilder<int>(
+                valueListenable: _scoreTick,
+                builder: (context, tick, child) => _buildBottomInfo(),
+              ),
             // Progress + controls
             _buildProgressBar(),
             _buildControls(),
@@ -536,8 +551,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       );
     }
 
-    final highlightCount = _getHighlightedWordCount();
-
     return Container(
       margin: const EdgeInsets.fromLTRB(8, 8, 8, 4),
       decoration: BoxDecoration(
@@ -566,7 +579,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             final isPast = _currentLyricIdx >= 0 && i < _currentLyricIdx;
 
             if (isCurrent) {
-              return _buildCurrentLyricLine(i, highlightCount);
+              return ValueListenableBuilder<Duration>(
+                valueListenable: _positionNotifier,
+                builder: (context, pos, _) =>
+                    _buildCurrentLyricLine(i, _getHighlightedWordCount(pos)),
+              );
             }
 
             return Padding(
@@ -687,30 +704,35 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   // ── PROGRESS ──
   Widget _buildProgressBar() {
-    final p = _duration.inMilliseconds > 0
-        ? (_position.inMilliseconds / _duration.inMilliseconds).clamp(0.0, 1.0) : 0.0;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2),
-            child: LinearProgressIndicator(
-              value: p, minHeight: 3,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF1DB954)),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ValueListenableBuilder<Duration>(
+        valueListenable: _positionNotifier,
+        builder: (context, pos, _) {
+          final p = _duration.inMilliseconds > 0
+              ? (pos.inMilliseconds / _duration.inMilliseconds).clamp(0.0, 1.0) : 0.0;
+          return Column(
             children: [
-              Text(_fmt(_position), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
-              _buildSpeedChip(),
-              Text(_fmt(_duration), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: p, minHeight: 3,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF1DB954)),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(_fmt(pos), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
+                  _buildSpeedChip(),
+                  Text(_fmt(_duration), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontFamily: 'Roboto')),
+                ],
+              ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
