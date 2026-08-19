@@ -24,14 +24,17 @@ android {
         applicationId = "com.example.final_thesis_ui"
 
         // Flutter-managed values
-        minSdk = flutter.minSdkVersion
+        // ffmpeg_kit_flutter_new requires API 24+.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Required for TensorFlow Lite native libraries
+        // Required for TensorFlow Lite native libraries.
+        // x86_64 is included so ffmpeg_kit (and other native plugins) work
+        // on the AVDs used for local testing, not just real arm devices.
         ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
         }
     }
 

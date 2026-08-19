@@ -1,5 +1,6 @@
-/// Provides audio URLs for songs.
-/// Audio files are stored in web/audio/ folder as MP3 files.
+/// Provides bundled asset paths for song audio.
+/// Audio files are stored in assets/audio/ and registered in pubspec.yaml
+/// so they play natively on Android/iOS without needing a web server.
 /// File naming: use the exact song title (e.g. "Dadalhin.mp3", "Buwan.mp3").
 class SongAudioService {
   static const Map<String, String> _audioFiles = {
@@ -12,15 +13,12 @@ class SongAudioService {
     'Pangarap Ko Ang Iyo': 'Pangarap Ko Ang Iyo.mp3',
   };
 
-  /// Returns the URL path to the audio file for playback.
-  /// Files are served from web/audio/ folder.
-  /// Spaces in filenames are URL-encoded so browsers can fetch them.
+  /// Returns the bundled asset path to the audio file for playback
+  /// (e.g. via AudioPlayer.setAsset).
   static String? getAudioUrl(String songTitle) {
     final file = _audioFiles[songTitle];
     if (file == null) return null;
-    // URL-encode the filename to handle spaces (e.g. "Nasa Iyo Na Ang Lahat.mp3")
-    final encoded = Uri.encodeFull('audio/$file');
-    return encoded;
+    return 'assets/audio/$file';
   }
 
   static bool hasAudio(String songTitle) {

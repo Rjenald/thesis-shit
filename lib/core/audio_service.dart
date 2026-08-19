@@ -8,8 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
 
 import 'note_utils.dart';
+import 'pitch_detection_service.dart';
 
-class AudioService {
+class AudioService implements PitchDetectionService {
   // ── Audio Constants ─────────────────────────────────────────────────────────
   static const int _sampleRate = 16000;
   static const int _bufferSize = 2048;
@@ -28,12 +29,14 @@ class AudioService {
   StreamSubscription<Uint8List>? _audioSub;
 
   StreamController<NoteResult?>? _resultController;
+  @override
   Stream<NoteResult?> get results {
     _resultController ??= StreamController<NoteResult?>.broadcast();
     return _resultController!.stream;
   }
 
   final _bytesController = StreamController<List<int>>.broadcast();
+  @override
   Stream<List<int>> get rawBytes => _bytesController.stream;
 
   bool _isRunning = false;
@@ -58,6 +61,7 @@ class AudioService {
   /// Start recording and pitch detection
   /// [targetFreq] = optional target frequency for pitch matching
   /// [enableMonitoring] = whether to enable real-time voice monitoring (ignored in pure YIN mode)
+  @override
   Future<bool> start({double? targetFreq, bool enableMonitoring = true}) async {
     if (_isRunning) return true;
 
@@ -78,8 +82,11 @@ class AudioService {
       sampleRate: _sampleRate,
       numChannels: 1,
       autoGain: false,
-      echoCancel: false,
-      noiseSuppress: false,
+      // Enabled so the phone's own speaker output (the backing track) gets
+      // filtered out of the mic input as much as the device's hardware/OS
+      // AEC supports, instead of bleeding into pitch detection as noise.
+      echoCancel: true,
+      noiseSuppress: true,
       // Do NOT request Android audio focus when the mic starts — the default
       // (AudioInterruptionMode.pause) makes `record` request AUDIOFOCUS_GAIN,
       // which tells the karaoke player (just_audio/ExoPlayer) it lost focus
@@ -305,6 +312,7 @@ class AudioService {
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
+  @override
   Future<void> stop() async {
     if (!_isRunning) return;
     _isRunning = false;
@@ -319,6 +327,7 @@ class AudioService {
   }
 
   /// Full cleanup — call this in dispose()
+  @override
   void dispose() {
     _isRunning = false;
 

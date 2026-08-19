@@ -1,7 +1,8 @@
-import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
@@ -36,6 +37,7 @@ class _ResultsPageState extends State<ResultsPage> {
   bool _downloaded = false;
   AudioPlayer? _listenPlayer;
   bool _isListening = false;
+  File? _listenFile;
 
   @override
   void initState() {
@@ -55,6 +57,7 @@ class _ResultsPageState extends State<ResultsPage> {
   void dispose() {
     _listenPlayer?.stop();
     _listenPlayer?.dispose();
+    _listenFile?.delete().ignore();
     super.dispose();
   }
 
@@ -108,11 +111,17 @@ class _ResultsPageState extends State<ResultsPage> {
     _listenPlayer = AudioPlayer();
 
     try {
-      // Play recorded voice if available (as base64 data URI)
+      // Play recorded voice if available. Written to a temp file rather than
+      // base64-encoded into a data URI — that recording can be tens of MB
+      // (a full mixed song + voice WAV), and synchronously base64-encoding
+      // that on the main isolate froze the UI for several seconds.
       if (widget.recordedVoiceWav != null) {
-        final b64 = base64Encode(widget.recordedVoiceWav!);
-        final dataUri = 'data:audio/wav;base64,$b64';
-        await _listenPlayer!.setUrl(dataUri);
+        final dir = await getTemporaryDirectory();
+        final file = File(
+            '${dir.path}/huni_listen_${DateTime.now().microsecondsSinceEpoch}.wav');
+        await file.writeAsBytes(widget.recordedVoiceWav!, flush: true);
+        _listenFile = file;
+        await _listenPlayer!.setFilePath(file.path);
       } else {
         // Fallback: play original song
         final audioUrl =
@@ -127,7 +136,7 @@ class _ResultsPageState extends State<ResultsPage> {
           }
           return;
         }
-        await _listenPlayer!.setUrl(audioUrl);
+        await _listenPlayer!.setAsset(audioUrl);
       }
 
       _listenPlayer!.playerStateStream.listen((state) {
