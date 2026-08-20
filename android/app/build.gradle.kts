@@ -9,7 +9,9 @@ plugins {
 android {
     namespace = "com.example.final_thesis_ui"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    // whisper_ggml requires NDK 29 — pinned explicitly so Gradle doesn't
+    // fall back to Flutter's (lower) default and fail to resolve it.
+    ndkVersion = "29.0.13113456"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

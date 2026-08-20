@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
+import '../../core/lyric_alignment_service.dart';
 import '../../data/tagalog_bisaya_songs.dart';
 import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
@@ -19,12 +20,14 @@ class ResultsPage extends StatefulWidget {
   final SessionResult session;
   final bool isAssignment;
   final Uint8List? recordedVoiceWav;
+  final LyricAlignmentResult? lyricAlignment;
 
   const ResultsPage({
     super.key,
     required this.session,
     this.isAssignment = false,
     this.recordedVoiceWav,
+    this.lyricAlignment,
   });
 
   @override
@@ -168,6 +171,8 @@ class _ResultsPageState extends State<ResultsPage> {
   static const _onTuneColor = Color(0xFF4CAF50);
   static const _offTuneColor = Color(0xFFF44336);
   static const _silentColor = Color(0xFF757575);
+  static const _flatColor = Color(0xFF448AFF);
+  static const _sharpColor = Color(0xFFFF5252);
 
   String _feedbackLabel(int scoreInt) {
     if (scoreInt >= 80) return 'Good';
@@ -362,7 +367,13 @@ class _ResultsPageState extends State<ResultsPage> {
                   const SizedBox(height: 12),
                   _buildFeedbackRow(scoreInt, s),
                   const SizedBox(height: 20),
+                  _buildHeatmapStrip(s),
+                  const SizedBox(height: 20),
+                  _buildLyricAlignment(),
+                  const SizedBox(height: 20),
                   _buildLyricsResults(s),
+                  const SizedBox(height: 20),
+                  _buildRecommendations(s),
                   const SizedBox(height: 24),
                   _buildRecommendationButton(),
                   const SizedBox(height: 24),
@@ -654,6 +665,233 @@ class _ResultsPageState extends State<ResultsPage> {
           ],
         ),
       ),
+    );
+  }
+
+  // ── LYRIC ALIGNMENT (Whisper-Tiny, on-device) ──
+  // Compares when the reference lyric expected each word against when
+  // Whisper actually heard it sung, from a real on-device transcription
+  // of the recording — not the static playback-position timestamps used
+  // for the live scrolling highlight.
+  Widget _buildLyricAlignment() {
+    final alignment = widget.lyricAlignment;
+    if (alignment == null || alignment.totalCount == 0) return const SizedBox.shrink();
+
+    final matchRate = alignment.matchRatePercent;
+    final avgOffsetMs = alignment.avgAbsTimingOffsetMs;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.graphic_eq, color: Color(0xFF00E5FF), size: 16),
+              const SizedBox(width: 6),
+              const Text(
+                'Lyric Alignment · Whisper-Tiny',
+                style: TextStyle(color: Colors.white70, fontSize: 13,
+                    fontWeight: FontWeight.w600, fontFamily: 'Roboto', letterSpacing: 0.3),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _alignmentStat('${matchRate.toStringAsFixed(0)}%', 'Words matched'),
+              ),
+              Expanded(
+                child: _alignmentStat('${avgOffsetMs.round()}ms', 'Avg. timing offset'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 20,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: alignment.words.take(60).map((w) {
+                final color = !w.matched
+                    ? Colors.white24
+                    : (w.timingOffsetMs!.abs() <= 400 ? _onTuneColor : const Color(0xFFFF9800));
+                return Container(
+                  margin: const EdgeInsets.only(right: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: color.withValues(alpha: 0.5)),
+                  ),
+                  child: Center(
+                    child: Text(w.expectedWord,
+                        style: TextStyle(color: color, fontSize: 10.5, fontFamily: 'Roboto')),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _alignmentStat(String value, String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18,
+            fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
+        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 11, fontFamily: 'Roboto')),
+      ],
+    );
+  }
+
+  // ── FLATNESS / SHARPNESS HEATMAP ──
+  // One block per singable line, colored by how far — and which
+  // direction — the singer drifted from the target pitch on that line.
+  Widget _buildHeatmapStrip(SessionResult s) {
+    final singable = s.singableLines;
+    if (singable.isEmpty) return const SizedBox.shrink();
+
+    Color colorFor(LyricPitchData line) {
+      switch (line.status) {
+        case LineStatus.correct:
+          return _onTuneColor;
+        case LineStatus.flat:
+          return _flatColor;
+        case LineStatus.sharp:
+          return _sharpColor;
+        case LineStatus.noSignal:
+          return _silentColor;
+      }
+    }
+
+    double intensityFor(LyricPitchData line) {
+      if (line.status == LineStatus.noSignal) return 0.25;
+      // Map 0-50 cents average deviation to 0.35-1.0 opacity so bigger
+      // misses read as visually "hotter."
+      final mag = line.avgCents.abs().clamp(0, 50) / 50;
+      return 0.35 + mag * 0.65;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Text(
+            'Pitch Heatmap',
+            style: TextStyle(color: Colors.white70, fontSize: 13,
+                fontWeight: FontWeight.w600, fontFamily: 'Roboto', letterSpacing: 0.3),
+          ),
+        ),
+        SizedBox(
+          height: 28,
+          child: Row(
+            children: singable.map((line) {
+              return Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 1),
+                  decoration: BoxDecoration(
+                    color: colorFor(line).withValues(alpha: intensityFor(line)),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            _legendDot(_onTuneColor, 'In tune'),
+            const SizedBox(width: 10),
+            _legendDot(_flatColor, 'Flat'),
+            const SizedBox(width: 10),
+            _legendDot(_sharpColor, 'Sharp'),
+            const SizedBox(width: 10),
+            _legendDot(_silentColor, 'No signal'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ── VOCAL HEALTH ALERTS + TARGETED PRACTICE RECOMMENDATIONS ──
+  Widget _buildRecommendations(SessionResult s) {
+    final alerts = s.vocalHealthAlerts;
+    final recs = s.practiceRecommendations;
+    if (alerts.isEmpty && recs.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (alerts.isNotEmpty) ...[
+          const Text(
+            'Vocal Health',
+            style: TextStyle(color: Colors.white70, fontSize: 13,
+                fontWeight: FontWeight.w600, fontFamily: 'Roboto', letterSpacing: 0.3),
+          ),
+          const SizedBox(height: 8),
+          ...alerts.map((a) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline, color: Color(0xFFFF9800), size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(a, style: const TextStyle(color: Colors.white70,
+                          fontSize: 12.5, fontFamily: 'Roboto', height: 1.4)),
+                    ),
+                  ],
+                ),
+              )),
+          const SizedBox(height: 12),
+        ],
+        if (recs.isNotEmpty) ...[
+          const Text(
+            'Practice Recommendations',
+            style: TextStyle(color: Colors.white70, fontSize: 13,
+                fontWeight: FontWeight.w600, fontFamily: 'Roboto', letterSpacing: 0.3),
+          ),
+          const SizedBox(height: 8),
+          ...recs.map((r) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.fitness_center, color: Color(0xFF00E5FF), size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(r, style: const TextStyle(color: Colors.white70,
+                          fontSize: 12.5, fontFamily: 'Roboto', height: 1.4)),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ],
     );
   }
 

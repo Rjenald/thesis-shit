@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../core/audio_service.dart';
 import '../../core/crepe_pitch_service.dart';
+import '../../core/lyric_alignment_service.dart';
 import '../../core/mixed_recording_service.dart';
 import '../../core/note_utils.dart';
+import '../../core/ondevice_crepe_service.dart';
 import '../../core/pitch_detection_service.dart';
 import '../../core/web_audio_fix.dart';
+import '../../widgets/pitch_graph.dart';
 import '../../models/session_result.dart';
 import '../../data/song_lyrics.dart';
 import '../../services/lyrics_service.dart';
@@ -35,7 +38,11 @@ class SongPlayerPage extends StatefulWidget {
 class _SongPlayerPageState extends State<SongPlayerPage> {
   final AudioPlayer _player = AudioPlayer();
   PitchDetectionService? _micService;
-  bool _usingCrepe = false;
+  String _detectorLabel = '';
+
+  // Live pitch graph — rolling cents-deviation history (null = no signal).
+  static const int _centsHistoryMax = 90;
+  final List<double?> _centsHistory = [];
 
   bool _isPlaying = false;
   bool _isRecording = false;
@@ -195,35 +202,49 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
   Future<void> _startMic() async {
-    // Try the real CREPE model (backend/crepe_server.py) first; if the
-    // server isn't reachable, fall back to the local YIN detector so
-    // recording still works offline.
-    final crepe = CrepePitchService();
-    final crepeOk = await crepe.start();
-    if (crepeOk) {
-      _micService = crepe;
-      _usingCrepe = true;
+    // Detector priority: on-device CREPE (best — no network, matches the
+    // thesis's on-device claim) -> network CREPE server, if reachable ->
+    // local YIN (always works, no dependencies). Whichever one actually
+    // starts becomes _micService; the rest are only tried on failure.
+    bool ok = false;
+
+    final onDeviceCrepe = OnDeviceCrepeService();
+    if (await onDeviceCrepe.start()) {
+      _micService = onDeviceCrepe;
+      _detectorLabel = 'CREPE · on-device';
+      ok = true;
     } else {
-      crepe.dispose();
-      _usingCrepe = false;
-      _micService = AudioService();
-      final yinOk = await _micService!.start();
-      if (!yinOk) {
-        _micService?.dispose(); _micService = null;
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Microphone permission denied')));
+      onDeviceCrepe.dispose();
+
+      final networkCrepe = CrepePitchService();
+      if (await networkCrepe.start()) {
+        _micService = networkCrepe;
+        _detectorLabel = 'CREPE · server';
+        ok = true;
+      } else {
+        networkCrepe.dispose();
+
+        _micService = AudioService();
+        if (await _micService!.start()) {
+          _detectorLabel = 'YIN · offline';
+          ok = true;
+        } else {
+          _micService?.dispose();
+          _micService = null;
         }
-        return;
       }
+    }
+
+    if (!ok) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('CREPE server unreachable — using offline pitch detection')),
-        );
+            const SnackBar(content: Text('Microphone permission denied')));
       }
+      return;
     }
     _recordStartPosition = _position;
     _recordedPcm.clear(); _correctCount = 0; _totalDetections = 0;
+    _centsHistory.clear();
 
     _bytesSub = _micService!.rawBytes.listen((b) => _recordedPcm.addAll(b));
 
@@ -231,7 +252,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       if (!mounted) return;
       _rawHz.add(result?.frequency ?? 0);
       _rawCents.add(result?.cents ?? 0);
-      if (result != null && result.feedback != PitchFeedback.noSignal) {
+
+      final hasSignal = result != null && result.feedback != PitchFeedback.noSignal;
+      _centsHistory.add(hasSignal ? result.cents : null);
+      if (_centsHistory.length > _centsHistoryMax) {
+        _centsHistory.removeAt(0);
+      }
+
+      if (hasSignal) {
         _totalDetections++;
         if (result.feedback == PitchFeedback.correct) {
           _correctCount++;
@@ -250,8 +278,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
           _pitchLabel = 'MISS'; _pitchColor = const Color(0xFFF44336);
           _pitchIcon = Icons.close;
         }
-        _scoreTick.value++;
       }
+      _scoreTick.value++;
     });
     setState(() => _isRecording = true);
 
@@ -280,22 +308,38 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   Future<void> _showResults() async {
     if (_rawHz.isEmpty) { Navigator.pop(context); return; }
     Uint8List? wav = _recordedPcm.isNotEmpty ? _buildWav(_recordedPcm) : null;
+    final micOnlyWav = wav;
 
-    // Mix the song into the recording so the saved file has song + voice,
-    // not just the mic. Falls back to mic-only if mixing fails for any reason.
+    LyricAlignmentResult? alignment;
+
     if (wav != null) {
+      _showMixingDialog();
+
+      // Mix the song into the recording (so the saved file has song +
+      // voice, not just mic) and run Whisper word-level lyric alignment
+      // on the clean mic-only audio concurrently — independent work.
       final audioUrl = SongAudioService.getAudioUrl(widget.songTitle);
-      if (audioUrl != null) {
-        _showMixingDialog();
-        final mixed = await mixSongAndVoice(
-          songAssetPath: audioUrl,
-          songStartOffset: _recordStartPosition,
-          micWavBytes: wav,
-          playbackSpeed: _playbackSpeed,
-        );
-        if (mounted) Navigator.of(context, rootNavigator: true).pop();
-        if (mixed != null) wav = mixed;
-      }
+      final mixFuture = audioUrl != null
+          ? mixSongAndVoice(
+              songAssetPath: audioUrl,
+              songStartOffset: _recordStartPosition,
+              micWavBytes: wav,
+              playbackSpeed: _playbackSpeed,
+            )
+          : Future<Uint8List?>.value(null);
+      final alignFuture = _lyrics.isNotEmpty
+          ? alignLyrics(
+              lyrics: _lyrics,
+              recordedWavBytes: micOnlyWav!,
+              recordStartOffset: _recordStartPosition,
+            )
+          : Future<LyricAlignmentResult?>.value(null);
+
+      final results = await Future.wait([mixFuture, alignFuture]);
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      final mixed = results[0] as Uint8List?;
+      alignment = results[1] as LyricAlignmentResult?;
+      if (mixed != null) wav = mixed;
     }
 
     if (!mounted) return;
@@ -306,7 +350,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (_) => ResultsPage(
-        session: session, isAssignment: widget.isAssignment, recordedVoiceWav: wav),
+        session: session, isAssignment: widget.isAssignment, recordedVoiceWav: wav,
+        lyricAlignment: alignment),
     ));
   }
 
@@ -450,7 +495,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
           ),
           if (_isRecording)
             Row(mainAxisSize: MainAxisSize.min, children: [
-              if (_usingCrepe)
+              if (_detectorLabel.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(right: 6),
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -459,7 +504,8 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5)),
                   ),
-                  child: const Text('CREPE', style: TextStyle(color: Color(0xFF00E5FF), fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Roboto', letterSpacing: 0.5)),
+                  child: Text(_detectorLabel,
+                      style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Roboto', letterSpacing: 0.3)),
                 ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -648,55 +694,61 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('${score.toStringAsFixed(0)}%',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Roboto')),
-                const SizedBox(width: 8),
-                Container(
-                  width: 28, height: 28,
-                  decoration: BoxDecoration(
-                    color: rc.withValues(alpha: 0.15), shape: BoxShape.circle,
-                    border: Border.all(color: rc, width: 2),
-                  ),
-                  child: Center(child: Text(rank,
-                      style: TextStyle(color: rc, fontSize: rank.length > 1 ? 9 : 13,
-                          fontWeight: FontWeight.w900, fontFamily: 'Roboto'))),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('${score.toStringAsFixed(0)}%',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Roboto')),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 28, height: 28,
+                      decoration: BoxDecoration(
+                        color: rc.withValues(alpha: 0.15), shape: BoxShape.circle,
+                        border: Border.all(color: rc, width: 2),
+                      ),
+                      child: Center(child: Text(rank,
+                          style: TextStyle(color: rc, fontSize: rank.length > 1 ? 9 : 13,
+                              fontWeight: FontWeight.w900, fontFamily: 'Roboto'))),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              if (_pitchLabel.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _pitchColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: _pitchColor.withValues(alpha: 0.5), width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_pitchIcon, color: _pitchColor, size: 14),
+                      const SizedBox(width: 4),
+                      Text(_pitchLabel,
+                          style: TextStyle(color: _pitchColor, fontSize: 12,
+                              fontWeight: FontWeight.w800, fontFamily: 'Roboto', letterSpacing: 1)),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          const Spacer(),
-          if (_pitchLabel.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: _pitchColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _pitchColor.withValues(alpha: 0.5), width: 1.5),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(_pitchIcon, color: _pitchColor, size: 14),
-                  const SizedBox(width: 4),
-                  Text(_pitchLabel,
-                      style: TextStyle(color: _pitchColor, fontSize: 12,
-                          fontWeight: FontWeight.w800, fontFamily: 'Roboto', letterSpacing: 1)),
-                ],
-              ),
-            ),
+          const SizedBox(height: 6),
+          PitchGraph(centsHistory: _centsHistory),
         ],
       ),
     );
@@ -781,21 +833,21 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _ctrlBtn(icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, onTap: _togglePlay, size: 28),
-          // Record button
+          // Mic button
           GestureDetector(
             onTap: _toggleMic,
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               width: 58, height: 58,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
+                color: _isRecording ? Colors.red : Colors.transparent,
                 border: Border.all(color: _isRecording ? Colors.red : Colors.white, width: 3),
               ),
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: _isRecording ? 20 : 40, height: _isRecording ? 20 : 40,
-                  decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(_isRecording ? 5 : 20)),
-                ),
+              child: Icon(
+                _isRecording ? Icons.mic : Icons.mic_none,
+                color: Colors.white,
+                size: 28,
               ),
             ),
           ),

@@ -18,6 +18,10 @@ class AudioService implements PitchDetectionService {
   static const double _threshold = 0.15;
   static const double _minFreq = 50.0;
   static const double _maxFreq = 1500.0;
+  // RMS floor below which a frame is treated as silence/background noise —
+  // skips the (relatively expensive) YIN autocorrelation entirely and
+  // reports "no signal" instead of guessing a pitch from noise.
+  static const double _vadRmsFloor = 0.01;
 
   // ── Smoothing ───────────────────────────────────────────────────────────────
   static const Duration _minEmitInterval = Duration(milliseconds: 80);
@@ -160,6 +164,21 @@ class AudioService implements PitchDetectionService {
       }
 
       _buffer.removeRange(0, _hopSize);
+
+      // VAD gate: skip YIN (and reset smoothing) on near-silent frames
+      // instead of letting it guess a pitch out of noise.
+      double sumSquares = 0;
+      for (int i = 0; i < _bufferSize; i++) {
+        sumSquares += frame[i] * frame[i];
+      }
+      final rms = sqrt(sumSquares / _bufferSize);
+      if (rms < _vadRmsFloor) {
+        _recentHz.clear();
+        _smoothedHz = null;
+        _lastConfidence = null;
+        _emitIfReady(NoteResult.silent());
+        continue;
+      }
 
       final hz = _yinPitchDetect(frame);
 
