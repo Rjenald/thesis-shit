@@ -236,21 +236,41 @@ class AudioService implements PitchDetectionService {
 
     if (tauEstimate == null) return null;
 
+    // Octave-error correction: the scan above stops at the FIRST
+    // (smallest-tau = highest-frequency) dip below threshold, which is
+    // often an upper harmonic rather than the true, lower fundamental —
+    // the classic YIN octave error, and the reason pitch used to read
+    // consistently an octave too high. If a comparably strong dip also
+    // exists at ~2x/~3x this tau (an octave or two down in frequency),
+    // that is almost certainly the real fundamental, so prefer it.
+    int correctedTau = tauEstimate;
+    for (final multiple in [2, 3]) {
+      final candidate = correctedTau * multiple;
+      if (candidate >= tauMax - 1) break;
+      final isLocalMin =
+          cmnd[candidate] < cmnd[candidate - 1] && cmnd[candidate] < cmnd[candidate + 1];
+      if (isLocalMin && cmnd[candidate] < _threshold && cmnd[candidate] <= cmnd[correctedTau] * 1.1) {
+        correctedTau = candidate;
+      } else {
+        break;
+      }
+    }
+
     final double betterTau;
-    if (tauEstimate > 0 && tauEstimate < tauMax - 1) {
-      final alpha = diffFunction[tauEstimate - 1];
-      final beta = diffFunction[tauEstimate];
-      final gamma = diffFunction[tauEstimate + 1];
+    if (correctedTau > 0 && correctedTau < tauMax - 1) {
+      final alpha = diffFunction[correctedTau - 1];
+      final beta = diffFunction[correctedTau];
+      final gamma = diffFunction[correctedTau + 1];
 
       final denominator = alpha - 2 * beta + gamma;
       if (denominator.abs() > 1e-10) {
         final p = 0.5 * (alpha - gamma) / denominator;
-        betterTau = tauEstimate + p;
+        betterTau = correctedTau + p;
       } else {
-        betterTau = tauEstimate.toDouble();
+        betterTau = correctedTau.toDouble();
       }
     } else {
-      betterTau = tauEstimate.toDouble();
+      betterTau = correctedTau.toDouble();
     }
 
     final hz = _sampleRate / betterTau;

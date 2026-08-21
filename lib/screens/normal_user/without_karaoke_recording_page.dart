@@ -177,9 +177,12 @@ class _WithoutKaraokeRecordingPageState
         await _saveWav(pcmSnapshot, durationSecs);
       }
 
-      // Non-blocking summary snackbar
+      // Non-blocking summary snackbar. Clear first so a leftover banner
+      // from a fast previous record/stop cycle can't linger underneath —
+      // that stacking was why it used to look permanently stuck.
       if (mounted && total > 0) {
         final inTunePct = total > 0 ? ((inTune / total) * 100).round() : 0;
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -207,6 +210,9 @@ class _WithoutKaraokeRecordingPageState
       // ═══════════════════════════════════════════════════════════════════
       // START → WITH MONITORING
       // ═══════════════════════════════════════════════════════════════════
+      // Wipe any summary banner still showing from a previous take so it
+      // can't sit on screen through a whole new recording.
+      if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
       _recordedPcm.clear();
       _inTuneCount = 0;
       _sharpCount = 0;
@@ -337,14 +343,10 @@ class _WithoutKaraokeRecordingPageState
         ),
       );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recording saved!'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      // No separate "saved" snackbar here — the caller shows one summary
+      // snackbar (with accuracy/range) right after this returns, and
+      // queuing two snackbars back-to-back was why the banner appeared to
+      // stay stuck on screen for way longer than intended.
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
