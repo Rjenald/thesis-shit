@@ -35,6 +35,20 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  bool _showLastNameError = false;
+  bool _showFirstNameError = false;
+  bool _showUsernameError = false;
+  bool _showPasswordError = false;
+  bool _showConfirmPasswordError = false;
+
+  final TextEditingController _lastName = TextEditingController();
+  final TextEditingController _firstName = TextEditingController();
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _confirmPassword = TextEditingController();
 
   int _currentPage = 0;
   Timer? _timer;
@@ -65,6 +79,11 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _lastName.dispose();
+    _firstName.dispose();
+    _username.dispose();
+    _password.dispose();
+    _confirmPassword.dispose();
     super.dispose();
   }
 
@@ -79,11 +98,55 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Future<void> _registerAndLogin() async {
+  Future<void> _register() async {
+    setState(() {
+      _showLastNameError = _lastName.text.trim().isEmpty;
+      _showFirstNameError = _firstName.text.trim().isEmpty;
+      _showUsernameError = _username.text.trim().isEmpty;
+      _showPasswordError = _password.text.isEmpty;
+      _showConfirmPasswordError =
+          _confirmPassword.text.isEmpty ||
+          _confirmPassword.text != _password.text;
+    });
+
+    if (_showLastNameError ||
+        _showFirstNameError ||
+        _showUsernameError ||
+        _showPasswordError ||
+        _showConfirmPasswordError) {
+      if (_password.text.isNotEmpty &&
+          _confirmPassword.text.isNotEmpty &&
+          _confirmPassword.text != _password.text) {
+        _showError('Passwords do not match.');
+      } else {
+        _showError('Please fill in all required fields.');
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
-      await SessionStorageService.saveUsername('guest');
+      final username = _username.text.trim();
+      final taken = await SessionStorageService.isUsernameTaken(username);
+      if (taken) {
+        if (!mounted) return;
+        setState(() {
+          _showUsernameError = true;
+          _isLoading = false;
+        });
+        _showError('Username is already taken.');
+        return;
+      }
+
+      await SessionStorageService.saveRegisteredAccount(
+        username: username,
+        password: _password.text,
+        role: 'normal',
+        firstName: _firstName.text.trim(),
+        lastName: _lastName.text.trim(),
+      );
+      await SessionStorageService.saveUsername(username);
       await SessionStorageService.saveRole('normal');
 
       if (!mounted) return;
@@ -103,6 +166,80 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  Widget _sectionLabel(String text) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: AppColors.primaryCyan,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _field({
+    required TextEditingController controller,
+    required String hint,
+    bool showError = false,
+    String? errorText,
+    bool obscure = false,
+    Widget? suffixIcon,
+    TextInputAction textInputAction = TextInputAction.next,
+    ValueChanged<String>? onSubmitted,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showError && errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: Text(
+              errorText,
+              style: const TextStyle(
+                color: AppColors.errorRed,
+                fontSize: 12,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ),
+        TextField(
+          controller: controller,
+          obscureText: obscure,
+          textInputAction: textInputAction,
+          onSubmitted: onSubmitted,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: AppColors.grey.withValues(alpha: 0.6),
+              fontFamily: 'Roboto',
+            ),
+            filled: true,
+            fillColor: AppColors.inputBg,
+            suffixIcon: suffixIcon,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: showError
+                  ? const BorderSide(color: AppColors.errorRed, width: 1.5)
+                  : BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +250,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Stack(
               children: [
                 SizedBox(
-                  height: 350,
+                  height: 220,
                   width: double.infinity,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 1000),
@@ -124,7 +261,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       key: ValueKey(_currentPage),
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      height: 350,
+                      height: 220,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(color: Colors.black);
@@ -139,13 +276,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   right: 0,
                   child: CustomPaint(
                     painter: CurvedBottomPainter(),
-                    size: const Size(double.infinity, 80),
+                    size: const Size(double.infinity, 60),
                   ),
                 ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -159,33 +296,85 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        const TextSpan(
-                          text: 'Singing',
-                          style: TextStyle(
-                            color: AppColors.primaryCyan,
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' brings joy to the heart',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ],
+                  Text(
+                    'as Normal User',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
+                  _sectionLabel('Personal Information'),
+                  _field(
+                    controller: _lastName,
+                    hint: 'Last Name',
+                    showError: _showLastNameError,
+                    errorText: 'Last name is required',
+                  ),
+                  const SizedBox(height: 16),
+                  _field(
+                    controller: _firstName,
+                    hint: 'First Name',
+                    showError: _showFirstNameError,
+                    errorText: 'First name is required',
+                  ),
+                  const SizedBox(height: 28),
+                  _sectionLabel('Login Information'),
+                  _field(
+                    controller: _username,
+                    hint: 'Username',
+                    showError: _showUsernameError,
+                    errorText: 'Username is required or taken',
+                  ),
+                  const SizedBox(height: 16),
+                  _field(
+                    controller: _password,
+                    hint: 'Password',
+                    obscure: _obscurePassword,
+                    showError: _showPasswordError,
+                    errorText: 'Password is required',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: AppColors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _field(
+                    controller: _confirmPassword,
+                    hint: 'Re-type Password',
+                    obscure: _obscureConfirmPassword,
+                    showError: _showConfirmPasswordError,
+                    errorText: 'Passwords do not match',
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _isLoading ? null : _register(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: AppColors.grey,
+                      ),
+                      onPressed: () {
+                        setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 28),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _registerAndLogin,
+                      onPressed: _isLoading ? null : _register,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryCyan,
                         foregroundColor: Colors.black,
@@ -206,7 +395,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             )
                           : const Text(
-                              'Normal User',
+                              'Register',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -214,7 +403,34 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                      );
+                    },
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Have an account? ',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 14,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: 'Login',
+                            style: TextStyle(
+                              color: AppColors.primaryCyan,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text.rich(
                     TextSpan(
                       text: 'By continuing, you agree to ',
@@ -250,33 +466,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       ],
                     ),
                     textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginPage()),
-                      );
-                    },
-                    child: Text.rich(
-                      TextSpan(
-                        text: 'Have an account? ',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 14,
-                        ),
-                        children: const [
-                          TextSpan(
-                            text: 'Login',
-                            style: TextStyle(
-                              color: AppColors.primaryCyan,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),
