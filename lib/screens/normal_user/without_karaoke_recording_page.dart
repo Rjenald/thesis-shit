@@ -44,12 +44,6 @@ class _WithoutKaraokeRecordingPageState
   int _flatCount = 0;
   int _totalReadings = 0;
 
-  // Highest and lowest note seen this session
-  double _sessionMaxHz = 0;
-  double _sessionMinHz = double.maxFinite;
-  String _sessionMaxNote = '';
-  String _sessionMinNote = '';
-
   // ── Timer ──────────────────────────────────────────────────────────────────
   int _seconds = 0;
   Timer? _timer;
@@ -144,12 +138,6 @@ class _WithoutKaraokeRecordingPageState
       final durationSecs = _seconds;
       final pcmSnapshot = List<int>.from(_recordedPcm);
 
-      // Snapshot stats before reset
-      final inTune = _inTuneCount;
-      final total = _totalReadings;
-      final maxNote = _sessionMaxNote;
-      final minNote = _sessionMinNote;
-
       setState(() {
         _isRecording = false;
         _isSaving = true;
@@ -163,10 +151,6 @@ class _WithoutKaraokeRecordingPageState
         _sharpCount = 0;
         _flatCount = 0;
         _totalReadings = 0;
-        _sessionMaxHz = 0;
-        _sessionMinHz = double.maxFinite;
-        _sessionMaxNote = '';
-        _sessionMinNote = '';
         for (int i = 0; i < _barCount; i++) {
           _bars[i] = 0.05;
         }
@@ -175,34 +159,6 @@ class _WithoutKaraokeRecordingPageState
       // Auto-save WAV
       if (pcmSnapshot.isNotEmpty && durationSecs >= 1) {
         await _saveWav(pcmSnapshot, durationSecs);
-      }
-
-      // Non-blocking summary snackbar. Clear first so a leftover banner
-      // from a fast previous record/stop cycle can't linger underneath —
-      // that stacking was why it used to look permanently stuck.
-      if (mounted && total > 0) {
-        final inTunePct = total > 0 ? ((inTune / total) * 100).round() : 0;
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Saved! Accuracy: $inTunePct% | Range: $minNote - $maxNote',
-              style: const TextStyle(fontFamily: 'Roboto'),
-            ),
-            backgroundColor: const Color(0xFF2A2A2A),
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'VIEW ALL',
-              textColor: AppColors.primaryCyan,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SaveRecordPage()),
-                );
-              },
-            ),
-          ),
-        );
       }
 
       if (mounted) setState(() => _isSaving = false);
@@ -218,10 +174,6 @@ class _WithoutKaraokeRecordingPageState
       _sharpCount = 0;
       _flatCount = 0;
       _totalReadings = 0;
-      _sessionMaxHz = 0;
-      _sessionMinHz = double.maxFinite;
-      _sessionMaxNote = '';
-      _sessionMinNote = '';
 
       final started = await _audioService.start(
         enableMonitoring: _isMonitoring,
@@ -293,16 +245,6 @@ class _WithoutKaraokeRecordingPageState
             break;
           case PitchFeedback.noSignal:
             break;
-        }
-
-        // Track highest and lowest note
-        if (result.frequency > _sessionMaxHz) {
-          _sessionMaxHz = result.frequency;
-          _sessionMaxNote = result.fullName;
-        }
-        if (result.frequency > 0 && result.frequency < _sessionMinHz) {
-          _sessionMinHz = result.frequency;
-          _sessionMinNote = result.fullName;
         }
 
         setState(() {
@@ -466,6 +408,7 @@ class _WithoutKaraokeRecordingPageState
                 children: [
                   TextButton(
                     onPressed: () {
+                      ScaffoldMessenger.of(context).clearSnackBars();
                       Navigator.pop(dialogCtx);
                       Navigator.pop(context);
                     },
@@ -496,7 +439,17 @@ class _WithoutKaraokeRecordingPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // Captured here (not re-looked-up later) so it stays valid to call
+    // clearSnackBars() on even after this page's own context is gone —
+    // e.g. when the system back gesture pops this route directly, without
+    // going through any of this page's own back-button handlers.
+    final messenger = ScaffoldMessenger.of(context);
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) messenger.clearSnackBars();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.bgDark,
       body: SafeArea(
         child: Column(
@@ -525,6 +478,7 @@ class _WithoutKaraokeRecordingPageState
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -541,7 +495,10 @@ class _WithoutKaraokeRecordingPageState
               color: AppColors.white,
               size: 26,
             ),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              ScaffoldMessenger.of(context).clearSnackBars();
+              Navigator.pop(context);
+            },
           ),
           const Text(
             'Record',
