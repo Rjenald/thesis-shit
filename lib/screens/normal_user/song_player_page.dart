@@ -87,6 +87,16 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<int> _scoreTick = ValueNotifier(0);
 
+  // just_audio's positionStream reports the decoder's read position, which
+  // runs ahead of what's actually audible once you account for output
+  // buffering — worse on the emulator, but present on real devices too.
+  // That made lyric highlighting fire before the matching word was heard,
+  // on every song. This clock is _positionNotifier nudged back to line the
+  // highlight up with what the singer actually hears; used only for lyric
+  // sync, never for the progress bar/seek time, which must stay exact.
+  static const Duration _lyricSyncOffset = Duration(milliseconds: 350);
+  final ValueNotifier<Duration> _lyricPositionNotifier = ValueNotifier(Duration.zero);
+
   @override
   void initState() {
     super.initState();
@@ -113,7 +123,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       if (!mounted) return;
       _position = pos;
       _positionNotifier.value = pos;
-      _updateLyricIndex(pos);
+      final lyricPos = pos > _lyricSyncOffset ? pos - _lyricSyncOffset : Duration.zero;
+      _lyricPositionNotifier.value = lyricPos;
+      _updateLyricIndex(lyricPos);
     });
     _player.durationStream.listen((dur) {
       if (!mounted || dur == null) return;
@@ -176,7 +188,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
   int _getHighlightedWordCount([Duration? at]) {
     if (_currentLyricIdx < 0 || _currentLyricIdx >= _lyrics.length) return 0;
-    final pos = at ?? _position;
+    final pos = at ?? _lyricPositionNotifier.value;
     final lineStart = _lyrics[_currentLyricIdx].timestamp.inMilliseconds;
     final lineEnd = _currentLyricIdx + 1 < _lyrics.length
         ? _lyrics[_currentLyricIdx + 1].timestamp.inMilliseconds
@@ -433,6 +445,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     _player.dispose();
     _lyricsScrollCtrl.dispose();
     _positionNotifier.dispose();
+    _lyricPositionNotifier.dispose();
     _scoreTick.dispose();
     _bytesSub?.cancel(); _micSub?.cancel(); _micService?.dispose();
     super.dispose();
@@ -626,7 +639,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
             if (isCurrent) {
               return ValueListenableBuilder<Duration>(
-                valueListenable: _positionNotifier,
+                valueListenable: _lyricPositionNotifier,
                 builder: (context, pos, _) =>
                     _buildCurrentLyricLine(i, _getHighlightedWordCount(pos)),
               );
