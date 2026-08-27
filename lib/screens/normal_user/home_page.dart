@@ -6,7 +6,6 @@ import '../../models/session_result.dart';
 import '../../services/session_storage_service.dart';
 import '../../services/song_audio_service.dart';
 import '../../services/song_catalog_service.dart';
-import '../../services/class_notifications_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/profile_avatar.dart';
 import 'favorites_page.dart';
@@ -21,7 +20,6 @@ class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     this.showBackButton = false,
-    required bool forceNormalUser,
   });
 
   @override
@@ -48,7 +46,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _loadUsername();
     _loadRecent();
-    _initNotifications();
   }
 
   Future<void> _loadUsername() async {
@@ -61,10 +58,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadRecent() async {
     final sessions = await SessionStorageService.loadSessions();
     if (mounted) setState(() => _recent = sessions);
-  }
-
-  Future<void> _initNotifications() async {
-    await ClassNotificationsService().initialize();
   }
 
   @override
@@ -719,7 +712,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   _menuItem(Icons.logout, 'Logout', () async {
                     await SessionStorageService.saveUsername('');
-                    await SessionStorageService.saveRole('');
                     if (!mounted) return;
                     // ignore: use_build_context_synchronously
                     Navigator.of(context).pushAndRemoveUntil(

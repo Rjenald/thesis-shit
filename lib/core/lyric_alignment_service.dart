@@ -64,16 +64,28 @@ class _RecognizedWord {
   const _RecognizedWord(this.norm, this.raw, this.time);
 }
 
-/// Returns null if transcription fails or produces no usable segments —
-/// caller should treat this as "alignment unavailable" and not block on it.
-Future<LyricAlignmentResult?> alignLyrics({
-  required List<LrcLine> lyrics,
-  required Uint8List recordedWavBytes,
-  required Duration recordStartOffset,
+/// One word recognized by Whisper, with its start/end time in the recording —
+/// used when there's no reference lyric to align against (see
+/// [transcribeWords]).
+class TranscribedWord {
+  final String text;
+  final Duration startTime;
+  final Duration endTime;
+  const TranscribedWord({
+    required this.text,
+    required this.startTime,
+    required this.endTime,
+  });
+}
+
+/// Runs Whisper over [recordedWavBytes] and returns raw word-level segments,
+/// with no alignment against any expected/reference text. Shared by
+/// [alignLyrics] (karaoke mode) and [transcribeWords] (reference-free mode).
+/// Returns null if transcription fails or produces nothing usable.
+Future<List<WhisperTranscribeSegment>?> _transcribeSegments(
+  Uint8List recordedWavBytes, {
   String lang = 'tl',
 }) async {
-  if (lyrics.isEmpty) return null;
-
   File? tempWav;
   try {
     // downloadModel() is a no-op (returns the cached path immediately) once
@@ -96,23 +108,9 @@ Future<LyricAlignmentResult?> alignLyrics({
 
     final segments = result?.transcription.segments;
     if (segments == null || segments.isEmpty) return null;
-
-    final expected = _buildExpectedWords(lyrics);
-    final recognizedWords = <_RecognizedWord>[];
-    for (var i = 0; i < segments.length; i++) {
-      final text = segments[i].text.trim();
-      if (text.isEmpty) continue;
-      recognizedWords.add(_RecognizedWord(
-        _normalize(text),
-        text,
-        recordStartOffset + segments[i].fromTs,
-      ));
-    }
-    if (recognizedWords.isEmpty) return null;
-
-    return LyricAlignmentResult(_align(expected, recognizedWords));
+    return segments;
   } catch (e) {
-    debugPrint('Whisper lyric alignment failed: $e');
+    debugPrint('Whisper transcription failed: $e');
     return null;
   } finally {
     if (tempWav != null && await tempWav.exists()) {
@@ -121,6 +119,59 @@ Future<LyricAlignmentResult?> alignLyrics({
       } catch (_) {}
     }
   }
+}
+
+/// Returns null if transcription fails or produces no usable segments —
+/// caller should treat this as "alignment unavailable" and not block on it.
+Future<LyricAlignmentResult?> alignLyrics({
+  required List<LrcLine> lyrics,
+  required Uint8List recordedWavBytes,
+  required Duration recordStartOffset,
+  String lang = 'tl',
+}) async {
+  if (lyrics.isEmpty) return null;
+
+  final segments = await _transcribeSegments(recordedWavBytes, lang: lang);
+  if (segments == null) return null;
+
+  final expected = _buildExpectedWords(lyrics);
+  final recognizedWords = <_RecognizedWord>[];
+  for (var i = 0; i < segments.length; i++) {
+    final text = segments[i].text.trim();
+    if (text.isEmpty) continue;
+    recognizedWords.add(_RecognizedWord(
+      _normalize(text),
+      text,
+      recordStartOffset + segments[i].fromTs,
+    ));
+  }
+  if (recognizedWords.isEmpty) return null;
+
+  return LyricAlignmentResult(_align(expected, recognizedWords));
+}
+
+/// Transcribes [recordedWavBytes] with word-level timestamps and no
+/// alignment against any reference lyrics — for reference-free ("without
+/// karaoke") recordings where there's nothing to align against.
+/// Returns an empty list if transcription fails or nothing was recognized.
+Future<List<TranscribedWord>> transcribeWords(
+  Uint8List recordedWavBytes, {
+  String lang = 'tl',
+}) async {
+  final segments = await _transcribeSegments(recordedWavBytes, lang: lang);
+  if (segments == null) return [];
+
+  final words = <TranscribedWord>[];
+  for (final segment in segments) {
+    final text = segment.text.trim();
+    if (text.isEmpty) continue;
+    words.add(TranscribedWord(
+      text: text,
+      startTime: segment.fromTs,
+      endTime: segment.toTs,
+    ));
+  }
+  return words;
 }
 
 List<_ExpectedWord> _buildExpectedWords(List<LrcLine> lyrics) {

@@ -21,14 +21,12 @@ class SongPlayerPage extends StatefulWidget {
   final String songTitle;
   final String songArtist;
   final String songImage;
-  final bool isAssignment;
 
   const SongPlayerPage({
     super.key,
     required this.songTitle,
     required this.songArtist,
     this.songImage = '',
-    this.isAssignment = false,
   });
 
   @override
@@ -362,7 +360,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (_) => ResultsPage(
-        session: session, isAssignment: widget.isAssignment, recordedVoiceWav: wav,
+        session: session, recordedVoiceWav: wav,
         lyricAlignment: alignment),
     ));
   }

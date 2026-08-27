@@ -3,29 +3,24 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
 import '../../core/lyric_alignment_service.dart';
 import '../../data/tagalog_bisaya_songs.dart';
 import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
-import '../../services/enrollment_service.dart';
 import '../../services/session_storage_service.dart';
 import '../../services/song_audio_service.dart';
-import '../../services/submission_service.dart';
 import 'song_player_page.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
-  final bool isAssignment;
   final Uint8List? recordedVoiceWav;
   final LyricAlignmentResult? lyricAlignment;
 
   const ResultsPage({
     super.key,
     required this.session,
-    this.isAssignment = false,
     this.recordedVoiceWav,
     this.lyricAlignment,
   });
@@ -186,24 +181,6 @@ class _ResultsPageState extends State<ResultsPage> {
     setState(() => _saving = true);
     await SessionStorageService.saveSession(widget.session);
 
-    if (widget.isAssignment) {
-      final enrollment = context.read<EnrollmentService>();
-      final username =
-          await SessionStorageService.loadUsername() ?? 'Student';
-      final className = enrollment.primaryClass ?? 'Unknown Class';
-      await SubmissionService().addSubmission(
-        StudentSubmission(
-          id: '${DateTime.now().millisecondsSinceEpoch}',
-          studentName: username,
-          className: className,
-          activityName: widget.session.songTitle,
-          activityType: 'Karaoke',
-          score: widget.session.score,
-          submittedAt: DateTime.now(),
-        ),
-      );
-    }
-
     if (!mounted) return;
     setState(() {
       _saved = true;
@@ -215,11 +192,9 @@ class _ResultsPageState extends State<ResultsPage> {
           children: [
             const Icon(Icons.check, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Text(
-              widget.isAssignment
-                  ? 'Submitted to teacher!'
-                  : 'Session saved to Library',
-              style: const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+            const Text(
+              'Session saved to Library',
+              style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
             ),
           ],
         ),
@@ -1105,7 +1080,6 @@ class _ResultsPageState extends State<ResultsPage> {
                       songTitle: widget.session.songTitle,
                       songArtist: widget.session.songArtist,
                       songImage: widget.session.songImage,
-                      isAssignment: widget.isAssignment,
                     ),
                   ),
                 );
@@ -1171,21 +1145,10 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
           const SizedBox(width: 8),
 
-          // Save / Submit button
+          // Save button
           Expanded(
             child: ElevatedButton(
-              onPressed: _saving
-                  ? null
-                  : widget.isAssignment
-                      ? () async {
-                          final nav = Navigator.of(context);
-                          await _saveSession();
-                          if (!mounted) return;
-                          nav.popUntil(
-                            (r) => r.isFirst || r.settings.name == '/',
-                          );
-                        }
-                      : _saveSession,
+              onPressed: _saving ? null : _saveSession,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _saved
                     ? _onTuneColor
@@ -1205,9 +1168,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       ),
                     )
                   : Text(
-                      _saved
-                          ? (widget.isAssignment ? 'Submitted' : 'Saved')
-                          : (widget.isAssignment ? 'Submit' : 'Save'),
+                      _saved ? 'Saved' : 'Save',
                       style: const TextStyle(
                         fontSize: 14,
                         fontFamily: 'Roboto',

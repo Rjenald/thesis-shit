@@ -7,9 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
 import '../../core/audio_service.dart';
+import '../../core/lyric_alignment_service.dart';
 import '../../core/note_utils.dart';
+import '../../core/ondevice_crepe_service.dart';
+import '../../core/word_note_builder.dart';
+import '../../models/free_sing_summary.dart';
+import '../../services/free_sing_storage_service.dart';
 import '../../services/recording_storage_service.dart';
 import 'save_record_page.dart';
+import 'without_karaoke_results_page.dart';
 
 class WithoutKaraokeRecordingPage extends StatefulWidget {
   const WithoutKaraokeRecordingPage({super.key});
@@ -28,7 +34,7 @@ class _WithoutKaraokeRecordingPageState
   StreamSubscription<List<int>>? _bytesSub;
 
   bool _isRecording = false;
-  bool _isSaving = false;
+  bool _isProcessing = false;
 
   // PCM buffer for WAV export
   final List<int> _recordedPcm = [];
@@ -140,7 +146,7 @@ class _WithoutKaraokeRecordingPageState
 
       setState(() {
         _isRecording = false;
-        _isSaving = true;
+        _isProcessing = true;
         _seconds = 0;
         _noteDisplay = '--';
         _freqDisplay = '';
@@ -156,12 +162,13 @@ class _WithoutKaraokeRecordingPageState
         }
       });
 
-      // Auto-save WAV
+      // Save the raw take, then run the full offline analysis pipeline
+      // (CREPE pitch + Whisper transcription) over it for the summary.
       if (pcmSnapshot.isNotEmpty && durationSecs >= 1) {
-        await _saveWav(pcmSnapshot, durationSecs);
+        await _processAndSave(pcmSnapshot, durationSecs);
       }
 
-      if (mounted) setState(() => _isSaving = false);
+      if (mounted) setState(() => _isProcessing = false);
     } else {
       // ═══════════════════════════════════════════════════════════════════
       // START → WITH MONITORING
@@ -258,9 +265,10 @@ class _WithoutKaraokeRecordingPageState
     }
   }
 
-  // ── WAV file builder ───────────────────────────────────────────────────────
+  // ── Post-recording pipeline ───────────────────────────────────────────────
+  // Not real-time: runs once, after the mic has stopped, over the full take.
 
-  Future<void> _saveWav(List<int> pcm, int durationSecs) async {
+  Future<void> _processAndSave(List<int> pcmBytes, int durationSecs) async {
     try {
       final now = DateTime.now();
       final id = now.millisecondsSinceEpoch.toString();
@@ -268,7 +276,7 @@ class _WithoutKaraokeRecordingPageState
           'Recording ${now.year}-${_pad(now.month)}-${_pad(now.day)} '
           '${_pad(now.hour)}:${_pad(now.minute)}';
 
-      final wavBytes = _buildWavBytes(pcm, sampleRate: 16000, channels: 1);
+      final wavBytes = _buildWavBytes(pcmBytes, sampleRate: 16000, channels: 1);
 
       // Store WAV as base64 in SharedPreferences (works on web and mobile)
       final prefs = await SharedPreferences.getInstance();
@@ -285,17 +293,60 @@ class _WithoutKaraokeRecordingPageState
         ),
       );
 
-      // No separate "saved" snackbar here — the caller shows one summary
-      // snackbar (with accuracy/range) right after this returns, and
-      // queuing two snackbars back-to-back was why the banner appeared to
-      // stay stuck on screen for way longer than intended.
+      // Pitch (CREPE, batch) and speech-to-text (Whisper) both run once over
+      // the full take, independently, then get combined by timestamp below.
+      final crepe = OnDeviceCrepeService();
+      List<PitchFrame> pitchFrames;
+      List<TranscribedWord> words;
+      try {
+        final results = await Future.wait([
+          crepe.analyzeOffline(_pcmBytesToInt16(pcmBytes)),
+          transcribeWords(wavBytes),
+        ]);
+        pitchFrames = results[0] as List<PitchFrame>;
+        words = results[1] as List<TranscribedWord>;
+      } finally {
+        crepe.dispose();
+      }
+
+      final wordNotes = buildWordNotes(words: words, pitchFrames: pitchFrames);
+
+      final summary = FreeSingSummary(
+        id: id,
+        createdAt: now,
+        durationSeconds: durationSecs,
+        audioRef: 'local:$id',
+        words: wordNotes,
+      );
+      await FreeSingStorageService.saveSummary(summary);
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => WithoutKaraokeResultsPage(summary: summary),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to process recording: $e')));
       }
     }
+  }
+
+  /// The mic's rawBytes stream (buffered into [_recordedPcm]) is raw PCM16LE
+  /// bytes, one element per byte — CREPE's batch analysis needs actual int16
+  /// sample values, so decode each little-endian pair.
+  List<int> _pcmBytesToInt16(List<int> bytes) {
+    final byteData = Uint8List.fromList(bytes).buffer.asByteData();
+    final samples = <int>[];
+    for (var i = 0; i + 1 < bytes.length; i += 2) {
+      samples.add(byteData.getInt16(i, Endian.little));
+    }
+    return samples;
   }
 
   String _pad(int v) => v.toString().padLeft(2, '0');
@@ -445,14 +496,16 @@ class _WithoutKaraokeRecordingPageState
     // going through any of this page's own back-button handlers.
     final messenger = ScaffoldMessenger.of(context);
     return PopScope(
-      canPop: true,
+      canPop: !_isProcessing,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) messenger.clearSnackBars();
       },
       child: Scaffold(
       backgroundColor: AppColors.bgDark,
       body: SafeArea(
-        child: Column(
+        child: Stack(
+          children: [
+            Column(
           children: [
             _buildHeader(),
             _buildCrepeStatusBar(),
@@ -476,8 +529,48 @@ class _WithoutKaraokeRecordingPageState
             ),
             _buildControls(),
           ],
+            ),
+            if (_isProcessing) _buildProcessingOverlay(),
+          ],
         ),
       ),
+      ),
+    );
+  }
+
+  // ── Processing overlay ─────────────────────────────────────────────────────
+
+  Widget _buildProcessingOverlay() {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.85),
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryCyan),
+              SizedBox(height: 20),
+              Text(
+                'Analyzing your recording…',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+              SizedBox(height: 6),
+              Text(
+                'Detecting words and notes',
+                style: TextStyle(
+                  color: AppColors.grey,
+                  fontSize: 12,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -947,7 +1040,7 @@ class _WithoutKaraokeRecordingPageState
 
           // Record / Stop button
           GestureDetector(
-            onTap: _isSaving ? null : _toggleRecording,
+            onTap: _isProcessing ? null : _toggleRecording,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 64,
@@ -967,7 +1060,7 @@ class _WithoutKaraokeRecordingPageState
                       ]
                     : [],
               ),
-              child: _isSaving
+              child: _isProcessing
                   ? const SizedBox(
                       width: 28,
                       height: 28,

@@ -142,19 +142,17 @@ class _RegisterPageState extends State<RegisterPage> {
       await SessionStorageService.saveRegisteredAccount(
         username: username,
         password: _password.text,
-        role: 'normal',
         firstName: _firstName.text.trim(),
         lastName: _lastName.text.trim(),
       );
       await SessionStorageService.saveUsername(username);
-      await SessionStorageService.saveRole('normal');
 
       if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (_) => const HomePage(forceNormalUser: true),
+          builder: (_) => const HomePage(),
         ),
         (route) => false,
       );

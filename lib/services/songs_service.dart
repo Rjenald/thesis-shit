@@ -24,7 +24,7 @@ class SongsService {
   /// The full local song list (1 000+ songs) as Map entries.
   ///
   /// Derived from [TagalogBisayaSongs.songs] — single source of truth for all
-  /// karaoke pages across normal user, teacher, and student accounts.
+  /// karaoke pages.
   static List<Map<String, String>> get _localSongs {
     return TagalogBisayaSongs.songs
         .map<Map<String, String>>(

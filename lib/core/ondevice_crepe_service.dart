@@ -143,14 +143,36 @@ class OnDeviceCrepeService implements PitchDetectionService {
       return;
     }
 
+    final frame = _computeFrame(intFrame, _prevSampleForPreEmphasis);
+    _prevSampleForPreEmphasis = frame.prevSample;
+
+    if (frame.frequency <= 0) {
+      _resultController!.add(NoteResult.silent());
+      return;
+    }
+
+    _resultController!.add(analyzeFrequency(
+      frame.frequency,
+      targetFreq: _targetFreq,
+      confidence: frame.confidence,
+    ));
+  }
+
+  /// Core per-frame CREPE pipeline, shared by the live stream ([_runInference])
+  /// and the offline batch pass ([analyzeOffline]): pre-emphasis + z-score
+  /// normalization, VAD gate, interpreter inference, and sub-bin peak decode.
+  /// [prevSample] carries the pre-emphasis filter's state across frames —
+  /// pass in the previous call's returned prevSample to keep it continuous.
+  _FrameResult _computeFrame(List<int> intFrame, double prevSample) {
     // int16 -> float32 [-1, 1], DC removal, pre-emphasis high-pass, then
     // z-score normalization (CREPE's expected input distribution).
     final floats = Float64List(_frameSize);
     double mean = 0;
+    double prev = prevSample;
     for (var i = 0; i < _frameSize; i++) {
       final sample = intFrame[i] / 32768.0;
-      final emphasized = sample - 0.97 * _prevSampleForPreEmphasis;
-      _prevSampleForPreEmphasis = sample;
+      final emphasized = sample - 0.97 * prev;
+      prev = sample;
       floats[i] = emphasized;
       mean += emphasized;
     }
@@ -166,8 +188,7 @@ class OnDeviceCrepeService implements PitchDetectionService {
 
     // VAD gate: skip inference on near-silent/noise-floor frames entirely.
     if (rms < _vadRmsFloor) {
-      _resultController!.add(NoteResult.silent());
-      return;
+      return _FrameResult(frequency: 0, confidence: 0, prevSample: prev);
     }
 
     final std = rms.clamp(1e-8, double.infinity);
@@ -178,7 +199,7 @@ class OnDeviceCrepeService implements PitchDetectionService {
       _interpreter!.run(input, output);
     } catch (e) {
       debugPrint('CREPE inference error: $e');
-      return;
+      return _FrameResult(frequency: 0, confidence: 0, prevSample: prev);
     }
 
     final activation = output[0];
@@ -192,8 +213,11 @@ class OnDeviceCrepeService implements PitchDetectionService {
     }
 
     if (peakVal < _confidenceThreshold) {
-      _resultController!.add(NoteResult.silent());
-      return;
+      return _FrameResult(
+        frequency: 0,
+        confidence: peakVal.toDouble(),
+        prevSample: prev,
+      );
     }
 
     // Weighted average over a small window around the peak for sub-bin
@@ -211,11 +235,47 @@ class OnDeviceCrepeService implements PitchDetectionService {
     final cents = bin * 20.0 + 1997.3794084376191;
     final freq = 10.0 * math.pow(2.0, cents / 1200.0);
 
-    _resultController!.add(analyzeFrequency(
-      freq.toDouble(),
-      targetFreq: _targetFreq,
+    return _FrameResult(
+      frequency: freq.toDouble(),
       confidence: peakVal.toDouble(),
-    ));
+      prevSample: prev,
+    );
+  }
+
+  /// Runs CREPE over an entire pre-recorded PCM16 buffer instead of live mic
+  /// input — for post-recording analysis (e.g. a full-recording summary)
+  /// rather than real-time feedback. Loads its own interpreter on first call
+  /// if one isn't already running; call [dispose] afterwards to release it.
+  Future<List<PitchFrame>> analyzeOffline(
+    List<int> pcm16Samples, {
+    int hopMs = 100,
+  }) async {
+    if (_interpreter == null) {
+      final options = InterpreterOptions()..threads = 4;
+      _interpreter = await Interpreter.fromAsset(_modelAsset, options: options);
+      _interpreter!.allocateTensors();
+    }
+
+    final hopSamples = math.max(1, (_sampleRate * hopMs / 1000).round());
+    final frames = <PitchFrame>[];
+    double prevSample = 0;
+
+    for (
+      var start = 0;
+      start + _frameSize <= pcm16Samples.length;
+      start += hopSamples
+    ) {
+      final frame = pcm16Samples.sublist(start, start + _frameSize);
+      final result = _computeFrame(frame, prevSample);
+      prevSample = result.prevSample;
+      frames.add(PitchFrame(
+        timeMs: (start / _sampleRate * 1000).round(),
+        frequency: result.frequency,
+        confidence: result.confidence,
+      ));
+    }
+
+    return frames;
   }
 
   @override
@@ -242,4 +302,18 @@ class OnDeviceCrepeService implements PitchDetectionService {
     _bytesController.close();
     _recorder.stop().ignore();
   }
+}
+
+/// Internal result of one CREPE frame inference, before it's turned into a
+/// [NoteResult] (live path) or a [PitchFrame] (offline batch path).
+class _FrameResult {
+  final double frequency; // 0 = no signal
+  final double confidence;
+  final double prevSample; // pre-emphasis filter carry for the next frame
+
+  const _FrameResult({
+    required this.frequency,
+    required this.confidence,
+    required this.prevSample,
+  });
 }

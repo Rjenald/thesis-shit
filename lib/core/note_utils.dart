@@ -261,3 +261,24 @@ class NoteResult {
       'NoteResult($fullName, ${frequency.toStringAsFixed(1)} Hz, '
       '${cents.toStringAsFixed(1)} ¢, $clarityPercent% clarity, $feedback)';
 }
+
+// ── Offline/batch pitch analysis ──────────────────────────────────────────────
+
+/// One frame of a batch (non-real-time) pitch analysis pass over a full
+/// recording — a timestamped Hz + confidence reading, as opposed to
+/// [NoteResult] which is a live analyzed-against-target reading.
+class PitchFrame {
+  final int timeMs;
+  final double frequency;
+
+  /// Model confidence for this frame (0.0–1.0). 0 means silence/no-signal.
+  final double confidence;
+
+  const PitchFrame({
+    required this.timeMs,
+    required this.frequency,
+    required this.confidence,
+  });
+
+  bool get hasSignal => frequency > 0;
+}

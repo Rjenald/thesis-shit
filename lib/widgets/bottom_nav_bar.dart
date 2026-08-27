@@ -60,7 +60,7 @@ class BottomNavBar extends StatelessWidget {
 
         Widget destination;
         if (index == 0) {
-          destination = const HomePage(forceNormalUser: true);
+          destination = const HomePage();
         } else if (index == 1) {
           destination = const LibraryPage();
         } else if (index == 2) {

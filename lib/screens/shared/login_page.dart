@@ -127,14 +127,13 @@ class _LoginPageState extends State<LoginPage> {
 
       if (account != null) {
         await SessionStorageService.saveUsername(u);
-        await SessionStorageService.saveRole('normal');
 
         if (!mounted) return;
 
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => const HomePage(forceNormalUser: true),
+            builder: (_) => const HomePage(),
           ),
           (route) => false,
         );
