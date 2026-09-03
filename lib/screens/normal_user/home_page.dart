@@ -452,85 +452,144 @@ class _HomePageState extends State<HomePage> {
     child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 26),
   );
 
-  // ── Recently visited ───────────────────────────────────────────────────────
+  // ── Home feed (Spotify-style rows of horizontal cards) ────────────────────
 
   Widget _buildRecentBody() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final readyToSing = SongCatalogService.songsWithAudio;
+    final browseAll = SongCatalogService.allSongs;
+    final artists = _groupedArtists();
+
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Recently Visited',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-              if (_recent.isNotEmpty)
-                Text(
-                  '${_recent.length} sessions',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-            ],
-          ),
+        _buildSectionHeader(
+          'Recently Visited',
+          trailing: _recent.isNotEmpty ? '${_recent.length} sessions' : null,
         ),
-        Expanded(
-          child: _recent.isEmpty
-              ? _buildEmptyRecent()
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _recent.length,
-                  itemBuilder: (ctx, i) => _buildRecentRow(_recent[i]),
-                ),
-        ),
+        _recent.isEmpty
+            ? _buildEmptyRecent()
+            : _buildHorizontalRecentList(),
+        if (readyToSing.isNotEmpty) ...[
+          _buildSectionHeader('Ready to Sing'),
+          _buildHorizontalSongList(readyToSing),
+        ],
+        if (artists.isNotEmpty) ...[
+          _buildSectionHeader('Artists'),
+          _buildArtistsRow(artists),
+        ],
+        if (browseAll.isNotEmpty) ...[
+          _buildSectionHeader('Browse Songs'),
+          _buildHorizontalSongList(browseAll),
+        ],
       ],
     );
   }
 
-  Widget _buildEmptyRecent() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildSectionHeader(String title, {String? trailing}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(
-            Icons.history,
-            color: Colors.white.withValues(alpha: 0.15),
-            size: 56,
-          ),
-          const SizedBox(height: 14),
           Text(
-            'No recent sessions yet',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 15,
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
               fontFamily: 'Roboto',
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Search a song above and start singing!',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.3),
-              fontSize: 12,
-              fontFamily: 'Roboto',
+          if (trailing != null)
+            Text(
+              trailing,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 12,
+                fontFamily: 'Roboto',
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildRecentRow(SessionResult s) {
+  Widget _buildEmptyRecent() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 28),
+        decoration: BoxDecoration(
+          color: const Color(0xFF111111),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white10, width: 0.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.history,
+              color: Colors.white.withValues(alpha: 0.15),
+              size: 40,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'No recent sessions yet',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 14,
+                fontFamily: 'Roboto',
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Pick a song below to start singing!',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 12,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Unique artists from the catalog, each represented by their first song's
+  // art. Tapping one runs a search for that artist.
+  List<Map<String, String>> _groupedArtists() {
+    final seen = <String>{};
+    final result = <Map<String, String>>[];
+    for (final song in SongCatalogService.allSongs) {
+      final artist = song['artist'] ?? '';
+      if (artist.isEmpty || seen.contains(artist)) continue;
+      seen.add(artist);
+      result.add({'artist': artist, 'image': song['image'] ?? ''});
+    }
+    return result;
+  }
+
+  void _searchArtist(String artist) {
+    _searchCtrl.text = artist;
+    setState(() {});
+    _runSearch(artist);
+  }
+
+  Widget _buildHorizontalRecentList() {
+    return SizedBox(
+      height: 190,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _recent.length,
+        itemBuilder: (ctx, i) => _buildRecentCard(_recent[i]),
+      ),
+    );
+  }
+
+  Widget _buildRecentCard(SessionResult s) {
     final date =
         '${s.completedAt.month.toString().padLeft(2, '0')}-'
         '${s.completedAt.day.toString().padLeft(2, '0')}-'
@@ -539,86 +598,90 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => _openSession(s),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 4),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
-        ),
-        child: Row(
+        width: 130,
+        margin: const EdgeInsets.only(right: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Circle image
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF1E1E1E),
-                image: s.songImage.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(s.songImage),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: s.songImage.isEmpty
-                  ? const Icon(
-                      Icons.music_note,
-                      color: AppColors.primaryCyan,
-                      size: 22,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 14),
-
-            // Title + artist
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s.songTitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Roboto',
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: s.songImage.isNotEmpty
+                      ? Image.network(
+                          s.songImage,
+                          width: 130,
+                          height: 130,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _gridPlaceholder(),
+                        )
+                      : _gridPlaceholder(),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: GestureDetector(
+                    onTap: () => _deleteSession(s),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    s.songArtist,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 12,
-                      fontFamily: 'Roboto',
+                ),
+                Positioned(
+                  left: 6,
+                  bottom: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      date,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Roboto',
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            // Date
+            const SizedBox(height: 8),
             Text(
-              date,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.35),
-                fontSize: 11,
+              s.songTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Roboto',
               ),
             ),
-            const SizedBox(width: 8),
-
-            // Delete
-            GestureDetector(
-              onTap: () => _deleteSession(s),
-              child: Icon(
-                Icons.delete_outline,
-                color: Colors.white.withValues(alpha: 0.4),
-                size: 20,
+            const SizedBox(height: 2),
+            Text(
+              s.songArtist,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11,
+                fontFamily: 'Roboto',
               ),
             ),
           ],
@@ -626,6 +689,160 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Widget _buildHorizontalSongList(List<Map<String, String>> songs) {
+    return SizedBox(
+      height: 190,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: songs.length,
+        itemBuilder: (ctx, i) => _buildGridSongCard(songs[i]),
+      ),
+    );
+  }
+
+  Widget _buildGridSongCard(Map<String, String> song) {
+    final image = song['image'] ?? '';
+    final hasAudio = SongAudioService.hasAudio(song['title'] ?? '');
+
+    return GestureDetector(
+      onTap: () => _openSong(song),
+      child: Container(
+        width: 130,
+        margin: const EdgeInsets.only(right: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: image.isNotEmpty
+                      ? Image.network(
+                          image,
+                          width: 130,
+                          height: 130,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _gridPlaceholder(),
+                        )
+                      : _gridPlaceholder(),
+                ),
+                if (hasAudio)
+                  Positioned(
+                    right: 6,
+                    bottom: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryCyan,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        size: 14,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              song['title'] ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              song['artist'] ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildArtistsRow(List<Map<String, String>> artists) {
+    return SizedBox(
+      height: 128,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: artists.length,
+        itemBuilder: (ctx, i) {
+          final a = artists[i];
+          final image = a['image'] ?? '';
+          return GestureDetector(
+            onTap: () => _searchArtist(a['artist'] ?? ''),
+            child: Container(
+              width: 84,
+              margin: const EdgeInsets.only(right: 14),
+              child: Column(
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF1E1E1E),
+                      image: image.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(image),
+                              fit: BoxFit.cover,
+                              onError: (_, __) {},
+                            )
+                          : null,
+                    ),
+                    child: image.isEmpty
+                        ? const Icon(
+                            Icons.person,
+                            color: AppColors.primaryCyan,
+                            size: 28,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    a['artist'] ?? '',
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _gridPlaceholder() => Container(
+    width: 130,
+    height: 130,
+    color: const Color(0xFF1E1E1E),
+    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 32),
+  );
 
   // ── Profile menu overlay ───────────────────────────────────────────────────
 

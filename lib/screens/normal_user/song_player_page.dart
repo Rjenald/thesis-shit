@@ -186,7 +186,15 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
   }
 
-  int _getHighlightedWordCount([Duration? at]) {
+  // Per-character sweep rate, relative to the line's real duration. 1.0 would
+  // finish the sweep exactly when the next line starts, but with dozens of
+  // characters flipping color instead of a handful of words, that reads as
+  // much faster than the old word-by-word highlight — so this is slowed to
+  // a fraction of real time; the line simply sits fully highlighted for the
+  // remainder once it catches up, which still looks natural.
+  static const double _lyricSweepRate = 0.6;
+
+  int _getHighlightedCharCount([Duration? at]) {
     if (_currentLyricIdx < 0 || _currentLyricIdx >= _lyrics.length) return 0;
     final pos = at ?? _lyricPositionNotifier.value;
     final lineStart = _lyrics[_currentLyricIdx].timestamp.inMilliseconds;
@@ -196,9 +204,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     final dur = lineEnd - lineStart;
     if (dur <= 0) return 0;
     final elapsed = pos.inMilliseconds - lineStart;
-    final progress = (elapsed / dur).clamp(0.0, 1.0);
-    final words = _lyrics[_currentLyricIdx].text.split(' ');
-    return (progress * words.length).ceil().clamp(0, words.length);
+    final progress = ((elapsed / dur) * _lyricSweepRate).clamp(0.0, 1.0);
+    final len = _lyrics[_currentLyricIdx].text.length;
+    return (progress * len).ceil().clamp(0, len);
   }
 
   Future<void> _togglePlay() async {
@@ -641,7 +649,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
               return ValueListenableBuilder<Duration>(
                 valueListenable: _lyricPositionNotifier,
                 builder: (context, pos, _) =>
-                    _buildCurrentLyricLine(i, _getHighlightedWordCount(pos)),
+                    _buildCurrentLyricLine(i, _getHighlightedCharCount(pos)),
               );
             }
 
@@ -667,33 +675,29 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
   }
 
-  /// Current lyric line — word-by-word highlight (green active, white upcoming)
+  /// Current lyric line — letter-by-letter highlight (Spotify-style sweep:
+  /// green sung, white upcoming), so the reveal is a smooth continuous wipe
+  /// across the line instead of jumping a whole word at a time.
   Widget _buildCurrentLyricLine(int lineIdx, int highlightCount) {
     final text = _lyrics[lineIdx].text;
-    final words = text.split(' ');
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
-          children: words.asMap().entries.map((entry) {
-            final i = entry.key;
-            final word = entry.value;
-            final isSung = i < highlightCount;
-            final space = i < words.length - 1 ? ' ' : '';
-
+          children: List.generate(text.length, (i) {
             return TextSpan(
-              text: '$word$space',
+              text: text[i],
               style: TextStyle(
-                color: isSung ? const Color(0xFF1DB954) : Colors.white,
+                color: i < highlightCount ? const Color(0xFF1DB954) : Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 fontFamily: 'Roboto',
                 height: 1.4,
               ),
             );
-          }).toList(),
+          }),
         ),
       ),
     );
