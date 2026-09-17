@@ -46,7 +46,12 @@ flutter_native_splash:
   image: assets/logo.png
   android_12:
     color: "#050505"
-    image: assets/logo.png
+    # Android 12+ masks the splash icon to a circular safe zone — the plain
+    # logo.png (little built-in padding) was getting its edges clipped by
+    # that mask. This is the same logo pre-scaled onto a larger transparent
+    # canvas with ~20% margin on every side so the circular mask can't cut
+    # into the visible artwork. See assets/logo_splash.png.
+    image: assets/logo_splash.png
 
 flutter_launcher_icons:
   android: true
@@ -58,6 +63,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
+    - assets/logo_splash.png
     - assets/videos/lifetime_benben.mp4
     - assets/audio/
     - assets/models/
+    - assets/ground_truth/

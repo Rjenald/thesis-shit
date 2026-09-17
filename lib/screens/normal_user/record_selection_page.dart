@@ -82,7 +82,7 @@ class RecordSelectionPage extends StatelessWidget {
                             elevation: 0,
                           ),
                           child: const Text(
-                            'With Karaoke',
+                            'Karaoke Recording',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -117,7 +117,7 @@ class RecordSelectionPage extends StatelessWidget {
                             elevation: 0,
                           ),
                           child: const Text(
-                            'Without Karaoke',
+                            'Freestyle Recording',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

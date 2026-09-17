@@ -136,7 +136,7 @@ class _LibraryPageState extends State<LibraryPage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _tabButton(
-                      label: 'Free Sing',
+                      label: 'Freestyle',
                       count: _freeSings.length,
                       selected: _tab == _LibraryTab.freeSing,
                       onTap: () => setState(() => _tab = _LibraryTab.freeSing),
@@ -176,9 +176,9 @@ class _LibraryPageState extends State<LibraryPage> {
                   : (_freeSings.isEmpty
                         ? _buildEmptyState(
                             icon: Icons.mic_none_outlined,
-                            title: 'No free sing recordings yet',
+                            title: 'No freestyle recordings yet',
                             subtitle:
-                                'Record without karaoke and your word/note summary will appear here!',
+                                'Record a freestyle take and your word/note summary will appear here!',
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.symmetric(
@@ -489,7 +489,7 @@ class _LibraryPageState extends State<LibraryPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Free Sing  •  $m:$s',
+                    'Freestyle  •  $m:$s',
                     style: const TextStyle(
                       color: AppColors.white,
                       fontWeight: FontWeight.w600,

@@ -7,12 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
 import '../../core/audio_service.dart';
-import '../../core/lyric_alignment_service.dart';
+import '../../core/lyric_alignment_service.dart' show warmUpWhisperModel;
 import '../../core/note_utils.dart';
 import '../../core/ondevice_crepe_service.dart';
-import '../../core/word_note_builder.dart';
-import '../../models/free_sing_summary.dart';
-import '../../services/free_sing_storage_service.dart';
 import '../../services/recording_storage_service.dart';
 import 'save_record_page.dart';
 import 'without_karaoke_results_page.dart';
@@ -44,12 +41,6 @@ class _WithoutKaraokeRecordingPageState
   bool _crepeLoading = true;
   String _pitchSource = 'Loading…';
 
-  // ── Session stats ──────────────────────────────────────────────────────────
-  int _inTuneCount = 0;
-  int _sharpCount = 0;
-  int _flatCount = 0;
-  int _totalReadings = 0;
-
   // ── Timer ──────────────────────────────────────────────────────────────────
   int _seconds = 0;
   Timer? _timer;
@@ -62,9 +53,8 @@ class _WithoutKaraokeRecordingPageState
   // ── Live pitch state ───────────────────────────────────────────────────────
   String _noteDisplay = '--';
   String _freqDisplay = '';
-  double _cents = 0.0;
   double _clarity = 0.0;
-  PitchFeedback _feedback = PitchFeedback.noSignal;
+  bool _hasSignal = false;
 
   // ── Waveform bars ──────────────────────────────────────────────────────────
   static const int _barCount = 30;
@@ -75,6 +65,15 @@ class _WithoutKaraokeRecordingPageState
   // ── Real-time voice monitoring ───────────────────────────────────────────
   bool _isMonitoring = true;
 
+  // ── Offline analysis pre-warming ──────────────────────────────────────────
+  // The results page runs its own CREPE analysis after stop, but the model
+  // bytes it needs are cached process-wide the first time anything loads
+  // them (see OnDeviceCrepeService._loadModelBytes) — so reading them here,
+  // while the user is still looking at the recording screen and hasn't even
+  // hit record yet, means the results page's own load skips that read
+  // entirely. Whisper's model-cache check is similarly cheap to do early.
+  final OnDeviceCrepeService _offlineCrepe = OnDeviceCrepeService();
+
   @override
   void initState() {
     super.initState();
@@ -84,6 +83,8 @@ class _WithoutKaraokeRecordingPageState
     )..repeat(reverse: true);
 
     _initCrepe();
+    _offlineCrepe.preload().ignore();
+    warmUpWhisperModel().ignore();
   }
 
   @override
@@ -94,6 +95,7 @@ class _WithoutKaraokeRecordingPageState
     _audioSub?.cancel();
     _bytesSub?.cancel();
     _audioService.dispose();
+    _offlineCrepe.dispose();
     super.dispose();
   }
 
@@ -150,13 +152,8 @@ class _WithoutKaraokeRecordingPageState
         _seconds = 0;
         _noteDisplay = '--';
         _freqDisplay = '';
-        _cents = 0.0;
         _clarity = 0.0;
-        _feedback = PitchFeedback.noSignal;
-        _inTuneCount = 0;
-        _sharpCount = 0;
-        _flatCount = 0;
-        _totalReadings = 0;
+        _hasSignal = false;
         for (int i = 0; i < _barCount; i++) {
           _bars[i] = 0.05;
         }
@@ -177,10 +174,6 @@ class _WithoutKaraokeRecordingPageState
       // can't sit on screen through a whole new recording.
       if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
       _recordedPcm.clear();
-      _inTuneCount = 0;
-      _sharpCount = 0;
-      _flatCount = 0;
-      _totalReadings = 0;
 
       final started = await _audioService.start(
         enableMonitoring: _isMonitoring,
@@ -216,15 +209,16 @@ class _WithoutKaraokeRecordingPageState
           for (int i = 0; i < _barCount - 1; i++) {
             _bars[i] = _bars[i + 1];
           }
-          final base = _feedback == PitchFeedback.noSignal ? 0.05 : 0.2;
-          final noise =
-              Random().nextDouble() *
-              (_feedback == PitchFeedback.noSignal ? 0.05 : 0.6);
+          final base = _hasSignal ? 0.2 : 0.05;
+          final noise = Random().nextDouble() * (_hasSignal ? 0.6 : 0.05);
           _bars[_barCount - 1] = (base + noise).clamp(0.03, 1.0);
         });
       });
 
-      // Pitch stream from CREPE / YIN
+      // Pitch stream from CREPE / YIN — freestyle mode has no reference
+      // melody, so this only ever reports the detected note, frequency,
+      // and confidence, never a sharp/flat/in-tune judgment (there's
+      // nothing to be sharp or flat relative to without a target pitch).
       _audioSub = _audioService.results.listen((result) {
         if (!mounted) return;
 
@@ -232,41 +226,26 @@ class _WithoutKaraokeRecordingPageState
           setState(() {
             _noteDisplay = '--';
             _freqDisplay = '';
-            _feedback = PitchFeedback.noSignal;
+            _hasSignal = false;
             _clarity = 0.0;
           });
           return;
         }
 
-        // Update session stats
-        _totalReadings++;
-        switch (result.feedback) {
-          case PitchFeedback.correct:
-            _inTuneCount++;
-            break;
-          case PitchFeedback.tooHigh:
-            _sharpCount++;
-            break;
-          case PitchFeedback.tooLow:
-            _flatCount++;
-            break;
-          case PitchFeedback.noSignal:
-            break;
-        }
-
         setState(() {
           _noteDisplay = result.fullName;
           _freqDisplay = '${result.frequency.toStringAsFixed(1)} Hz';
-          _cents = result.cents;
+          _hasSignal = true;
           _clarity = result.confidence;
-          _feedback = result.feedback;
         });
       });
     }
   }
 
-  // ── Post-recording pipeline ───────────────────────────────────────────────
-  // Not real-time: runs once, after the mic has stopped, over the full take.
+  // ── Post-recording save + handoff ─────────────────────────────────────────
+  // Only the fast part happens here: build the WAV and save it. The heavy
+  // analysis (batch CREPE + Whisper) runs on the results page itself, so the
+  // result screen appears right after this — not after the whole pipeline.
 
   Future<void> _processAndSave(List<int> pcmBytes, int durationSecs) async {
     try {
@@ -293,38 +272,17 @@ class _WithoutKaraokeRecordingPageState
         ),
       );
 
-      // Pitch (CREPE, batch) and speech-to-text (Whisper) both run once over
-      // the full take, independently, then get combined by timestamp below.
-      final crepe = OnDeviceCrepeService();
-      List<PitchFrame> pitchFrames;
-      List<TranscribedWord> words;
-      try {
-        final results = await Future.wait([
-          crepe.analyzeOffline(_pcmBytesToInt16(pcmBytes)),
-          transcribeWords(wavBytes),
-        ]);
-        pitchFrames = results[0] as List<PitchFrame>;
-        words = results[1] as List<TranscribedWord>;
-      } finally {
-        crepe.dispose();
-      }
-
-      final wordNotes = buildWordNotes(words: words, pitchFrames: pitchFrames);
-
-      final summary = FreeSingSummary(
-        id: id,
-        createdAt: now,
-        durationSeconds: durationSecs,
-        audioRef: 'local:$id',
-        words: wordNotes,
-      );
-      await FreeSingStorageService.saveSummary(summary);
-
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => WithoutKaraokeResultsPage(summary: summary),
+            builder: (_) => WithoutKaraokeResultsPage.processing(
+              recordingId: id,
+              createdAt: now,
+              durationSeconds: durationSecs,
+              wavBytes: wavBytes,
+              pcmSamples: _pcmBytesToInt16(pcmBytes),
+            ),
           ),
         );
       }
@@ -332,7 +290,7 @@ class _WithoutKaraokeRecordingPageState
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to process recording: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to save recording: $e')));
       }
     }
   }
@@ -404,34 +362,16 @@ class _WithoutKaraokeRecordingPageState
     return const Color(0xFFF44336);
   }
 
-  Color get _feedbackColor {
-    switch (_feedback) {
-      case PitchFeedback.correct:
-        return AppColors.primaryCyan;
-      case PitchFeedback.tooHigh:
-        return Colors.orangeAccent;
-      case PitchFeedback.tooLow:
-        return Colors.blueAccent;
-      case PitchFeedback.noSignal:
-        return AppColors.grey;
-    }
-  }
+  // Freestyle mode has no reference melody to judge pitch against, so the
+  // note color/label only ever indicate whether a voice was detected — not
+  // a sharp/flat/in-tune verdict, which would need a target that doesn't
+  // exist here.
+  Color get _noteColor => _hasSignal ? AppColors.primaryCyan : AppColors.grey;
 
-  String get _feedbackLabel {
-    switch (_feedback) {
-      case PitchFeedback.correct:
-        return 'In Tune ✓';
-      case PitchFeedback.tooHigh:
-        return 'Too High ↑';
-      case PitchFeedback.tooLow:
-        return 'Too Low ↓';
-      case PitchFeedback.noSignal:
-        return _isRecording ? 'Listening...' : '';
-    }
+  String get _statusLabel {
+    if (_hasSignal) return '';
+    return _isRecording ? 'Listening...' : '';
   }
-
-  double get _inTunePercent =>
-      _totalReadings > 0 ? _inTuneCount / _totalReadings : 0.0;
 
   // ── Exit dialog ────────────────────────────────────────────────────────────
 
@@ -517,11 +457,7 @@ class _WithoutKaraokeRecordingPageState
                   const SizedBox(height: 28),
                   _buildWaveform(),
                   const SizedBox(height: 28),
-                  if (_isRecording) _buildCentsMeter(),
-                  if (_isRecording) const SizedBox(height: 16),
                   if (_isRecording) _buildClarityBar(),
-                  if (_isRecording) const SizedBox(height: 8),
-                  if (_isRecording) _buildLiveStats(),
                   if (_isRecording) const SizedBox(height: 8),
                   _buildTimer(),
                 ],
@@ -551,20 +487,11 @@ class _WithoutKaraokeRecordingPageState
               CircularProgressIndicator(color: AppColors.primaryCyan),
               SizedBox(height: 20),
               Text(
-                'Analyzing your recording…',
+                'Preparing the result...',
                 style: TextStyle(
                   color: AppColors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Detecting words and notes',
-                style: TextStyle(
-                  color: AppColors.grey,
-                  fontSize: 12,
                   fontFamily: 'Roboto',
                 ),
               ),
@@ -743,7 +670,7 @@ class _WithoutKaraokeRecordingPageState
           style: TextStyle(
             fontSize: 72,
             fontWeight: FontWeight.bold,
-            color: _isRecording ? _feedbackColor : AppColors.grey,
+            color: _isRecording ? _noteColor : AppColors.grey,
             fontFamily: 'Roboto',
           ),
           child: Text(_noteDisplay),
@@ -764,14 +691,15 @@ class _WithoutKaraokeRecordingPageState
                 ),
                 const SizedBox(width: 10),
               ],
-              Text(
-                _feedbackLabel,
-                style: TextStyle(
-                  color: _feedbackColor,
-                  fontSize: 14,
-                  fontFamily: 'Roboto',
+              if (_statusLabel.isNotEmpty)
+                Text(
+                  _statusLabel,
+                  style: TextStyle(
+                    color: _noteColor,
+                    fontSize: 14,
+                    fontFamily: 'Roboto',
+                  ),
                 ),
-              ),
             ],
           ),
       ],
@@ -794,7 +722,7 @@ class _WithoutKaraokeRecordingPageState
                   width: 5,
                   height: 80 * _bars[i],
                   decoration: BoxDecoration(
-                    color: _feedbackColor.withValues(
+                    color: _noteColor.withValues(
                       alpha: 0.4 + _bars[i] * 0.6,
                     ),
                     borderRadius: BorderRadius.circular(3),
@@ -809,58 +737,10 @@ class _WithoutKaraokeRecordingPageState
     );
   }
 
-  // ── Cents meter ────────────────────────────────────────────────────────────
-
-  Widget _buildCentsMeter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Flat',
-                style: TextStyle(
-                  color: AppColors.grey.withValues(alpha: 0.6),
-                  fontSize: 11,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-              Text(
-                '${_cents.toStringAsFixed(1)} cents',
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 11,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-              Text(
-                'Sharp',
-                style: TextStyle(
-                  color: AppColors.grey.withValues(alpha: 0.6),
-                  fontSize: 11,
-                  fontFamily: 'Roboto',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: (_cents.clamp(-50, 50) + 50) / 100,
-              minHeight: 7,
-              backgroundColor: AppColors.inputBg,
-              valueColor: AlwaysStoppedAnimation<Color>(_feedbackColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Clarity bar ────────────────────────────────────────────────────────────
+  // ── Confidence bar ─────────────────────────────────────────────────────────
+  // Freestyle mode's job is just to detect the note and how confident CREPE
+  // is in that detection — never a sharp/flat/in-tune judgment, which needs
+  // a target pitch that doesn't exist without a reference melody.
 
   Widget _buildClarityBar() {
     return Padding(
@@ -879,7 +759,7 @@ class _WithoutKaraokeRecordingPageState
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Voice Clarity  •  $_pitchSource',
+                    'Confidence  •  $_pitchSource',
                     style: TextStyle(
                       color: AppColors.grey.withValues(alpha: 0.7),
                       fontSize: 11,
@@ -907,82 +787,6 @@ class _WithoutKaraokeRecordingPageState
               minHeight: 7,
               backgroundColor: AppColors.inputBg,
               valueColor: AlwaysStoppedAnimation<Color>(_clarityColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Live stats ─────────────────────────────────────────────────────────────
-
-  Widget _buildLiveStats() {
-    if (_totalReadings == 0) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _liveStatChip(
-            label: 'In Tune',
-            value: '${(_inTunePercent * 100).round()}%',
-            color: AppColors.primaryCyan,
-          ),
-          _liveStatChip(
-            label: 'Sharp',
-            value: '$_sharpCount',
-            color: Colors.orangeAccent,
-          ),
-          _liveStatChip(
-            label: 'Flat',
-            value: '$_flatCount',
-            color: Colors.blueAccent,
-          ),
-          Text(
-            '$_totalReadings pts',
-            style: TextStyle(
-              color: AppColors.grey.withValues(alpha: 0.4),
-              fontSize: 9,
-              fontFamily: 'Roboto',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _liveStatChip({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Roboto',
-            ),
-          ),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-              color: color.withValues(alpha: 0.7),
-              fontSize: 9,
-              fontFamily: 'Roboto',
             ),
           ),
         ],

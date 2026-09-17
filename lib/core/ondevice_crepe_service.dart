@@ -3,15 +3,22 @@
 /// (standard CREPE architecture: 1024-sample @16kHz input, 360-bin pitch
 /// salience output) and runs inference locally via tflite_flutter.
 ///
-/// Includes a simple, real preprocessing chain before each frame is fed to
-/// the model: DC-offset removal, a first-order pre-emphasis high-pass
-/// filter, and an RMS-energy VAD gate that skips inference entirely on
-/// near-silent frames (saves battery and avoids feeding the model noise).
+/// Preprocessing matches what CREPE was actually trained on — per-frame
+/// DC-offset removal and z-score normalization, nothing else — plus an
+/// RMS-energy VAD gate that skips inference entirely on near-silent frames
+/// (saves battery and avoids feeding the model noise). An earlier version
+/// of this also applied a pre-emphasis high-pass filter before those steps;
+/// that's a deviation from CREPE's real preprocessing, and on real singing
+/// (as opposed to a clean test tone) it measurably suppressed confidence —
+/// especially on lower notes, since pre-emphasis specifically attenuates
+/// low frequencies — enough that real voiced audio never crossed the
+/// confidence threshold. Removed.
 library;
 
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:record/record.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'note_utils.dart';
@@ -25,9 +32,34 @@ class OnDeviceCrepeService implements PitchDetectionService {
   // this trades detection cadence for staying smooth. Real latency varies
   // by device (see thesis limitation on real-time performance on mobile).
   static const _inferenceInterval = Duration(milliseconds: 200);
-  static const _confidenceThreshold = 0.5;
+  // See kDefaultPitchConfidenceThreshold (note_utils.dart) for why this
+  // isn't the textbook-CREPE 0.5 — huni_crepe.tflite's own confidence range
+  // runs much lower, verified on real phone-mic recordings.
+  static const _confidenceThreshold = kDefaultPitchConfidenceThreshold;
   // RMS floor below which a frame is treated as silence/noise and skipped.
   static const _vadRmsFloor = 0.01;
+
+  // rootBundle.load() re-reads the asset (APK/platform-channel round trip)
+  // every single call — Flutter's asset bundle does NOT cache raw ByteData
+  // on its own. Every OnDeviceCrepeService instance (one per recording's
+  // offline pass, plus the live-mic one in karaoke mode) was paying that
+  // read again. Caching the decoded bytes once, process-wide, lets every
+  // instance skip straight to InterpreterCreate — each still builds its own
+  // independent Interpreter, so there's no cross-instance sharing/concurrency
+  // risk, just a skipped I/O read.
+  static Uint8List? _cachedModelBytes;
+  static Future<Uint8List>? _modelBytesLoading;
+
+  static Future<Uint8List> _loadModelBytes() {
+    final cached = _cachedModelBytes;
+    if (cached != null) return Future.value(cached);
+    return _modelBytesLoading ??= () async {
+      final data = await rootBundle.load(_modelAsset);
+      final bytes = data.buffer.asUint8List();
+      _cachedModelBytes = bytes;
+      return bytes;
+    }();
+  }
 
   final _recorder = AudioRecorder();
   StreamSubscription<Uint8List>? _audioSub;
@@ -50,7 +82,6 @@ class OnDeviceCrepeService implements PitchDetectionService {
   // Rolling PCM buffer (int16 samples) — always keep at least _frameSize.
   final List<int> _pcmBuffer = [];
   DateTime _lastInference = DateTime.fromMillisecondsSinceEpoch(0);
-  double _prevSampleForPreEmphasis = 0;
 
   /// Returns false if the model can't be loaded or the mic permission is
   /// denied — caller should fall back to the network CREPE service or YIN.
@@ -67,8 +98,9 @@ class OnDeviceCrepeService implements PitchDetectionService {
     // fails interpreter creation on emulators/many devices that don't have
     // one; CPU-only is what actually works everywhere.
     try {
+      final buffer = await _loadModelBytes();
       final options = InterpreterOptions()..threads = 4;
-      _interpreter = await Interpreter.fromAsset(_modelAsset, options: options);
+      _interpreter = Interpreter.fromBuffer(buffer, options: options);
       _interpreter!.allocateTensors();
     } catch (e) {
       debugPrint('On-device CREPE model load failed: $e');
@@ -105,7 +137,6 @@ class OnDeviceCrepeService implements PitchDetectionService {
     }
 
     _pcmBuffer.clear();
-    _prevSampleForPreEmphasis = 0;
     _isRunning = true;
     _audioSub = stream.listen(
       _onAudioChunk,
@@ -143,10 +174,13 @@ class OnDeviceCrepeService implements PitchDetectionService {
       return;
     }
 
-    final frame = _computeFrame(intFrame, _prevSampleForPreEmphasis);
-    _prevSampleForPreEmphasis = frame.prevSample;
+    final frame = _computeFrame(intFrame);
 
-    if (frame.frequency <= 0) {
+    // frequency <= 0 covers the VAD-gated/error case; confidence below
+    // threshold covers "the model ran but isn't sure" — _computeFrame
+    // always decodes a frequency once it runs the model, regardless of
+    // confidence, so this needs to check both explicitly.
+    if (frame.frequency <= 0 || frame.confidence < _confidenceThreshold) {
       _resultController!.add(NoteResult.silent());
       return;
     }
@@ -159,22 +193,17 @@ class OnDeviceCrepeService implements PitchDetectionService {
   }
 
   /// Core per-frame CREPE pipeline, shared by the live stream ([_runInference])
-  /// and the offline batch pass ([analyzeOffline]): pre-emphasis + z-score
-  /// normalization, VAD gate, interpreter inference, and sub-bin peak decode.
-  /// [prevSample] carries the pre-emphasis filter's state across frames —
-  /// pass in the previous call's returned prevSample to keep it continuous.
-  _FrameResult _computeFrame(List<int> intFrame, double prevSample) {
-    // int16 -> float32 [-1, 1], DC removal, pre-emphasis high-pass, then
-    // z-score normalization (CREPE's expected input distribution).
+  /// and the offline batch pass ([analyzeOffline]): DC removal + z-score
+  /// normalization (exactly CREPE's expected input, nothing more), VAD
+  /// gate, interpreter inference, and sub-bin peak decode.
+  _FrameResult _computeFrame(List<int> intFrame) {
+    // int16 -> float32 [-1, 1], DC removal, then z-score normalization.
     final floats = Float64List(_frameSize);
     double mean = 0;
-    double prev = prevSample;
     for (var i = 0; i < _frameSize; i++) {
       final sample = intFrame[i] / 32768.0;
-      final emphasized = sample - 0.97 * prev;
-      prev = sample;
-      floats[i] = emphasized;
-      mean += emphasized;
+      floats[i] = sample;
+      mean += sample;
     }
     mean /= _frameSize;
 
@@ -188,7 +217,7 @@ class OnDeviceCrepeService implements PitchDetectionService {
 
     // VAD gate: skip inference on near-silent/noise-floor frames entirely.
     if (rms < _vadRmsFloor) {
-      return _FrameResult(frequency: 0, confidence: 0, prevSample: prev);
+      return const _FrameResult(frequency: 0, confidence: 0);
     }
 
     final std = rms.clamp(1e-8, double.infinity);
@@ -199,7 +228,7 @@ class OnDeviceCrepeService implements PitchDetectionService {
       _interpreter!.run(input, output);
     } catch (e) {
       debugPrint('CREPE inference error: $e');
-      return _FrameResult(frequency: 0, confidence: 0, prevSample: prev);
+      return const _FrameResult(frequency: 0, confidence: 0);
     }
 
     final activation = output[0];
@@ -212,14 +241,15 @@ class OnDeviceCrepeService implements PitchDetectionService {
       }
     }
 
-    if (peakVal < _confidenceThreshold) {
-      return _FrameResult(
-        frequency: 0,
-        confidence: peakVal.toDouble(),
-        prevSample: prev,
-      );
-    }
-
+    // Decode the frequency regardless of confidence — confidence alone
+    // signals reliability (see [PitchFrame.confidence]); callers that need
+    // a hard cutoff apply it explicitly (e.g. [_runInference] for the live
+    // UI). Keeping this unconditional is also what makes it possible to
+    // inspect what the model actually saw on a low-confidence frame instead
+    // of just a zeroed-out "no signal", which is what let the diagnostics
+    // below catch a real preprocessing bug instead of guessing at
+    // threshold numbers.
+    //
     // Weighted average over a small window around the peak for sub-bin
     // precision (standard CREPE decoding).
     const window = 4;
@@ -238,27 +268,35 @@ class OnDeviceCrepeService implements PitchDetectionService {
     return _FrameResult(
       frequency: freq.toDouble(),
       confidence: peakVal.toDouble(),
-      prevSample: prev,
     );
+  }
+
+  /// Loads the CREPE interpreter if it isn't already loaded. Safe to call
+  /// early (e.g. as soon as a recording screen opens) to warm the model
+  /// before [analyzeOffline] actually needs it — asset loading and
+  /// `allocateTensors()` are the fixed cost paid on first use, so doing it
+  /// ahead of time keeps it off the critical path after the user hits stop.
+  Future<void> preload() async {
+    if (_interpreter != null) return;
+    final buffer = await _loadModelBytes();
+    final options = InterpreterOptions()..threads = 4;
+    _interpreter = Interpreter.fromBuffer(buffer, options: options);
+    _interpreter!.allocateTensors();
   }
 
   /// Runs CREPE over an entire pre-recorded PCM16 buffer instead of live mic
   /// input — for post-recording analysis (e.g. a full-recording summary)
   /// rather than real-time feedback. Loads its own interpreter on first call
-  /// if one isn't already running; call [dispose] afterwards to release it.
+  /// if [preload] wasn't already called; call [dispose] afterwards to
+  /// release it.
   Future<List<PitchFrame>> analyzeOffline(
     List<int> pcm16Samples, {
     int hopMs = 100,
   }) async {
-    if (_interpreter == null) {
-      final options = InterpreterOptions()..threads = 4;
-      _interpreter = await Interpreter.fromAsset(_modelAsset, options: options);
-      _interpreter!.allocateTensors();
-    }
+    await preload();
 
     final hopSamples = math.max(1, (_sampleRate * hopMs / 1000).round());
     final frames = <PitchFrame>[];
-    double prevSample = 0;
 
     for (
       var start = 0;
@@ -266,16 +304,77 @@ class OnDeviceCrepeService implements PitchDetectionService {
       start += hopSamples
     ) {
       final frame = pcm16Samples.sublist(start, start + _frameSize);
-      final result = _computeFrame(frame, prevSample);
-      prevSample = result.prevSample;
+      final result = _computeFrame(frame);
       frames.add(PitchFrame(
         timeMs: (start / _sampleRate * 1000).round(),
         frequency: result.frequency,
         confidence: result.confidence,
       ));
+
+      // Each interpreter.run() call above is a synchronous blocking FFI
+      // call with no natural await point — back-to-back over hundreds of
+      // hops that would freeze the UI isolate for the whole batch (no
+      // frame rendering, no spinner animation) and starve any concurrently
+      // running Future (e.g. Whisper transcription) of event-loop turns.
+      // Yielding after every hop keeps the app responsive and lets other
+      // work actually interleave, at negligible cost next to inference time.
+      await Future<void>.delayed(Duration.zero);
     }
 
+    _logOfflineDiagnostics(frames);
     return frames;
+  }
+
+  /// Temporary diagnostic: when every syllable in a real recording comes
+  /// back with no detected pitch, this pinpoints WHERE in the pipeline it's
+  /// being lost — near-silent audio never reaching the model (VAD gate) vs.
+  /// the model running but never clearing the confidence bar — instead of
+  /// guessing at threshold changes blind. Safe to remove once resolved.
+  void _logOfflineDiagnostics(List<PitchFrame> frames) {
+    if (frames.isEmpty) {
+      debugPrint('[CREPE offline] no frames produced (recording too short?)');
+      return;
+    }
+    // confidence == 0.0 means the VAD gate skipped inference entirely for
+    // that hop (or, rarely, the interpreter threw) — it never got a real
+    // peak-activation reading. Anything else ran through the model.
+    final vadGated = frames.where((f) => f.confidence == 0.0).length;
+    final ranInference = frames.where((f) => f.confidence > 0.0).toList();
+    final belowThreshold =
+        ranInference.where((f) => f.confidence < _confidenceThreshold).length;
+    final aboveThreshold = ranInference.length - belowThreshold;
+    final maxConfidence = ranInference.isEmpty
+        ? 0.0
+        : ranInference.map((f) => f.confidence).reduce(math.max);
+    final avgConfidence = ranInference.isEmpty
+        ? 0.0
+        : ranInference.map((f) => f.confidence).reduce((a, b) => a + b) /
+            ranInference.length;
+    debugPrint(
+      '[CREPE offline] ${frames.length} hops total — '
+      '$vadGated silence-gated (never reached the model), '
+      '${ranInference.length} reached the model '
+      '($belowThreshold below ${_confidenceThreshold.toStringAsFixed(2)} '
+      'confidence, $aboveThreshold above). '
+      'maxConfidence=${maxConfidence.toStringAsFixed(3)} '
+      'avgConfidence=${avgConfidence.toStringAsFixed(3)}',
+    );
+
+    // Sanity-check plausibility of what's being discarded: is the model
+    // landing on musically reasonable frequencies (~80–500 Hz vocal range)
+    // just without enough confidence, or is it decoding noise? Shows the
+    // 8 highest-confidence discarded frames — the ones closest to actually
+    // being accepted.
+    if (ranInference.isNotEmpty) {
+      final sample = ranInference.toList()
+        ..sort((a, b) => b.confidence.compareTo(a.confidence));
+      final preview = sample.take(8).map((f) {
+        final note = f.frequency > 0 ? hzToNoteName(f.frequency) : '--';
+        return '${f.timeMs}ms:${f.frequency.toStringAsFixed(1)}Hz'
+            '($note,conf=${f.confidence.toStringAsFixed(3)})';
+      }).join('  ');
+      debugPrint('[CREPE offline] top discarded frames: $preview');
+    }
   }
 
   @override
@@ -309,11 +408,9 @@ class OnDeviceCrepeService implements PitchDetectionService {
 class _FrameResult {
   final double frequency; // 0 = no signal
   final double confidence;
-  final double prevSample; // pre-emphasis filter carry for the next frame
 
   const _FrameResult({
     required this.frequency,
     required this.confidence,
-    required this.prevSample,
   });
 }
