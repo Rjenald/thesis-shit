@@ -33,6 +33,7 @@ dependencies:
   ffmpeg_kit_flutter_new_min: ^2.1.0
   tflite_flutter: ^0.12.1
   whisper_ggml: ^2.6.0
+  file_picker: ^11.0.3
 
 dev_dependencies:
   flutter_test:

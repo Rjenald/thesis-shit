@@ -8,9 +8,9 @@ import '../../core/lyric_alignment_service.dart';
 import '../../core/note_utils.dart' show PitchFrame;
 import '../../core/ondevice_crepe_service.dart';
 import '../../core/word_note_builder.dart';
-import '../../models/free_sing_summary.dart';
+import '../../models/freestyle_summary.dart';
 import '../../models/word_note_entry.dart';
-import '../../services/free_sing_storage_service.dart';
+import '../../services/freestyle_storage_service.dart';
 
 /// Shows the word-by-word note summary of a completed "without karaoke"
 /// recording as a lyric-style synchronized timeline — no reference song, so
@@ -19,15 +19,15 @@ import '../../services/free_sing_storage_service.dart';
 /// session.
 ///
 /// Two ways to land on this page:
-///  • [WithoutKaraokeResultsPage.new] — view an already-analyzed, already-
+///  • [FreestyleResultsPage.new] — view an already-analyzed, already-
 ///    saved summary (e.g. tapped from the Library).
-///  • [WithoutKaraokeResultsPage.processing] — a recording just finished;
+///  • [FreestyleResultsPage.processing] — a recording just finished;
 ///    the batch CREPE + Whisper pipeline runs here (not on the recording
 ///    page) so the screen itself appears immediately, with the header/
 ///    playback available right away and the word timeline filling in once
 ///    analysis completes.
-class WithoutKaraokeResultsPage extends StatefulWidget {
-  final FreeSingSummary? summary;
+class FreestyleResultsPage extends StatefulWidget {
+  final FreestyleSummary? summary;
 
   final String? recordingId;
   final DateTime? pendingCreatedAt;
@@ -35,7 +35,7 @@ class WithoutKaraokeResultsPage extends StatefulWidget {
   final Uint8List? pendingWavBytes;
   final List<int>? pendingPcmSamples;
 
-  const WithoutKaraokeResultsPage({super.key, required FreeSingSummary summary})
+  const FreestyleResultsPage({super.key, required FreestyleSummary summary})
       : summary = summary,
         recordingId = null,
         pendingCreatedAt = null,
@@ -43,7 +43,7 @@ class WithoutKaraokeResultsPage extends StatefulWidget {
         pendingWavBytes = null,
         pendingPcmSamples = null;
 
-  const WithoutKaraokeResultsPage.processing({
+  const FreestyleResultsPage.processing({
     super.key,
     required String recordingId,
     required DateTime createdAt,
@@ -58,13 +58,13 @@ class WithoutKaraokeResultsPage extends StatefulWidget {
         pendingPcmSamples = pcmSamples;
 
   @override
-  State<WithoutKaraokeResultsPage> createState() =>
-      _WithoutKaraokeResultsPageState();
+  State<FreestyleResultsPage> createState() =>
+      _FreestyleResultsPageState();
 }
 
-class _WithoutKaraokeResultsPageState
-    extends State<WithoutKaraokeResultsPage> {
-  FreeSingSummary? _summary;
+class _FreestyleResultsPageState
+    extends State<FreestyleResultsPage> {
+  FreestyleSummary? _summary;
   bool _analyzing = false;
 
   late final String _audioRef;
@@ -133,14 +133,14 @@ class _WithoutKaraokeResultsPageState
         wordNotes = buildPitchOnlyNotes(pitchFrames: pitchFrames);
       }
 
-      final summary = FreeSingSummary(
+      final summary = FreestyleSummary(
         id: widget.recordingId!,
         createdAt: _createdAt,
         durationSeconds: _durationSeconds,
         audioRef: _audioRef,
         words: wordNotes,
       );
-      await FreeSingStorageService.saveSummary(summary);
+      await FreestyleStorageService.saveSummary(summary);
 
       if (mounted) {
         setState(() {

@@ -164,9 +164,8 @@ class _ResultsPageState extends State<ResultsPage> {
         await _listenPlayer!.setFilePath(file.path);
       } else {
         // Fallback: play original song
-        final audioUrl =
-            SongAudioService.getAudioUrl(widget.session.songTitle);
-        if (audioUrl == null) {
+        final audio = SongAudioService.resolve(widget.session.songTitle);
+        if (audio == null) {
           _listenPlayer?.dispose();
           _listenPlayer = null;
           if (mounted) {
@@ -176,7 +175,11 @@ class _ResultsPageState extends State<ResultsPage> {
           }
           return;
         }
-        await _listenPlayer!.setAsset(audioUrl);
+        if (audio.isAsset) {
+          await _listenPlayer!.setAsset(audio.path);
+        } else {
+          await _listenPlayer!.setFilePath(audio.path);
+        }
       }
 
       _listenPlayer!.playerStateStream.listen((state) {

@@ -12,19 +12,53 @@ import '../../core/note_utils.dart';
 import '../../core/ondevice_crepe_service.dart';
 import '../../services/recording_storage_service.dart';
 import 'save_record_page.dart';
-import 'without_karaoke_results_page.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../services/lyrics_service.dart' show LrcLine;
+import 'freestyle_results_page.dart';
 
-class WithoutKaraokeRecordingPage extends StatefulWidget {
-  const WithoutKaraokeRecordingPage({super.key});
+/// Records a take and sends it for note/word/timestamp analysis.
+///
+/// Used by two modes. With no song passed in it's Freestyle Karaoke: just
+/// sing. With a song and lyrics from the online search it's Analysis
+/// Karaoke — the same recording and the same analysis, with the lyrics
+/// shown to sing along to. Deliberately one page: the two modes differ only
+/// in whether there are words on screen, and there's no reference melody in
+/// either case, so nothing about the capture or analysis changes.
+class FreestyleRecordingPage extends StatefulWidget {
+  /// Null in Freestyle mode; the chosen song in Analysis mode.
+  final String? songTitle;
+  final String? songArtist;
+
+  /// Timed lyrics to follow along to. Empty when the song had none, or in
+  /// Freestyle mode.
+  final List<LrcLine> lyrics;
+
+  /// YouTube video to play as a backing track, or null to sing a cappella.
+  /// Streamed through the embedded player — never downloaded.
+  final String? backingTrackVideoId;
+
+  const FreestyleRecordingPage({
+    super.key,
+    this.songTitle,
+    this.songArtist,
+    this.lyrics = const [],
+    this.backingTrackVideoId,
+  });
+
+  bool get isAnalysisMode => songTitle != null;
 
   @override
-  State<WithoutKaraokeRecordingPage> createState() =>
-      _WithoutKaraokeRecordingPageState();
+  State<FreestyleRecordingPage> createState() =>
+      _FreestyleRecordingPageState();
 }
 
-class _WithoutKaraokeRecordingPageState
-    extends State<WithoutKaraokeRecordingPage>
+class _FreestyleRecordingPageState
+    extends State<FreestyleRecordingPage>
     with TickerProviderStateMixin {
+  /// Null unless a backing track was chosen — see
+  /// [FreestyleRecordingPage.backingTrackVideoId].
+  YoutubePlayerController? _youtubeController;
+
   // ── Audio ──────────────────────────────────────────────────────────────────
   final AudioService _audioService = AudioService();
   StreamSubscription<NoteResult?>? _audioSub;
@@ -77,6 +111,20 @@ class _WithoutKaraokeRecordingPageState
   @override
   void initState() {
     super.initState();
+    final videoId = widget.backingTrackVideoId;
+    if (videoId != null) {
+      _youtubeController = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: const YoutubePlayerFlags(
+          // The singer starts the track themselves, together with the
+          // recording — autoplaying it while they're still reading the
+          // lyrics would put seconds of song into the take before they
+          // sing a note.
+          autoPlay: false,
+          mute: false,
+        ),
+      );
+    }
     _idleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -89,6 +137,7 @@ class _WithoutKaraokeRecordingPageState
 
   @override
   void dispose() {
+    _youtubeController?.dispose();
     _idleController.dispose();
     _waveTimer?.cancel();
     _timer?.cancel();
@@ -142,6 +191,8 @@ class _WithoutKaraokeRecordingPageState
       await _audioService.stop();
       _timer?.cancel();
       _waveTimer?.cancel();
+      // Nothing left to sing over once the take has ended.
+      _youtubeController?.pause();
 
       final durationSecs = _seconds;
       final pcmSnapshot = List<int>.from(_recordedPcm);
@@ -276,7 +327,7 @@ class _WithoutKaraokeRecordingPageState
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => WithoutKaraokeResultsPage.processing(
+            builder: (_) => FreestyleResultsPage.processing(
               recordingId: id,
               createdAt: now,
               durationSeconds: durationSecs,
@@ -449,14 +500,18 @@ class _WithoutKaraokeRecordingPageState
           children: [
             _buildHeader(),
             _buildCrepeStatusBar(),
+            if (_youtubeController != null) _buildBackingTrack(),
+            if (widget.lyrics.isNotEmpty) Expanded(child: _buildLyricsPanel()),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildNoteDisplay(),
                   const SizedBox(height: 28),
-                  _buildWaveform(),
-                  const SizedBox(height: 28),
+                  if (widget.lyrics.isEmpty) ...[
+                    _buildWaveform(),
+                    const SizedBox(height: 28),
+                  ],
                   if (_isRecording) _buildClarityBar(),
                   if (_isRecording) const SizedBox(height: 8),
                   _buildTimer(),
@@ -470,6 +525,120 @@ class _WithoutKaraokeRecordingPageState
           ],
         ),
       ),
+      ),
+    );
+  }
+
+  // ── Backing track (Analysis Karaoke) ───────────────────────────────────────
+
+  /// The chosen minus-one, streamed through YouTube's embedded player.
+  ///
+  /// Start it yourself when you start recording — it isn't tied to the
+  /// record button on purpose, since the two clocks are independent and
+  /// pretending otherwise would imply a sync the analysis doesn't rely on.
+  Widget _buildBackingTrack() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: YoutubePlayer(
+              controller: _youtubeController!,
+              showVideoProgressIndicator: true,
+              progressIndicatorColor: AppColors.primaryCyan,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.headset, color: Color(0xFFFF9800), size: 13),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  'Headphones recommended — speaker audio gets recorded too.',
+                  style: TextStyle(
+                    color: AppColors.grey.withValues(alpha: 0.75),
+                    fontSize: 10.5,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Lyrics (Analysis Karaoke) ──────────────────────────────────────────────
+
+  /// The chosen song's words, to sing along to.
+  ///
+  /// Deliberately scrolled by the singer rather than auto-highlighted from
+  /// the recording clock: LRC timings are anchored to the studio recording,
+  /// intro included, so with no backing track playing they'd drift
+  /// immediately — the singer starts at the first word, the file expects
+  /// them several seconds in. A highlight that's confidently wrong is worse
+  /// than none.
+  Widget _buildLyricsPanel() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.lyrics_outlined,
+                  color: AppColors.primaryCyan, size: 15),
+              const SizedBox(width: 6),
+              Text(
+                'Lyrics',
+                style: TextStyle(
+                  color: AppColors.grey.withValues(alpha: 0.9),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto',
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'scroll as you sing',
+                style: TextStyle(
+                  color: AppColors.grey.withValues(alpha: 0.5),
+                  fontSize: 10,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.builder(
+              itemCount: widget.lyrics.length,
+              itemBuilder: (context, i) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Text(
+                  widget.lyrics[i].text,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 15,
+                    height: 1.35,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -520,16 +689,36 @@ class _WithoutKaraokeRecordingPageState
               Navigator.pop(context);
             },
           ),
-          const Text(
-            'Record',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white,
-              fontFamily: 'Roboto',
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.songTitle ?? 'Record',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: widget.isAnalysisMode ? 18 : 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+                if (widget.isAnalysisMode &&
+                    (widget.songArtist ?? '').isNotEmpty)
+                  Text(
+                    widget.songArtist!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.grey.withValues(alpha: 0.9),
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+              ],
             ),
           ),
-          const Spacer(),
 
           // Monitoring toggle (only while recording)
           if (_isRecording)

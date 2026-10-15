@@ -3,7 +3,7 @@ import 'word_note_entry.dart';
 /// A completed "without karaoke" recording: the word-by-word note summary
 /// produced by running speech-to-text and pitch detection over the full
 /// take after the fact, with no reference song to score against.
-class FreeSingSummary {
+class FreestyleSummary {
   final String id;
   final DateTime createdAt;
   final int durationSeconds;
@@ -15,7 +15,7 @@ class FreeSingSummary {
 
   final List<WordNoteEntry> words;
 
-  const FreeSingSummary({
+  const FreestyleSummary({
     required this.id,
     required this.createdAt,
     required this.durationSeconds,
@@ -31,7 +31,7 @@ class FreeSingSummary {
         'words': words.map((w) => w.toJson()).toList(),
       };
 
-  factory FreeSingSummary.fromJson(Map<String, dynamic> j) => FreeSingSummary(
+  factory FreestyleSummary.fromJson(Map<String, dynamic> j) => FreestyleSummary(
         id: j['id'] as String,
         createdAt: DateTime.parse(j['createdAt'] as String),
         durationSeconds: j['durationSeconds'] as int? ?? 0,

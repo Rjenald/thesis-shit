@@ -7,9 +7,11 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../core/note_utils.dart' show noteNameToFrequency;
+import 'admin_media_service.dart';
 
 /// One authored ground-truth syllable: the note the singer is meant to hit
 /// during [startTime]–[endTime] in the song's own timeline (i.e. the same
@@ -37,17 +39,30 @@ class GroundTruthService {
     'nasa iyo na ang lahat': 'assets/ground_truth/Nasa_Iyo_Na_Ang_Lahat.json',
   };
 
+  /// Whether this song ships with a ground-truth melody, ignoring any admin
+  /// upload — lets the admin screen distinguish "using the built-in file"
+  /// from "nothing available", which decides whether deleting an upload
+  /// leaves the song with a working target melody.
+  static bool hasBundledGroundTruth(String songTitle) =>
+      _assetBySongTitle.containsKey(songTitle.toLowerCase());
+
   /// Returns the song's ground-truth syllables sorted by time, or null if
   /// no ground truth is available for it (not an error — most songs don't
   /// have one yet).
   static Future<List<GroundTruthSyllable>?> loadForSong(
     String songTitle,
   ) async {
+    // An admin upload overrides the bundled file for this song, and is the
+    // only source for a song the admin added — assets are read-only, so an
+    // uploaded melody can never live in _assetBySongTitle.
+    final uploadedPath = AdminMediaService.groundTruthPathFor(songTitle);
     final assetPath = _assetBySongTitle[songTitle.toLowerCase()];
-    if (assetPath == null) return null;
+    if (uploadedPath == null && assetPath == null) return null;
 
     try {
-      final raw = await rootBundle.loadString(assetPath);
+      final raw = uploadedPath != null
+          ? await File(uploadedPath).readAsString()
+          : await rootBundle.loadString(assetPath!);
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final data = json['data'] as List<dynamic>? ?? [];
 

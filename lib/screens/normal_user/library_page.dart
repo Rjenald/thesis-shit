@@ -1,15 +1,15 @@
 import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
-import '../../models/free_sing_summary.dart';
+import '../../models/freestyle_summary.dart';
 import '../../models/session_result.dart';
-import '../../services/free_sing_storage_service.dart';
+import '../../services/freestyle_storage_service.dart';
 import '../../services/session_storage_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'home_page.dart';
 import 'record_selection_page.dart';
 import 'results_page.dart';
-import 'without_karaoke_results_page.dart';
+import 'freestyle_results_page.dart';
 
 enum _LibraryTab { karaoke, freeSing }
 
@@ -24,7 +24,7 @@ class _LibraryPageState extends State<LibraryPage> {
   _LibraryTab _tab = _LibraryTab.karaoke;
 
   List<SessionResult> _sessions = [];
-  List<FreeSingSummary> _freeSings = [];
+  List<FreestyleSummary> _freeSings = [];
   bool _loading = true;
 
   @override
@@ -35,7 +35,7 @@ class _LibraryPageState extends State<LibraryPage> {
 
   Future<void> _loadAll() async {
     final sessions = await SessionStorageService.loadSessions();
-    final freeSings = await FreeSingStorageService.loadSummaries();
+    final freeSings = await FreestyleStorageService.loadSummaries();
     if (mounted) {
       setState(() {
         _sessions = sessions;
@@ -50,8 +50,8 @@ class _LibraryPageState extends State<LibraryPage> {
     await _loadAll();
   }
 
-  Future<void> _deleteFreeSing(FreeSingSummary summary) async {
-    await FreeSingStorageService.deleteSummary(summary.id);
+  Future<void> _deleteFreeSing(FreestyleSummary summary) async {
+    await FreestyleStorageService.deleteSummary(summary.id);
     await _loadAll();
   }
 
@@ -443,7 +443,7 @@ class _LibraryPageState extends State<LibraryPage> {
     child: const Icon(Icons.music_note, color: AppColors.grey, size: 24),
   );
 
-  Widget _buildFreeSingItem(FreeSingSummary summary) {
+  Widget _buildFreeSingItem(FreestyleSummary summary) {
     final date = summary.createdAt;
     final dateStr =
         '${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}-${date.year}';
@@ -457,7 +457,7 @@ class _LibraryPageState extends State<LibraryPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => WithoutKaraokeResultsPage(summary: summary),
+            builder: (_) => FreestyleResultsPage(summary: summary),
           ),
         );
       },
@@ -536,7 +536,7 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  void _confirmDeleteFreeSing(FreeSingSummary summary) {
+  void _confirmDeleteFreeSing(FreestyleSummary summary) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

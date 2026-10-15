@@ -117,13 +117,18 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
   Future<void> _initAudio() async {
-    final audioUrl = SongAudioService.getAudioUrl(widget.songTitle);
-    if (audioUrl == null) {
+    final audio = SongAudioService.resolve(widget.songTitle);
+    if (audio == null) {
       debugPrint('No audio URL for "${widget.songTitle}"');
       return;
     }
     try {
-      await _player.setAsset(audioUrl);
+      // An admin-uploaded track lives on disk, not in the asset bundle.
+      if (audio.isAsset) {
+        await _player.setAsset(audio.path);
+      } else {
+        await _player.setFilePath(audio.path);
+      }
       await _player.setVolume(1.0);
       _duration = _player.duration ?? Duration.zero;
       setState(() {});
@@ -370,10 +375,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         // melody to compare against (most songs don't have one yet).
         final groundTruth = await GroundTruthService.loadForSong(widget.songTitle);
 
-        final audioUrl = SongAudioService.getAudioUrl(widget.songTitle);
-        pendingMixedAudio = audioUrl != null
+        final audio = SongAudioService.resolve(widget.songTitle);
+        pendingMixedAudio = audio != null
             ? mixSongAndVoice(
-                songAssetPath: audioUrl,
+                songPath: audio.path,
+                songIsAsset: audio.isAsset,
                 songStartOffset: _recordStartPosition,
                 micWavBytes: wav,
                 playbackSpeed: _playbackSpeed,

@@ -1,3 +1,6 @@
+import 'admin_media_service.dart';
+import 'song_audio_service.dart';
+
 class SongCatalogService {
   static const List<Map<String, String>> _songs = [
     {
@@ -127,19 +130,44 @@ class SongCatalogService {
     },
   ];
 
-  static List<Map<String, String>> get allSongs => _songs;
+  /// The songs this app ships with, ignoring anything the admin added.
+  static List<Map<String, String>> get bundledSongs => _songs;
 
-  static List<Map<String, String>> get songsWithAudio =>
-      _songs.where((s) => s['hasAudio'] == 'true').toList();
+  /// Every song available to sing: the bundled catalog plus the ones an
+  /// admin added, which only exist in [AdminMediaService]'s index because
+  /// assets can't be written to at runtime.
+  static List<Map<String, String>> get allSongs => [
+        ..._songs,
+        for (final s in AdminMediaService.customSongs)
+          {
+            'title': s.title,
+            'artist': s.artist,
+            'image': '',
+            if (SongAudioService.hasAudio(s.title)) 'hasAudio': 'true',
+          },
+      ];
+
+  /// Songs that can actually be played with a backing track. An admin
+  /// upload counts, so a bundled song whose MP3 was only ever uploaded
+  /// shows up here too.
+  static List<Map<String, String>> get songsWithAudio => allSongs
+      .where((s) =>
+          s['hasAudio'] == 'true' || SongAudioService.hasAudio(s['title'] ?? ''))
+      .toList();
 
   static List<Map<String, String>> search(String query) {
     final q = query.toLowerCase();
-    return _songs
+    return allSongs
         .where(
           (s) =>
               (s['title'] ?? '').toLowerCase().contains(q) ||
               (s['artist'] ?? '').toLowerCase().contains(q),
         )
         .toList();
+  }
+
+  static bool containsTitle(String title) {
+    final t = title.trim().toLowerCase();
+    return _songs.any((s) => (s['title'] ?? '').toLowerCase() == t);
   }
 }

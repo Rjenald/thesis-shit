@@ -256,6 +256,70 @@ class SessionStorageService {
     }
   }
 
+  // ── Admin account ─────────────────────────────────────────────────────────
+  // One built-in admin, stored in the same account list as everyone else and
+  // marked with an isAdmin flag, so there's one account system rather than
+  // two. Seeded on first run because an offline app has no server to create
+  // it; the password is changeable from the admin page, and
+  // [adminIsUsingDefaultPassword] drives the prompt to do so.
+
+  static const defaultAdminUsername = 'admin';
+  static const defaultAdminPassword = 'huniadmin';
+
+  /// Creates the admin account if it doesn't exist yet. Never overwrites an
+  /// existing one, so a changed password survives app restarts.
+  static Future<void> ensureAdminAccountSeeded() async {
+    final accounts = await _loadRegisteredAccounts();
+    if (accounts.any((a) => a['isAdmin'] == true)) return;
+
+    accounts.removeWhere((a) => a['username'] == defaultAdminUsername);
+    accounts.add({
+      'username': defaultAdminUsername,
+      'password': defaultAdminPassword,
+      'isAdmin': true,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _registeredAccountsKey,
+      accounts.map((a) => jsonEncode(a)).toList(),
+    );
+  }
+
+  /// True only for credentials belonging to an account flagged as admin, so
+  /// a normal account can't reach the admin page by name alone.
+  static Future<bool> authenticateAdmin(
+      String username, String password) async {
+    final accounts = await _loadRegisteredAccounts();
+    return accounts.any((a) =>
+        a['isAdmin'] == true &&
+        a['username'] == username &&
+        a['password'] == password);
+  }
+
+  static Future<bool> adminIsUsingDefaultPassword() async {
+    final accounts = await _loadRegisteredAccounts();
+    return accounts.any(
+        (a) => a['isAdmin'] == true && a['password'] == defaultAdminPassword);
+  }
+
+  /// Returns false if [currentPassword] is wrong, leaving the stored one
+  /// unchanged.
+  static Future<bool> changeAdminPassword(
+      String currentPassword, String newPassword) async {
+    final accounts = await _loadRegisteredAccounts();
+    final index = accounts.indexWhere((a) =>
+        a['isAdmin'] == true && a['password'] == currentPassword);
+    if (index == -1) return false;
+
+    accounts[index] = {...accounts[index], 'password': newPassword};
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _registeredAccountsKey,
+      accounts.map((a) => jsonEncode(a)).toList(),
+    );
+    return true;
+  }
+
   // ── Clear all account data (logout) ───────────────────────────────────────
   static Future<void> clearAccount() async {
     final prefs = await SharedPreferences.getInstance();
