@@ -32,9 +32,6 @@ class OnDeviceCrepeService implements PitchDetectionService {
   // this trades detection cadence for staying smooth. Real latency varies
   // by device (see thesis limitation on real-time performance on mobile).
   static const _inferenceInterval = Duration(milliseconds: 200);
-  // See kDefaultPitchConfidenceThreshold (note_utils.dart) for why this
-  // isn't the textbook-CREPE 0.5 — huni_crepe.tflite's own confidence range
-  // runs much lower, verified on real phone-mic recordings.
   static const _confidenceThreshold = kDefaultPitchConfidenceThreshold;
   // RMS floor below which a frame is treated as silence/noise and skipped.
   static const _vadRmsFloor = 0.01;

@@ -164,12 +164,20 @@ const double kDefaultPitchToleranceCents = 25.0;
 /// the one place this value is defined, so [OnDeviceCrepeService] and every
 /// frame-to-segment builder (karaoke's [buildSingingSegments], "without
 /// karaoke"'s buildWordNotes) share one number instead of drifting apart.
-/// huni_crepe.tflite is a custom-trained model, not stock CREPE weights, so
-/// its confidence range runs much lower than stock CREPE's — verified on
-/// real phone-mic recordings: background/ambiguous frames average ~0.07–
-/// 0.10, while the model's best guesses on real singing top out around
-/// ~0.2–0.3. 0.15 sits between those two, measured ranges.
-const double kDefaultPitchConfidenceThreshold = 0.15;
+/// 0.5 is CREPE's own convention, and the model now in assets/models/
+/// reaches it comfortably: measured against synthesised tones of known
+/// pitch (A2–A4), it reports 0.87–0.96 confidence with under 5 cents of
+/// error.
+///
+/// This was previously 0.15. That was never a tuning choice — it was
+/// compensation for a broken model. The custom-trained huni_crepe.tflite
+/// shipped before scored a maximum confidence of ~0.3 and read 355–831
+/// cents sharp (worsening with pitch, consistent with its 360 bins
+/// spanning 5 octaves while this file's decoder assumes 6). At the stock
+/// 0.5 threshold it produced no usable frames at all, so the threshold was
+/// lowered until something came through. With a model that actually works,
+/// a low threshold only lets noise in.
+const double kDefaultPitchConfidenceThreshold = 0.5;
 
 /// Classify pitch feedback given a cents deviation.
 PitchFeedback classifyPitch(
