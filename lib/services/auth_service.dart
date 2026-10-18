@@ -15,6 +15,9 @@ class AuthResult {
   final String? firstName;
   final String? lastName;
 
+  /// Granted by the database's users.is_admin column, never by the client.
+  final bool isAdmin;
+
   /// Null when [ok]; otherwise a message safe to show the user.
   final String? error;
 
@@ -29,6 +32,7 @@ class AuthResult {
     this.email,
     this.firstName,
     this.lastName,
+    this.isAdmin = false,
     this.error,
     this.isNetworkError = false,
   });
@@ -39,6 +43,7 @@ class AuthResult {
         email: user['email'] as String?,
         firstName: user['firstName'] as String?,
         lastName: user['lastName'] as String?,
+        isAdmin: user['isAdmin'] == true,
       );
 
   factory AuthResult.failure(String message) =>
@@ -67,11 +72,19 @@ class AuthService {
   static String get _base =>
       'http://${PitchServerConfig.serverIp}:${AuthConfig.port}';
 
+  /// Set [requireAdmin] for the admin screen: the server then rejects an
+  /// otherwise-valid account that lacks admin rights, so the decision is
+  /// made by the database rather than trusted from the app.
   static Future<AuthResult> login({
     required String username,
     required String password,
+    bool requireAdmin = false,
   }) =>
-      _post('/auth/login', {'username': username, 'password': password});
+      _post('/auth/login', {
+        'username': username,
+        'password': password,
+        'requireAdmin': requireAdmin,
+      });
 
   static Future<AuthResult> register({
     required String username,

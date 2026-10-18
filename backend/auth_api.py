@@ -80,12 +80,20 @@ def _public(row: dict) -> dict:
         "email": row.get("email"),
         "firstName": row.get("first_name"),
         "lastName": row.get("last_name"),
+        # Decided by the database, never by the client. The app asks to sign
+        # in as admin; only this flag grants it.
+        "isAdmin": bool(row.get("is_admin", 0)),
     }
 
 
 class LoginRequest(BaseModel):
     username: str = Field(min_length=1, max_length=100)
     password: str = Field(min_length=1)
+
+    # requireAdmin is set by the "Log in as Admin" screen. Credentials are
+    # still verified first, so a wrong password fails as a wrong password
+    # rather than revealing whether the account is an admin.
+    requireAdmin: bool = False
 
 
 class RegisterRequest(BaseModel):
@@ -129,7 +137,15 @@ def login(req: LoginRequest):
     if row is None or not _check_password(req.password, row["password"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    return {"ok": True, "user": _public(row)}
+    user = _public(row)
+
+    # Checked only after the password is confirmed, so this can't be used to
+    # find out which accounts are admins.
+    if req.requireAdmin and not user["isAdmin"]:
+        raise HTTPException(
+            status_code=403, detail="This account does not have admin access")
+
+    return {"ok": True, "user": user}
 
 
 @auth_router.post("/auth/register")

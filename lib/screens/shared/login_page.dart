@@ -125,22 +125,29 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       if (_adminMode) {
-        final isAdmin = await SessionStorageService.authenticateAdmin(u, p);
+        // Admin rights come from huni_db.users.is_admin, checked server-side
+        // after the password is verified. Previously this used a seeded
+        // local account, so admin access had nothing to do with the database.
+        final result = await AuthService.login(
+            username: u, password: p, requireAdmin: true);
         if (!mounted) return;
-        if (isAdmin) {
+        if (result.ok && result.isAdmin) {
+          await SessionStorageService.saveUsername(result.username ?? u);
+          if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const AdminPage()),
             (route) => false,
           );
         } else {
+          // A server that's unreachable isn't a credentials problem, so the
+          // fields aren't flagged red and the message says what's actually
+          // wrong.
           setState(() {
-            showUsernameError = true;
-            showPasswordError = true;
+            showUsernameError = !result.isNetworkError;
+            showPasswordError = !result.isNetworkError;
           });
-          // Deliberately not saying whether the account exists but isn't an
-          // admin — that would confirm a valid username to anyone probing.
-          _showError('Invalid admin credentials.');
+          _showError(result.error ?? 'Invalid admin credentials.');
         }
         return;
       }
