@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 import '../normal_user/home_page.dart';
 import '../../constants/app_colors.dart';
+import '../../services/auth_service.dart';
 import '../../services/session_storage_service.dart';
 
 class CurvedBottomPainter extends CustomPainter {
@@ -40,12 +41,14 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _showLastNameError = false;
   bool _showFirstNameError = false;
+  bool _showEmailError = false;
   bool _showUsernameError = false;
   bool _showPasswordError = false;
   bool _showConfirmPasswordError = false;
 
   final TextEditingController _lastName = TextEditingController();
   final TextEditingController _firstName = TextEditingController();
+  final TextEditingController _email = TextEditingController();
   final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
@@ -81,6 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _timer?.cancel();
     _lastName.dispose();
     _firstName.dispose();
+    _email.dispose();
     _username.dispose();
     _password.dispose();
     _confirmPassword.dispose();
@@ -102,6 +106,8 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() {
       _showLastNameError = _lastName.text.trim().isEmpty;
       _showFirstNameError = _firstName.text.trim().isEmpty;
+      _showEmailError = !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+          .hasMatch(_email.text.trim());
       _showUsernameError = _username.text.trim().isEmpty;
       _showPasswordError = _password.text.isEmpty;
       _showConfirmPasswordError =
@@ -111,6 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (_showLastNameError ||
         _showFirstNameError ||
+        _showEmailError ||
         _showUsernameError ||
         _showPasswordError ||
         _showConfirmPasswordError) {
@@ -128,23 +135,33 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final username = _username.text.trim();
-      final taken = await SessionStorageService.isUsernameTaken(username);
-      if (taken) {
-        if (!mounted) return;
-        setState(() {
-          _showUsernameError = true;
-          _isLoading = false;
-        });
-        _showError('Username is already taken.');
-        return;
-      }
 
-      await SessionStorageService.saveRegisteredAccount(
+      // Created in huni_db via the backend, which hashes the password with
+      // bcrypt. Uniqueness is enforced by the database's own constraints
+      // rather than a check here, so two devices registering the same name
+      // at once can't both succeed.
+      final result = await AuthService.register(
         username: username,
         password: _password.text,
+        email: _email.text.trim(),
         firstName: _firstName.text.trim(),
         lastName: _lastName.text.trim(),
       );
+
+      if (!mounted) return;
+
+      if (!result.ok) {
+        final taken = (result.error ?? '').toLowerCase().contains('taken');
+        setState(() {
+          _showUsernameError = taken && !result.isNetworkError;
+          _showEmailError =
+              taken && (result.error ?? '').toLowerCase().startsWith('email');
+          _isLoading = false;
+        });
+        _showError(result.error ?? 'Could not create your account.');
+        return;
+      }
+
       await SessionStorageService.saveUsername(username);
 
       if (!mounted) return;
@@ -319,6 +336,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 28),
                   _sectionLabel('Login Information'),
+                  // huni_db.users requires a unique, non-null email, so it
+                  // has to be collected rather than generated.
+                  _field(
+                    controller: _email,
+                    hint: 'Email',
+                    showError: _showEmailError,
+                    errorText: 'A valid email is required',
+                  ),
+                  const SizedBox(height: 16),
                   _field(
                     controller: _username,
                     hint: 'Username',

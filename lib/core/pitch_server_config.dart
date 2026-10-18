@@ -21,7 +21,7 @@ class PitchServerConfig {
   /// Real device → the host's LAN address, from `ipconfig`.
   static const String serverIp = String.fromEnvironment(
     'PITCH_SERVER_IP',
-    defaultValue: '10.38.57.126',
+    defaultValue: '10.234.221.126',
   );
 
   static const int serverPort =

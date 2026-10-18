@@ -4,6 +4,7 @@ import '../admin/admin_page.dart';
 import '../normal_user/home_page.dart';
 import 'register_page.dart';
 import '../../constants/app_colors.dart';
+import '../../services/auth_service.dart';
 import '../../services/session_storage_service.dart';
 
 class CurvedBottomPainter extends CustomPainter {
@@ -144,15 +145,15 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      // Check locally registered accounts
-      final account = await SessionStorageService.authenticateRegisteredAccount(
-        u,
-        p,
-      );
+      // Checked against huni_db through the backend API. Accounts used to
+      // live in this device's own storage, which meant anyone could
+      // register locally and sign in regardless of the database — and the
+      // accounts actually in huni_db could never sign in at all.
+      final result = await AuthService.login(username: u, password: p);
       if (!mounted) return;
 
-      if (account != null) {
-        await SessionStorageService.saveUsername(u);
+      if (result.ok) {
+        await SessionStorageService.saveUsername(result.username ?? u);
 
         if (!mounted) return;
 
@@ -164,11 +165,13 @@ class _LoginPageState extends State<LoginPage> {
           (route) => false,
         );
       } else {
+        // A server that can't be reached is not a wrong password — saying
+        // so would send people off changing credentials that are fine.
         setState(() {
-          showUsernameError = true;
-          showPasswordError = true;
+          showUsernameError = !result.isNetworkError;
+          showPasswordError = !result.isNetworkError;
         });
-        _showError('Invalid username or password.');
+        _showError(result.error ?? 'Invalid username or password.');
       }
     } catch (e) {
       if (!mounted) return;
