@@ -15,6 +15,14 @@ class LocalSongLyrics {
         return _ulapLyrics;
       case 'fallen':
         return _fallenLyrics;
+      case 'araw-araw':
+        return _arawArawLyrics;
+      case 'ere':
+        return _ereLyrics;
+      case 'tahanan':
+        return _tahananLyrics;
+      case 'binibini':
+        return _binibiniLyrics;
       default:
         return null;
     }
@@ -204,5 +212,196 @@ class LocalSongLyrics {
     LrcLine(timestamp: Duration(milliseconds: 184880), text: 'What if I told you that I\'ve fallen? (Oh, nevermind)'),
     LrcLine(timestamp: Duration(milliseconds: 189770), text: 'What if I told you that I\'ve fallen? (Oh, nevermind, I said nevermind)'),
     LrcLine(timestamp: Duration(milliseconds: 194440), text: 'I shouldn\'t tell you that I\'ve fallen'),
+  ];
+
+  // ── Araw-Araw - Ben&Ben ─────────────────────────────────────
+  // From lrclib, nearest-duration master (263.0s
+  // against our 285s karaoke track). Timings follow the
+  // studio original, so they may need an offset for this backing
+  // track - see the ground-truth alignment note.
+  static final List<LrcLine> _arawArawLyrics = [
+    LrcLine(timestamp: Duration(milliseconds: 420), text: 'Umaga na sa ating duyan'),
+    LrcLine(timestamp: Duration(milliseconds: 9170), text: '\'Wag nang mawawala'),
+    LrcLine(timestamp: Duration(milliseconds: 14680), text: 'Umaga na sa ating duyan'),
+    LrcLine(timestamp: Duration(milliseconds: 23400), text: 'Magmamahal, oh, mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 55540), text: 'Matang magkakilala'),
+    LrcLine(timestamp: Duration(milliseconds: 61900), text: 'Sa unang pagtagpo'),
+    LrcLine(timestamp: Duration(milliseconds: 68970), text: 'Paano dahan-dahang'),
+    LrcLine(timestamp: Duration(milliseconds: 75560), text: 'Sinuyo ang puso?'),
+    LrcLine(timestamp: Duration(milliseconds: 84370), text: 'Kay tagal ko nang nag-iisa'),
+    LrcLine(timestamp: Duration(milliseconds: 91170), text: 'And\'yan ka lang pala'),
+    LrcLine(timestamp: Duration(milliseconds: 98330), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 101500), text: 'Pipiliin ka sa araw-araw'),
+    LrcLine(timestamp: Duration(milliseconds: 111830), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 115200), text: 'Ang nadarama sa \'yo\'y malinaw'),
+    LrcLine(timestamp: Duration(milliseconds: 123620), text: 'Higit pa sa ligaya'),
+    LrcLine(timestamp: Duration(milliseconds: 130440), text: 'Hatid sa damdamin'),
+    LrcLine(timestamp: Duration(milliseconds: 137340), text: 'Lahat naunawaan'),
+    LrcLine(timestamp: Duration(milliseconds: 143840), text: 'Sa lalim ng tingin'),
+    LrcLine(timestamp: Duration(milliseconds: 152810), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 156160), text: 'Pipiliin ka sa araw-araw'),
+    LrcLine(timestamp: Duration(milliseconds: 166380), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 169860), text: 'Ang nadarama sa \'yo\'y malinaw'),
+    LrcLine(timestamp: Duration(milliseconds: 182590), text: 'Sa minsang pagbali ng hangin'),
+    LrcLine(timestamp: Duration(milliseconds: 189670), text: 'Hinila patungo sa akin'),
+    LrcLine(timestamp: Duration(milliseconds: 196850), text: 'Tanging ika\'y iibiging wagas at buo'),
+    LrcLine(timestamp: Duration(milliseconds: 208680), text: 'Payapa sa yakap ng iyong hiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 221640), text: 'Payapa sa yakap ng iyong...'),
+    LrcLine(timestamp: Duration(milliseconds: 248220), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 251420), text: 'Pipiliin ka sa araw-araw'),
+    LrcLine(timestamp: Duration(milliseconds: 261480), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 265170), text: 'Ang nadarama sa \'yo\'y malinaw'),
+    LrcLine(timestamp: Duration(milliseconds: 274840), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 278660), text: '\'Wag nang mawala araw-araw'),
+    LrcLine(timestamp: Duration(milliseconds: 288860), text: 'Mahiwaga'),
+    LrcLine(timestamp: Duration(milliseconds: 292440), text: 'Pipiliin ka araw-araw'),
+  ];
+
+  // ── Ere - Juan Karlos ─────────────────────────────────────
+  // From lrclib, nearest-duration master (280.0s
+  // against our 276s karaoke track). Timings follow the
+  // studio original, so they may need an offset for this backing
+  // track - see the ground-truth alignment note.
+  static final List<LrcLine> _ereLyrics = [
+    LrcLine(timestamp: Duration(milliseconds: 780), text: 'Lahat ng pagmamahal'),
+    LrcLine(timestamp: Duration(milliseconds: 6250), text: 'At oras na aking binigay'),
+    LrcLine(timestamp: Duration(milliseconds: 14050), text: 'Parang \'di mo pansin'),
+    LrcLine(timestamp: Duration(milliseconds: 18870), text: 'Ang sama ko sa \'yong paningin'),
+    LrcLine(timestamp: Duration(milliseconds: 25020), text: 'Hmm, hmm'),
+    LrcLine(timestamp: Duration(milliseconds: 28410), text: 'Oh, \'di ba? Nakakaputang ina'),
+    LrcLine(timestamp: Duration(milliseconds: 35910), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 41640), text: 'Oh, \'di ba? Pinagmukha mo \'kong tanga'),
+    LrcLine(timestamp: Duration(milliseconds: 48960), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 56420), text: '\'Di mo agad sinabi'),
+    LrcLine(timestamp: Duration(milliseconds: 61720), text: 'Na may duda na sa \'yong isip (duda, duda)'),
+    LrcLine(timestamp: Duration(milliseconds: 70030), text: 'Pinalalim mo pa'),
+    LrcLine(timestamp: Duration(milliseconds: 74410), text: 'Ang sugat dito sa aking dibdib'),
+    LrcLine(timestamp: Duration(milliseconds: 81170), text: 'Oh, shit'),
+    LrcLine(timestamp: Duration(milliseconds: 84420), text: 'Hmm, \'di ba? Nakakaputang ina'),
+    LrcLine(timestamp: Duration(milliseconds: 91630), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 97430), text: 'Oh, \'di ba? Pinagmukha mo \'kong tanga'),
+    LrcLine(timestamp: Duration(milliseconds: 104880), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 110550), text: 'Sa ere, ere, ere'),
+    LrcLine(timestamp: Duration(milliseconds: 121390), text: 'At ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 123740), text: 'Sa ere, ere, oh, ere, ooh-ooh'),
+    LrcLine(timestamp: Duration(milliseconds: 134590), text: 'At ako\'y iniwan mo, ooh-ooh-ooh'),
+    LrcLine(timestamp: Duration(milliseconds: 140870), text: 'Tatlong bilyon, ikaw lang nga ang aking gusto'),
+    LrcLine(timestamp: Duration(milliseconds: 147680), text: 'Pasensiya na kung ngayon ako\'y \'di para sa \'yo'),
+    LrcLine(timestamp: Duration(milliseconds: 154190), text: 'Tayo ay papunta na sa \'ting bagong yugto'),
+    LrcLine(timestamp: Duration(milliseconds: 160800), text: '\'Yokong mabuhay sa isang mundong walang tayo'),
+    LrcLine(timestamp: Duration(milliseconds: 167230), text: 'Tatlong bilyon, ikaw lang nga ang aking gusto'),
+    LrcLine(timestamp: Duration(milliseconds: 174070), text: 'Pasensiya na kung ngayon ako\'y \'di para sa \'yo'),
+    LrcLine(timestamp: Duration(milliseconds: 180560), text: 'Tayo ay papunta na sa \'ting bagong yugto'),
+    LrcLine(timestamp: Duration(milliseconds: 187160), text: '\'Yokong mabuhay sa isang mundong walang tayo'),
+    LrcLine(timestamp: Duration(milliseconds: 193810), text: '\'Di ba? Nakakaputang ina'),
+    LrcLine(timestamp: Duration(milliseconds: 200240), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 205720), text: 'Oh, \'di ba? \'Di ba? \'Di ba? Pinagmukha mo \'kong tanga'),
+    LrcLine(timestamp: Duration(milliseconds: 213370), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 219110), text: 'Sa ere, ere, ere (oh, \'di ba? Nakakaputang ina)'),
+    LrcLine(timestamp: Duration(milliseconds: 226560), text: '(Tayo\'y lumilipad) at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 232280), text: 'Sa ere, ere, oh, ere (oh, \'di ba? Pinagmukha mo \'kong tanga)'),
+    LrcLine(timestamp: Duration(milliseconds: 239730), text: '(Tayo\'y lumilipad) at ako\'y iniwan mo'),
+    LrcLine(timestamp: Duration(milliseconds: 245490), text: 'Oh, \'di ba? Nakakaputang ina'),
+    LrcLine(timestamp: Duration(milliseconds: 252850), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo pa'),
+    LrcLine(timestamp: Duration(milliseconds: 259660), text: '\'Di ba? Ginawa mo pa akong tanga'),
+    LrcLine(timestamp: Duration(milliseconds: 265910), text: 'Tayo\'y lumilipad, at ako\'y iniwan mo, hmm'),
+  ];
+
+  // ── Tahanan - Adie ─────────────────────────────────────
+  // From lrclib, nearest-duration master (293.0s
+  // against our 292s karaoke track). Timings follow the
+  // studio original, so they may need an offset for this backing
+  // track - see the ground-truth alignment note.
+  static final List<LrcLine> _tahananLyrics = [
+    LrcLine(timestamp: Duration(milliseconds: 18540), text: 'Sa araw-araw'),
+    LrcLine(timestamp: Duration(milliseconds: 21480), text: 'Tanging ikaw ang palagi kong hinahangad'),
+    LrcLine(timestamp: Duration(milliseconds: 27880), text: 'Laging tanaw'),
+    LrcLine(timestamp: Duration(milliseconds: 29580), text: 'Sa \'yo ang ilaw na nagsisilbi kong liwanag'),
+    LrcLine(timestamp: Duration(milliseconds: 36940), text: 'Labis ang ngiti kapag ika\'y kaharap'),
+    LrcLine(timestamp: Duration(milliseconds: 41140), text: 'Ramdam ko ang pagmamahal, giliw'),
+    LrcLine(timestamp: Duration(milliseconds: 45590), text: 'Namumukod-tangi ka at walang katulad'),
+    LrcLine(timestamp: Duration(milliseconds: 49770), text: 'Ikaw lang ang para sa \'kin'),
+    LrcLine(timestamp: Duration(milliseconds: 62530), text: 'Sa \'yo lang, sa \'yo lang ako uuwi'),
+    LrcLine(timestamp: Duration(milliseconds: 68970), text: 'Kaya naman'),
+    LrcLine(timestamp: Duration(milliseconds: 70820), text: 'Dito ka sa piling ko'),
+    LrcLine(timestamp: Duration(milliseconds: 74470), text: 'Oh, dito ka lang, dito ka lang'),
+    LrcLine(timestamp: Duration(milliseconds: 79210), text: 'Bumabagal ang ikot ng mundo'),
+    LrcLine(timestamp: Duration(milliseconds: 82880), text: 'Kapag ika\'y nariyan, oh, aking tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 88330), text: 'Ta, ta-ta-ta-ta, tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 95670), text: 'Dito ka lang, dito ka lang, dito ka lang'),
+    LrcLine(timestamp: Duration(milliseconds: 104360), text: 'Oh, aking tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 114410), text: 'Sa bawat sandali'),
+    LrcLine(timestamp: Duration(milliseconds: 117390), text: 'Na tayo ay magkayakap nang mahigpit'),
+    LrcLine(timestamp: Duration(milliseconds: 123930), text: 'Taglay mong init'),
+    LrcLine(timestamp: Duration(milliseconds: 125520), text: 'Ang bumabalot sa \'king nilalamig na damdamin'),
+    LrcLine(timestamp: Duration(milliseconds: 132970), text: 'Tayong dalawa\'y pinagtagpo'),
+    LrcLine(timestamp: Duration(milliseconds: 138120), text: 'Ng tamang pagkakataon'),
+    LrcLine(timestamp: Duration(milliseconds: 141830), text: 'Hindi maitatanggi'),
+    LrcLine(timestamp: Duration(milliseconds: 144240), text: 'Na sa akin, ikaw ang tanging tiyak, ah'),
+    LrcLine(timestamp: Duration(milliseconds: 158930), text: 'Ikaw lang, ikaw lang ang tinatangi'),
+    LrcLine(timestamp: Duration(milliseconds: 162800), text: '(Ikaw lamang ang tinatangi ko)'),
+    LrcLine(timestamp: Duration(milliseconds: 166800), text: 'Ikaw lang at ako ang naaaninag (naaaninag)'),
+    LrcLine(timestamp: Duration(milliseconds: 174890), text: 'Sa gitna ng paraiso na ating sinimulan'),
+    LrcLine(timestamp: Duration(milliseconds: 181460), text: 'Oh, aking tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 186770), text: 'Pinapawi lahat ng iyong mga ngiti'),
+    LrcLine(timestamp: Duration(milliseconds: 190340), text: 'Negatibo na nakadikit sa \'king labi'),
+    LrcLine(timestamp: Duration(milliseconds: 195150), text: 'Huli ng iyong ngiti ang aking kiliti'),
+    LrcLine(timestamp: Duration(milliseconds: 199350), text: 'Katotohanan na hindi ko maitatanggi'),
+    LrcLine(timestamp: Duration(milliseconds: 203420), text: 'Na mahal kita, walang iba'),
+    LrcLine(timestamp: Duration(milliseconds: 210870), text: 'Kaya naman'),
+    LrcLine(timestamp: Duration(milliseconds: 212490), text: 'Dito ka sa piling ko'),
+    LrcLine(timestamp: Duration(milliseconds: 216000), text: 'Oh, dito ka lang, dito ka lang'),
+    LrcLine(timestamp: Duration(milliseconds: 221050), text: 'Bumabagal ang ikot ng mundo'),
+    LrcLine(timestamp: Duration(milliseconds: 224910), text: 'Kapag ika\'y nariyan, oh, aking tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 229970), text: 'Ta, ta-ta-ta-ta, tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 237870), text: 'Dito ka lang, dito ka lang, dito ka lang'),
+    LrcLine(timestamp: Duration(milliseconds: 247270), text: 'Dito ka sa piling ko'),
+    LrcLine(timestamp: Duration(milliseconds: 247880), text: '(Pinapawi lahat ng iyong mga ngiti)'),
+    LrcLine(timestamp: Duration(milliseconds: 251730), text: '(Negatibo na nakadikit sa \'king labi)'),
+    LrcLine(timestamp: Duration(milliseconds: 256200), text: 'Bumabagal ang ikot ng mundo'),
+    LrcLine(timestamp: Duration(milliseconds: 257240), text: '(Huli ng iyong ngiti ang aking kiliti)'),
+    LrcLine(timestamp: Duration(milliseconds: 260310), text: '(Katotohanan na hindi ko maitatanggi)'),
+    LrcLine(timestamp: Duration(milliseconds: 264820), text: 'Ta, ta-ta-ta-ta, tahanan'),
+    LrcLine(timestamp: Duration(milliseconds: 272630), text: 'Dito ka lang, dito ka lang, dito ka lang'),
+    LrcLine(timestamp: Duration(milliseconds: 280850), text: 'Oh, aking tahanan'),
+  ];
+
+  // ── Binibini - Zack Tabudlo ─────────────────────────────────────
+  // From lrclib, nearest-duration master (214.0s
+  // against our 214s karaoke track). Timings follow the
+  // studio original, so they may need an offset for this backing
+  // track - see the ground-truth alignment note.
+  static final List<LrcLine> _binibiniLyrics = [
+    LrcLine(timestamp: Duration(milliseconds: 480), text: 'Binibini'),
+    LrcLine(timestamp: Duration(milliseconds: 5150), text: 'Alam mo ba kung pa\'no nahulog sa \'yo?'),
+    LrcLine(timestamp: Duration(milliseconds: 11710), text: 'Naramdaman lang bigla ng puso'),
+    LrcLine(timestamp: Duration(milliseconds: 19430), text: 'Aking sinta, ikaw lang nagparamdam nito'),
+    LrcLine(timestamp: Duration(milliseconds: 27310), text: 'Kaya sabihin mo sa akin'),
+    LrcLine(timestamp: Duration(milliseconds: 31770), text: 'Ang tumatakbo sa isip mo'),
+    LrcLine(timestamp: Duration(milliseconds: 38100), text: 'Kung mahal mo na rin ba ako'),
+    LrcLine(timestamp: Duration(milliseconds: 43200), text: 'Isayaw mo ako'),
+    LrcLine(timestamp: Duration(milliseconds: 48990), text: 'Sa gitna ng ulan, mahal ko'),
+    LrcLine(timestamp: Duration(milliseconds: 56330), text: 'Kapalit man nito\'y buhay ko'),
+    LrcLine(timestamp: Duration(milliseconds: 64140), text: 'Gagawin ang lahat para sa \'yo'),
+    LrcLine(timestamp: Duration(milliseconds: 71390), text: 'Alam kong mahal mo na rin ako'),
+    LrcLine(timestamp: Duration(milliseconds: 77550), text: 'Binibini'),
+    LrcLine(timestamp: Duration(milliseconds: 82540), text: 'Sabi mo noon sa \'kin, ayaw mo pa'),
+    LrcLine(timestamp: Duration(milliseconds: 89710), text: 'Pero ang yakap ngayo\'y kakaiba'),
+    LrcLine(timestamp: Duration(milliseconds: 97300), text: 'Hindi ka ba nalilito? Totoo na bang gusto ko?'),
+    LrcLine(timestamp: Duration(milliseconds: 104520), text: '\'Wag nang lalabanan ang puso'),
+    LrcLine(timestamp: Duration(milliseconds: 109280), text: 'Alam kong mahal mo na \'ko'),
+    LrcLine(timestamp: Duration(milliseconds: 116150), text: 'Kung gano\'n, halika na\'t huwag lumayo'),
+    LrcLine(timestamp: Duration(milliseconds: 121520), text: 'Isayaw mo ako'),
+    LrcLine(timestamp: Duration(milliseconds: 126910), text: 'Sa gitna ng ulan, mahal ko'),
+    LrcLine(timestamp: Duration(milliseconds: 134420), text: 'Kapalit man nito\'y buhay ko'),
+    LrcLine(timestamp: Duration(milliseconds: 141700), text: 'Gagawin ang lahat para sa \'yo'),
+    LrcLine(timestamp: Duration(milliseconds: 148870), text: 'Alam kong mahal mo na rin ako, whoa'),
+    LrcLine(timestamp: Duration(milliseconds: 161160), text: 'Ooh-'),
+    LrcLine(timestamp: Duration(milliseconds: 171840), text: 'Yeah'),
+    LrcLine(timestamp: Duration(milliseconds: 180220), text: 'Isayaw mo ako'),
+    LrcLine(timestamp: Duration(milliseconds: 185950), text: 'Sa gitna ng ulan, mahal ko'),
+    LrcLine(timestamp: Duration(milliseconds: 193110), text: 'Kapalit man nito\'y buhay ko'),
+    LrcLine(timestamp: Duration(milliseconds: 201380), text: 'Gagawin ang lahat para sa \'yo'),
+    LrcLine(timestamp: Duration(milliseconds: 208660), text: 'Alam kong mahal mo na rin ako'),
   ];
 }
