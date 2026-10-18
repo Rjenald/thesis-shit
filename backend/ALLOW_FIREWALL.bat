@@ -1,38 +1,42 @@
 @echo off
-REM Opens ports 8000 (pitch server) and 8001 (auth/login) so a phone on the
-REM same Wi-Fi can reach them. Windows blocks inbound connections by default,
-REM which is why the app reports "could not reach the Huni server".
+REM Opens ports 8000 (pitch) and 8001 (login) so a phone on the same Wi-Fi
+REM can reach this PC. Windows blocks inbound connections by default, which
+REM is why the app says "could not reach the Huni server".
 REM
-REM RIGHT-CLICK THIS FILE AND CHOOSE "Run as administrator".
-REM Run once per machine - the rule persists.
+REM RIGHT-CLICK this file -> "Run as administrator".  Double-clicking will
+REM not work: adding a firewall rule requires elevation.
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo  NOT RUNNING AS ADMINISTRATOR
+    echo  ============================================
+    echo   NOT RUNNING AS ADMINISTRATOR - nothing done
+    echo  ============================================
     echo.
-    echo  Close this window, right-click ALLOW_FIREWALL.bat
-    echo  and choose "Run as administrator".
+    echo  Close this window.
+    echo  RIGHT-CLICK ALLOW_FIREWALL.bat
+    echo  Choose "Run as administrator"
     echo.
     pause
     exit /b 1
 )
 
-echo Adding firewall rule for ports 8000 and 8001...
-powershell -NoProfile -Command ^
-  "Remove-NetFirewallRule -DisplayName 'Huni servers (8000-8001)' -ErrorAction SilentlyContinue; ^
-   New-NetFirewallRule -DisplayName 'Huni servers (8000-8001)' -Direction Inbound ^
-     -LocalPort 8000,8001 -Protocol TCP -Action Allow -Profile Private,Domain | Out-Null; ^
-   Write-Host 'Rule added.'"
+echo Removing any previous rule...
+netsh advfirewall firewall delete rule name="Huni servers" >nul 2>&1
+
+echo Adding rule for TCP 8000-8001...
+netsh advfirewall firewall add rule name="Huni servers" dir=in action=allow protocol=TCP localport=8000-8001
+
+echo.
+echo Verifying...
+netsh advfirewall firewall show rule name="Huni servers" | findstr /C:"Rule Name" /C:"Enabled" /C:"LocalPort" /C:"Action"
 
 echo.
 echo Your PC's address on this network:
-powershell -NoProfile -Command ^
-  "(Get-NetIPAddress -AddressFamily IPv4 ^| Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } ^| Select-Object -ExpandProperty IPAddress) -join ', '"
+ipconfig | findstr /C:"IPv4"
 
 echo.
-echo Next: on your PHONE's browser open
-echo    http://THAT_ADDRESS:8001/auth/health
-echo You should see:  {"status":"ok","database":"huni_db","users":13}
+echo NEXT: on your PHONE'S BROWSER open  http://THAT-ADDRESS:8001/auth/health
+echo Expect:  {"status":"ok","database":"huni_db","users":13}
 echo.
 pause
