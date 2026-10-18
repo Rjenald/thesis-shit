@@ -6,7 +6,17 @@ class CatalogSong {
   final String title;
   final String artist;
 
-  const CatalogSong({required this.title, required this.artist});
+  /// Cover art URL, empty when none is known. Every place that renders this
+  /// has an errorBuilder falling back to a placeholder, so an empty or
+  /// unreachable URL degrades to an icon rather than a broken image — which
+  /// also covers running offline, since these are remote.
+  final String image;
+
+  const CatalogSong({
+    required this.title,
+    required this.artist,
+    this.image = '',
+  });
 
   /// The naming convention every asset for this song follows:
   /// `assets/audio/<Title - Artist>.mp3` and
@@ -16,7 +26,7 @@ class CatalogSong {
   Map<String, String> toMap() => {
         'title': title,
         'artist': artist,
-        'image': '',
+        'image': image,
         'hasAudio': 'true',
       };
 }
@@ -36,14 +46,39 @@ class SongCatalogService {
   static const List<CatalogSong> bundled = [
     CatalogSong(title: 'Araw-Araw', artist: 'Ben&Ben'),
     CatalogSong(title: 'Binibini', artist: 'Zack Tabudlo'),
-    CatalogSong(title: 'Dadalhin', artist: 'Alcasid'),
+    CatalogSong(
+      title: 'Dadalhin',
+      artist: 'Alcasid',
+      image: 'https://media.philstar.com/photos/2022/04/19/'
+          'regine-1_2022-04-19_17-19-51.jpg',
+    ),
     CatalogSong(title: 'Ere', artist: 'Juan Karlos'),
-    CatalogSong(title: 'Fallen', artist: 'Lola Amour'),
+    CatalogSong(
+      title: 'Fallen',
+      artist: 'Lola Amour',
+      image: 'https://images.genius.com/'
+          'b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
+    ),
     CatalogSong(title: 'Mula Sa Puso', artist: 'Regine Velasquez'),
-    CatalogSong(title: 'Nasa Iyo Na Ang Lahat', artist: 'Daniel Padilla'),
-    CatalogSong(title: 'Paalam Muna Sandali', artist: 'Darren'),
+    CatalogSong(
+      title: 'Nasa Iyo Na Ang Lahat',
+      artist: 'Daniel Padilla',
+      image: 'https://images.genius.com/'
+          'e817d67292e5c1ac1e72b0c8573161e5.900x900x1.jpg',
+    ),
+    CatalogSong(
+      title: 'Paalam Muna Sandali',
+      artist: 'Darren',
+      image: 'https://tse4.mm.bing.net/th/id/'
+          'OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
+    ),
     CatalogSong(title: 'Tahanan', artist: 'Adie'),
-    CatalogSong(title: 'Ulap', artist: 'Rob Daniel'),
+    CatalogSong(
+      title: 'Ulap',
+      artist: 'Rob Daniel',
+      image: 'https://tse3.mm.bing.net/th/id/'
+          'OIP.4AnzA3S0-AUEBFjst492KwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3',
+    ),
   ];
 
   /// The bundled songs, ignoring anything an admin added.
