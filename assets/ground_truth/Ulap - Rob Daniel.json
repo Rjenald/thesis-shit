@@ -1,0 +1,3892 @@
+{
+ "data": [
+  {
+   "syllable": "",
+   "start": 3.81,
+   "end": 3.92,
+   "note": "B2"
+  },
+  {
+   "syllable": "",
+   "start": 5.43,
+   "end": 5.65,
+   "note": "E4"
+  },
+  {
+   "syllable": "Nag",
+   "start": 7.06,
+   "end": 7.45,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Nag",
+   "start": 7.47,
+   "end": 7.65,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Nag",
+   "start": 7.81,
+   "end": 7.92,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "-isa,",
+   "start": 8.19,
+   "end": 8.4,
+   "note": "D3"
+  },
+  {
+   "syllable": "-isa,",
+   "start": 8.47,
+   "end": 8.68,
+   "note": "A3"
+  },
+  {
+   "syllable": "-isa,",
+   "start": 8.68,
+   "end": 9.16,
+   "note": "B3"
+  },
+  {
+   "syllable": "-isa,",
+   "start": 9.16,
+   "end": 9.41,
+   "note": "B3"
+  },
+  {
+   "syllable": "-isa,",
+   "start": 9.41,
+   "end": 9.56,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "-isa,",
+   "start": 9.59,
+   "end": 9.7,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 9.77,
+   "end": 10.44,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 10.44,
+   "end": 10.57,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 10.88,
+   "end": 11.01,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 11.31,
+   "end": 11.44,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 16.78,
+   "end": 16.93,
+   "note": "A3"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 16.93,
+   "end": 18.08,
+   "note": "B3"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 18.1,
+   "end": 18.25,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "nakadunaw",
+   "start": 18.4,
+   "end": 18.87,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 18.87,
+   "end": 19.51,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 19.56,
+   "end": 19.66,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 19.69,
+   "end": 19.85,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 20.19,
+   "end": 20.33,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 20.35,
+   "end": 20.53,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 21.39,
+   "end": 21.49,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "bintana",
+   "start": 24.73,
+   "end": 24.87,
+   "note": "A3"
+  },
+  {
+   "syllable": "bintana",
+   "start": 24.87,
+   "end": 25.97,
+   "note": "B3"
+  },
+  {
+   "syllable": "bintana",
+   "start": 25.97,
+   "end": 26.09,
+   "note": "A3"
+  },
+  {
+   "syllable": "bintana",
+   "start": 26.11,
+   "end": 26.33,
+   "note": "C4"
+  },
+  {
+   "syllable": "bintana",
+   "start": 26.46,
+   "end": 26.92,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "bintana",
+   "start": 26.93,
+   "end": 27.12,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 27.17,
+   "end": 27.53,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 27.54,
+   "end": 27.65,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 27.82,
+   "end": 28.62,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 29.1,
+   "end": 29.26,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "Ako",
+   "start": 32.1,
+   "end": 32.22,
+   "note": "D♯3"
+  },
+  {
+   "syllable": "'y",
+   "start": 32.69,
+   "end": 32.79,
+   "note": "A3"
+  },
+  {
+   "syllable": "'y",
+   "start": 32.79,
+   "end": 33.11,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "nagkunyang",
+   "start": 33.11,
+   "end": 33.67,
+   "note": "B3"
+  },
+  {
+   "syllable": "nagkunyang",
+   "start": 33.67,
+   "end": 33.93,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "nagkunyang",
+   "start": 34.16,
+   "end": 35.14,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 35.14,
+   "end": 35.51,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 35.87,
+   "end": 36.06,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 36.27,
+   "end": 36.48,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 37.79,
+   "end": 37.96,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 38.96,
+   "end": 39.17,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 39.2,
+   "end": 39.34,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 40.32,
+   "end": 40.49,
+   "note": "C♯3"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 40.75,
+   "end": 40.91,
+   "note": "A3"
+  },
+  {
+   "syllable": "nakawad",
+   "start": 40.91,
+   "end": 41.7,
+   "note": "B3"
+  },
+  {
+   "syllable": "po",
+   "start": 41.7,
+   "end": 41.94,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 42.14,
+   "end": 42.65,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 42.68,
+   "end": 42.97,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 43.14,
+   "end": 43.29,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 43.35,
+   "end": 43.52,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 43.79,
+   "end": 43.92,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 46.72,
+   "end": 46.97,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 47.01,
+   "end": 47.17,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 47.33,
+   "end": 47.5,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 48.47,
+   "end": 48.63,
+   "note": "B2"
+  },
+  {
+   "syllable": "",
+   "start": 48.83,
+   "end": 48.99,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 48.99,
+   "end": 49.48,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "",
+   "start": 49.48,
+   "end": 49.77,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 49.77,
+   "end": 50.09,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 50.17,
+   "end": 50.48,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 50.48,
+   "end": 50.65,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "Lumalayo",
+   "start": 50.75,
+   "end": 51.23,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Lumalayo",
+   "start": 51.27,
+   "end": 51.41,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Lumalayo",
+   "start": 51.53,
+   "end": 51.64,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 54.69,
+   "end": 54.8,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 55.28,
+   "end": 55.4,
+   "note": "E4"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 56.65,
+   "end": 56.76,
+   "note": "G3"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 56.85,
+   "end": 57.24,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 57.24,
+   "end": 57.63,
+   "note": "B3"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 57.65,
+   "end": 57.88,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "tutsol",
+   "start": 58.12,
+   "end": 58.46,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 58.46,
+   "end": 59.65,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "Upang",
+   "start": 64.18,
+   "end": 64.31,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "di",
+   "start": 64.39,
+   "end": 64.6,
+   "note": "G3"
+  },
+  {
+   "syllable": "na",
+   "start": 64.75,
+   "end": 65.04,
+   "note": "B3"
+  },
+  {
+   "syllable": "mabulog",
+   "start": 65.09,
+   "end": 65.82,
+   "note": "B3"
+  },
+  {
+   "syllable": "mabulog",
+   "start": 65.83,
+   "end": 66.07,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "mabulog",
+   "start": 66.15,
+   "end": 66.44,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 66.52,
+   "end": 66.68,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 66.7,
+   "end": 66.83,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 67.09,
+   "end": 67.21,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 67.23,
+   "end": 67.46,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 70.18,
+   "end": 70.38,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 70.43,
+   "end": 70.54,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 72.61,
+   "end": 72.75,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 72.75,
+   "end": 72.86,
+   "note": "D4"
+  },
+  {
+   "syllable": "sa",
+   "start": 72.86,
+   "end": 73.43,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 73.49,
+   "end": 73.59,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 73.74,
+   "end": 73.9,
+   "note": "A4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 73.9,
+   "end": 74.15,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 74.15,
+   "end": 75.08,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 75.08,
+   "end": 75.27,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 75.31,
+   "end": 75.47,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 75.56,
+   "end": 76.19,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 76.55,
+   "end": 76.66,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 80.68,
+   "end": 80.91,
+   "note": "A4"
+  },
+  {
+   "syllable": "sa",
+   "start": 80.91,
+   "end": 81.99,
+   "note": "B4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 82.13,
+   "end": 82.46,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "At",
+   "start": 82.46,
+   "end": 83.16,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "At",
+   "start": 83.16,
+   "end": 83.5,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "At",
+   "start": 83.7,
+   "end": 83.9,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "At",
+   "start": 83.91,
+   "end": 84.01,
+   "note": "G4"
+  },
+  {
+   "syllable": "mawawag",
+   "start": 88.43,
+   "end": 88.57,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "mawawag",
+   "start": 88.67,
+   "end": 88.89,
+   "note": "A4"
+  },
+  {
+   "syllable": "mawawag",
+   "start": 88.89,
+   "end": 90.11,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "-usap",
+   "start": 90.13,
+   "end": 90.45,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "-usap",
+   "start": 90.45,
+   "end": 90.93,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "-usap",
+   "start": 91.16,
+   "end": 91.67,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 91.67,
+   "end": 91.99,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 92.01,
+   "end": 92.27,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 92.4,
+   "end": 92.54,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 95.76,
+   "end": 95.87,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 95.89,
+   "end": 96.06,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 96.08,
+   "end": 96.2,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 96.4,
+   "end": 96.6,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 96.67,
+   "end": 96.8,
+   "note": "A4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 96.8,
+   "end": 97.13,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 97.13,
+   "end": 97.33,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 97.4,
+   "end": 97.94,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "mawara",
+   "start": 97.94,
+   "end": 98.1,
+   "note": "A4"
+  },
+  {
+   "syllable": "mawara",
+   "start": 98.27,
+   "end": 99.19,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 99.19,
+   "end": 99.54,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 99.54,
+   "end": 99.67,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 99.74,
+   "end": 100.17,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 100.31,
+   "end": 100.62,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 104.65,
+   "end": 104.79,
+   "note": "D4"
+  },
+  {
+   "syllable": "sa",
+   "start": 104.79,
+   "end": 105.39,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 105.6,
+   "end": 105.89,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 105.89,
+   "end": 106.16,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 106.19,
+   "end": 107.14,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 107.14,
+   "end": 107.3,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 107.61,
+   "end": 108.15,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 108.52,
+   "end": 108.66,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 112.71,
+   "end": 112.92,
+   "note": "A4"
+  },
+  {
+   "syllable": "sa",
+   "start": 112.92,
+   "end": 113.98,
+   "note": "B4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 114.09,
+   "end": 114.46,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Upang",
+   "start": 114.46,
+   "end": 115.16,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Upang",
+   "start": 115.16,
+   "end": 115.44,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "di",
+   "start": 115.56,
+   "end": 115.79,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "di",
+   "start": 115.96,
+   "end": 116.22,
+   "note": "G4"
+  },
+  {
+   "syllable": "di",
+   "start": 116.24,
+   "end": 116.39,
+   "note": "G4"
+  },
+  {
+   "syllable": "mabulog",
+   "start": 119.54,
+   "end": 119.65,
+   "note": "A3"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 120.4,
+   "end": 120.61,
+   "note": "E4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 120.66,
+   "end": 120.76,
+   "note": "A4"
+  },
+  {
+   "syllable": "haayang",
+   "start": 120.83,
+   "end": 121.17,
+   "note": "B4"
+  },
+  {
+   "syllable": "haayang",
+   "start": 121.17,
+   "end": 121.38,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "haayang",
+   "start": 121.38,
+   "end": 121.48,
+   "note": "G4"
+  },
+  {
+   "syllable": "haayang",
+   "start": 121.48,
+   "end": 121.93,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "haayang",
+   "start": 121.93,
+   "end": 122.29,
+   "note": "A4"
+  },
+  {
+   "syllable": "haayang",
+   "start": 122.29,
+   "end": 123.14,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 123.14,
+   "end": 123.56,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 123.73,
+   "end": 124.17,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 124.18,
+   "end": 124.29,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 124.37,
+   "end": 124.55,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 126.34,
+   "end": 126.64,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Mahulog",
+   "start": 128.32,
+   "end": 128.47,
+   "note": "A3"
+  },
+  {
+   "syllable": "Mahulog",
+   "start": 128.67,
+   "end": 128.78,
+   "note": "A4"
+  },
+  {
+   "syllable": "Mahulog",
+   "start": 128.78,
+   "end": 129.03,
+   "note": "B4"
+  },
+  {
+   "syllable": "Mahulog",
+   "start": 129.04,
+   "end": 129.2,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "tuloy",
+   "start": 129.32,
+   "end": 129.84,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "tuloy",
+   "start": 129.84,
+   "end": 130.07,
+   "note": "A4"
+  },
+  {
+   "syllable": "tuloy",
+   "start": 130.07,
+   "end": 131.23,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 131.23,
+   "end": 132.2,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 132.32,
+   "end": 132.65,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 134.19,
+   "end": 134.39,
+   "note": "C♯3"
+  },
+  {
+   "syllable": "Nagkamali",
+   "start": 136.32,
+   "end": 136.5,
+   "note": "D3"
+  },
+  {
+   "syllable": "Nagkamali",
+   "start": 136.77,
+   "end": 136.93,
+   "note": "A3"
+  },
+  {
+   "syllable": "Nagkamali",
+   "start": 136.93,
+   "end": 137.29,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "Nagkamali",
+   "start": 137.37,
+   "end": 137.64,
+   "note": "B3"
+  },
+  {
+   "syllable": "Nagkamali",
+   "start": 137.64,
+   "end": 137.81,
+   "note": "C4"
+  },
+  {
+   "syllable": "Nagkamali",
+   "start": 137.81,
+   "end": 137.95,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 138.01,
+   "end": 138.65,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 138.69,
+   "end": 138.84,
+   "note": "G3"
+  },
+  {
+   "syllable": "Nagkakarali",
+   "start": 141.31,
+   "end": 141.73,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Nagkakarali",
+   "start": 141.86,
+   "end": 142.1,
+   "note": "C4"
+  },
+  {
+   "syllable": "ako",
+   "start": 144.2,
+   "end": 144.36,
+   "note": "E3"
+  },
+  {
+   "syllable": "ako",
+   "start": 144.36,
+   "end": 144.52,
+   "note": "E3"
+  },
+  {
+   "syllable": "ako",
+   "start": 144.52,
+   "end": 144.65,
+   "note": "D♯3"
+  },
+  {
+   "syllable": "sa",
+   "start": 144.77,
+   "end": 144.91,
+   "note": "A3"
+  },
+  {
+   "syllable": "sa",
+   "start": 144.91,
+   "end": 145.92,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "'yo?",
+   "start": 146.11,
+   "end": 146.41,
+   "note": "C4"
+  },
+  {
+   "syllable": "'yo?",
+   "start": 146.47,
+   "end": 146.7,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 146.7,
+   "end": 147.15,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "mga",
+   "start": 152.41,
+   "end": 152.57,
+   "note": "B2"
+  },
+  {
+   "syllable": "mga",
+   "start": 152.72,
+   "end": 152.85,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 152.85,
+   "end": 153.64,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 153.67,
+   "end": 153.81,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 153.87,
+   "end": 154.02,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 154.06,
+   "end": 154.52,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 154.67,
+   "end": 154.81,
+   "note": "F3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 154.96,
+   "end": 155.31,
+   "note": "F3"
+  },
+  {
+   "syllable": "O",
+   "start": 155.48,
+   "end": 155.59,
+   "note": "D♯3"
+  },
+  {
+   "syllable": "O",
+   "start": 157.7,
+   "end": 157.98,
+   "note": "D♯3"
+  },
+  {
+   "syllable": "mga",
+   "start": 160.44,
+   "end": 160.57,
+   "note": "C♯3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 160.73,
+   "end": 160.9,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 160.9,
+   "end": 161.33,
+   "note": "B3"
+  },
+  {
+   "syllable": "nagtinig",
+   "start": 161.35,
+   "end": 161.68,
+   "note": "B3"
+  },
+  {
+   "syllable": "nito",
+   "start": 161.75,
+   "end": 161.95,
+   "note": "D♯3"
+  },
+  {
+   "syllable": "",
+   "start": 162.21,
+   "end": 162.43,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 162.47,
+   "end": 162.86,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "blanco",
+   "start": 164.03,
+   "end": 164.28,
+   "note": "E4"
+  },
+  {
+   "syllable": "blanco",
+   "start": 165.04,
+   "end": 165.37,
+   "note": "B3"
+  },
+  {
+   "syllable": "nito",
+   "start": 165.71,
+   "end": 165.87,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 166.39,
+   "end": 166.66,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 167.06,
+   "end": 167.18,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 167.23,
+   "end": 167.46,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 167.5,
+   "end": 167.65,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 168.33,
+   "end": 168.55,
+   "note": "E3"
+  },
+  {
+   "syllable": "",
+   "start": 168.66,
+   "end": 168.82,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "Naririnig",
+   "start": 168.82,
+   "end": 169.65,
+   "note": "B3"
+  },
+  {
+   "syllable": "Naririnig",
+   "start": 169.65,
+   "end": 170.11,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "Naririnig",
+   "start": 170.11,
+   "end": 170.37,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Naririnig",
+   "start": 170.45,
+   "end": 170.56,
+   "note": "C4"
+  },
+  {
+   "syllable": "Naririnig",
+   "start": 170.56,
+   "end": 170.77,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 170.77,
+   "end": 171.11,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 171.11,
+   "end": 171.42,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 171.47,
+   "end": 171.58,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "",
+   "start": 171.92,
+   "end": 172.06,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 173.79,
+   "end": 173.91,
+   "note": "C♯3"
+  },
+  {
+   "syllable": "",
+   "start": 174.29,
+   "end": 174.42,
+   "note": "C♯3"
+  },
+  {
+   "syllable": "tinig",
+   "start": 176.4,
+   "end": 176.59,
+   "note": "E3"
+  },
+  {
+   "syllable": "tinig",
+   "start": 176.67,
+   "end": 176.86,
+   "note": "A3"
+  },
+  {
+   "syllable": "tinig",
+   "start": 176.86,
+   "end": 177.55,
+   "note": "B3"
+  },
+  {
+   "syllable": "mo",
+   "start": 177.67,
+   "end": 177.85,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "mo",
+   "start": 178.08,
+   "end": 178.44,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 178.44,
+   "end": 178.63,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 178.72,
+   "end": 178.99,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 180.48,
+   "end": 180.62,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 181.86,
+   "end": 181.97,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 182.35,
+   "end": 182.47,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 182.67,
+   "end": 182.81,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 184.29,
+   "end": 184.6,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "Nabuhok",
+   "start": 184.68,
+   "end": 185.53,
+   "note": "B3"
+  },
+  {
+   "syllable": "Nabuhok",
+   "start": 185.65,
+   "end": 185.97,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "Nabuhok",
+   "start": 186.15,
+   "end": 186.45,
+   "note": "C4"
+  },
+  {
+   "syllable": "muli",
+   "start": 187.13,
+   "end": 187.37,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "muli",
+   "start": 187.37,
+   "end": 187.65,
+   "note": "B3"
+  },
+  {
+   "syllable": "muli",
+   "start": 187.65,
+   "end": 188.06,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 188.06,
+   "end": 188.21,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 189.28,
+   "end": 189.43,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "",
+   "start": 189.46,
+   "end": 189.6,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Ang",
+   "start": 190.22,
+   "end": 190.33,
+   "note": "D♯3"
+  },
+  {
+   "syllable": "pag",
+   "start": 192.19,
+   "end": 192.31,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "-ibig",
+   "start": 192.36,
+   "end": 192.63,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "-ibig",
+   "start": 192.66,
+   "end": 192.81,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "-ibig",
+   "start": 192.81,
+   "end": 193.48,
+   "note": "E4"
+  },
+  {
+   "syllable": "-ibig",
+   "start": 193.63,
+   "end": 193.84,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "ko",
+   "start": 193.91,
+   "end": 194.02,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "ko",
+   "start": 194.18,
+   "end": 194.36,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 194.36,
+   "end": 194.95,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 194.95,
+   "end": 195.22,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 195.22,
+   "end": 195.69,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 195.72,
+   "end": 196.08,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "",
+   "start": 196.71,
+   "end": 197.01,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "",
+   "start": 197.09,
+   "end": 197.56,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 197.67,
+   "end": 198.18,
+   "note": "A4"
+  },
+  {
+   "syllable": "",
+   "start": 198.2,
+   "end": 198.33,
+   "note": "A4"
+  },
+  {
+   "syllable": "Isa",
+   "start": 198.71,
+   "end": 199.18,
+   "note": "B4"
+  },
+  {
+   "syllable": "sa",
+   "start": 200.63,
+   "end": 200.83,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 200.83,
+   "end": 201.43,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 201.85,
+   "end": 202.15,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 202.2,
+   "end": 202.56,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 203.1,
+   "end": 203.22,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 203.73,
+   "end": 203.9,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 204.02,
+   "end": 204.25,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 204.48,
+   "end": 204.6,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 205.46,
+   "end": 205.64,
+   "note": "B2"
+  },
+  {
+   "syllable": "",
+   "start": 207.67,
+   "end": 207.84,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 207.85,
+   "end": 208.2,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 208.21,
+   "end": 208.34,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 208.37,
+   "end": 208.5,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 208.69,
+   "end": 208.85,
+   "note": "A4"
+  },
+  {
+   "syllable": "",
+   "start": 208.92,
+   "end": 209.89,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "",
+   "start": 209.91,
+   "end": 210.02,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 210.19,
+   "end": 210.45,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 210.54,
+   "end": 210.99,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 211.22,
+   "end": 211.61,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "pag",
+   "start": 215.68,
+   "end": 216.26,
+   "note": "G4"
+  },
+  {
+   "syllable": "pag",
+   "start": 216.72,
+   "end": 216.88,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "-usap",
+   "start": 216.88,
+   "end": 218.05,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "-usap",
+   "start": 218.2,
+   "end": 218.45,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "-usap",
+   "start": 218.72,
+   "end": 219.03,
+   "note": "G4"
+  },
+  {
+   "syllable": "-usap",
+   "start": 219.13,
+   "end": 219.25,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "-usap",
+   "start": 219.39,
+   "end": 219.51,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 219.64,
+   "end": 219.75,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 219.76,
+   "end": 219.94,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 220.09,
+   "end": 220.27,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 220.49,
+   "end": 220.6,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 220.63,
+   "end": 220.75,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 221.74,
+   "end": 221.85,
+   "note": "B5"
+  },
+  {
+   "syllable": "",
+   "start": 223.7,
+   "end": 224.22,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 224.43,
+   "end": 224.6,
+   "note": "D4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 224.63,
+   "end": 224.77,
+   "note": "A4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 224.77,
+   "end": 224.88,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 225.4,
+   "end": 225.56,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 225.58,
+   "end": 225.87,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 225.94,
+   "end": 226.05,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "manglulang",
+   "start": 226.12,
+   "end": 226.24,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "manglulang",
+   "start": 226.3,
+   "end": 227.06,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "manglulang",
+   "start": 227.2,
+   "end": 227.62,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 227.9,
+   "end": 228.01,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 228.1,
+   "end": 228.25,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 228.94,
+   "end": 229.62,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 231.92,
+   "end": 232.05,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 232.68,
+   "end": 232.9,
+   "note": "D4"
+  },
+  {
+   "syllable": "sa",
+   "start": 232.9,
+   "end": 233.41,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "iyo",
+   "start": 233.69,
+   "end": 233.81,
+   "note": "A4"
+  },
+  {
+   "syllable": "iyo",
+   "start": 233.82,
+   "end": 233.92,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "iyo",
+   "start": 233.95,
+   "end": 234.2,
+   "note": "B4"
+  },
+  {
+   "syllable": "iyo",
+   "start": 234.2,
+   "end": 234.57,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 234.8,
+   "end": 235.12,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 235.12,
+   "end": 235.34,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 235.58,
+   "end": 235.69,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 235.71,
+   "end": 236.09,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 236.44,
+   "end": 236.59,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 239.82,
+   "end": 240.19,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 240.93,
+   "end": 241.84,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 241.86,
+   "end": 241.98,
+   "note": "B3"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 242.49,
+   "end": 242.6,
+   "note": "A4"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 243.05,
+   "end": 243.21,
+   "note": "G4"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 243.21,
+   "end": 243.52,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 244.04,
+   "end": 244.36,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 246.7,
+   "end": 246.82,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 247.67,
+   "end": 247.91,
+   "note": "G4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 248.03,
+   "end": 248.17,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "aya",
+   "start": 248.47,
+   "end": 248.62,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "aya",
+   "start": 248.82,
+   "end": 249.16,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "aya",
+   "start": 249.5,
+   "end": 249.87,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 250.28,
+   "end": 250.67,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 250.88,
+   "end": 251.04,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 251.22,
+   "end": 251.66,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 254.5,
+   "end": 254.61,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "",
+   "start": 254.73,
+   "end": 254.85,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 255.67,
+   "end": 256.06,
+   "note": "G4"
+  },
+  {
+   "syllable": "Mahul",
+   "start": 256.07,
+   "end": 256.19,
+   "note": "G4"
+  },
+  {
+   "syllable": "Mahul",
+   "start": 256.26,
+   "end": 256.52,
+   "note": "C4"
+  },
+  {
+   "syllable": "na",
+   "start": 256.84,
+   "end": 257.05,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "gulong",
+   "start": 257.29,
+   "end": 257.82,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "gulong",
+   "start": 258.06,
+   "end": 258.17,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 258.82,
+   "end": 259.06,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 259.3,
+   "end": 259.58,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 260.19,
+   "end": 260.29,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 260.91,
+   "end": 261.55,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 261.99,
+   "end": 262.17,
+   "note": "B4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 263.75,
+   "end": 264.07,
+   "note": "G4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 264.18,
+   "end": 264.28,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Oooo...",
+   "start": 264.69,
+   "end": 264.81,
+   "note": "D4"
+  },
+  {
+   "syllable": "Oooo...",
+   "start": 265.1,
+   "end": 266.02,
+   "note": "E4"
+  },
+  {
+   "syllable": "Oooo...",
+   "start": 266.02,
+   "end": 266.24,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "Gusto",
+   "start": 267.23,
+   "end": 267.38,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "kang",
+   "start": 267.68,
+   "end": 267.83,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "kang",
+   "start": 267.83,
+   "end": 268.12,
+   "note": "G4"
+  },
+  {
+   "syllable": "kang",
+   "start": 268.12,
+   "end": 268.26,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "makasama",
+   "start": 268.38,
+   "end": 268.67,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "makasama",
+   "start": 268.67,
+   "end": 268.88,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "makasama",
+   "start": 269.35,
+   "end": 270.09,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 270.18,
+   "end": 270.45,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 270.45,
+   "end": 270.77,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 271.02,
+   "end": 271.26,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 271.32,
+   "end": 271.43,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 271.8,
+   "end": 272.12,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 272.51,
+   "end": 272.62,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 273.21,
+   "end": 273.43,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 273.49,
+   "end": 273.6,
+   "note": "C5"
+  },
+  {
+   "syllable": "Ako",
+   "start": 274.65,
+   "end": 274.79,
+   "note": "F4"
+  },
+  {
+   "syllable": "Ako",
+   "start": 274.81,
+   "end": 274.93,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ako",
+   "start": 275.0,
+   "end": 275.1,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Ako",
+   "start": 275.13,
+   "end": 275.23,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Ako",
+   "start": 275.26,
+   "end": 275.38,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "nang",
+   "start": 275.7,
+   "end": 276.13,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "nang",
+   "start": 276.13,
+   "end": 276.62,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "bahala",
+   "start": 276.62,
+   "end": 276.78,
+   "note": "G4"
+  },
+  {
+   "syllable": "bahala",
+   "start": 276.78,
+   "end": 277.11,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "bahala",
+   "start": 277.17,
+   "end": 277.31,
+   "note": "E4"
+  },
+  {
+   "syllable": "bahala",
+   "start": 277.43,
+   "end": 278.1,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "bahala",
+   "start": 278.1,
+   "end": 278.23,
+   "note": "D4"
+  },
+  {
+   "syllable": "bahala",
+   "start": 278.23,
+   "end": 278.45,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 278.45,
+   "end": 278.75,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 278.99,
+   "end": 279.37,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 279.38,
+   "end": 279.63,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 279.71,
+   "end": 279.92,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 280.09,
+   "end": 280.24,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 281.8,
+   "end": 281.91,
+   "note": "B5"
+  },
+  {
+   "syllable": "",
+   "start": 282.59,
+   "end": 282.72,
+   "note": "F3"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 282.73,
+   "end": 282.89,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 282.91,
+   "end": 283.02,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 283.12,
+   "end": 283.25,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 283.29,
+   "end": 283.6,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 283.65,
+   "end": 283.81,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 283.81,
+   "end": 283.95,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 284.08,
+   "end": 284.25,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "lang",
+   "start": 284.39,
+   "end": 284.64,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "lang",
+   "start": 284.64,
+   "end": 284.75,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "lang",
+   "start": 284.75,
+   "end": 284.92,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "uwala",
+   "start": 285.32,
+   "end": 285.89,
+   "note": "E4"
+  },
+  {
+   "syllable": "uwala",
+   "start": 285.89,
+   "end": 286.0,
+   "note": "D4"
+  },
+  {
+   "syllable": "Atin",
+   "start": 286.0,
+   "end": 286.16,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "Atin",
+   "start": 287.15,
+   "end": 287.35,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Atin",
+   "start": 287.38,
+   "end": 287.56,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Atin",
+   "start": 287.74,
+   "end": 288.14,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Atin",
+   "start": 288.14,
+   "end": 288.26,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "ang",
+   "start": 288.38,
+   "end": 288.67,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "ang",
+   "start": 288.67,
+   "end": 288.81,
+   "note": "G4"
+  },
+  {
+   "syllable": "pulaya",
+   "start": 289.29,
+   "end": 289.88,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Ang",
+   "start": 289.88,
+   "end": 290.19,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "ating",
+   "start": 290.42,
+   "end": 290.57,
+   "note": "B3"
+  },
+  {
+   "syllable": "ating",
+   "start": 290.78,
+   "end": 290.97,
+   "note": "G3"
+  },
+  {
+   "syllable": "ating",
+   "start": 290.97,
+   "end": 291.56,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "ating",
+   "start": 291.6,
+   "end": 292.02,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "ating",
+   "start": 292.39,
+   "end": 292.55,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "ating",
+   "start": 292.63,
+   "end": 292.75,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "ating",
+   "start": 292.8,
+   "end": 293.0,
+   "note": "E4"
+  },
+  {
+   "syllable": "mundo",
+   "start": 293.15,
+   "end": 294.09,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 294.13,
+   "end": 294.26,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 294.26,
+   "end": 294.92,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "",
+   "start": 294.92,
+   "end": 295.18,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 295.18,
+   "end": 295.43,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 295.74,
+   "end": 295.93,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 296.03,
+   "end": 296.18,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 296.34,
+   "end": 296.66,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 297.01,
+   "end": 297.28,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 297.45,
+   "end": 297.64,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 297.86,
+   "end": 297.98,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "",
+   "start": 298.68,
+   "end": 298.91,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Tumingin",
+   "start": 299.65,
+   "end": 299.85,
+   "note": "G4"
+  },
+  {
+   "syllable": "Tumingin",
+   "start": 299.85,
+   "end": 300.2,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Tumingin",
+   "start": 300.2,
+   "end": 300.66,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 300.75,
+   "end": 301.13,
+   "note": "F4"
+  },
+  {
+   "syllable": "akin",
+   "start": 301.15,
+   "end": 302.13,
+   "note": "E4"
+  },
+  {
+   "syllable": "akin",
+   "start": 302.16,
+   "end": 302.37,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 302.45,
+   "end": 302.63,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 302.93,
+   "end": 303.14,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 303.15,
+   "end": 303.3,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 303.35,
+   "end": 303.64,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 303.76,
+   "end": 303.86,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 303.88,
+   "end": 304.06,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 304.24,
+   "end": 304.39,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 304.8,
+   "end": 304.91,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 305.83,
+   "end": 305.95,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "",
+   "start": 306.22,
+   "end": 306.36,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 306.64,
+   "end": 306.9,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "",
+   "start": 306.94,
+   "end": 307.1,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 307.2,
+   "end": 307.32,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Langapin",
+   "start": 307.63,
+   "end": 307.8,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Langapin",
+   "start": 307.8,
+   "end": 308.11,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Langapin",
+   "start": 308.35,
+   "end": 309.06,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "ang",
+   "start": 309.06,
+   "end": 309.18,
+   "note": "F4"
+  },
+  {
+   "syllable": "hangin",
+   "start": 309.36,
+   "end": 310.2,
+   "note": "E4"
+  },
+  {
+   "syllable": "hangin",
+   "start": 310.2,
+   "end": 310.31,
+   "note": "D4"
+  },
+  {
+   "syllable": "hangin",
+   "start": 310.31,
+   "end": 310.51,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 310.51,
+   "end": 310.64,
+   "note": "B3"
+  },
+  {
+   "syllable": "Pag",
+   "start": 311.06,
+   "end": 311.34,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Pag",
+   "start": 311.8,
+   "end": 312.01,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "-asa",
+   "start": 312.1,
+   "end": 312.27,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "-asa",
+   "start": 312.48,
+   "end": 312.59,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "-asa",
+   "start": 312.85,
+   "end": 312.96,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 314.7,
+   "end": 314.86,
+   "note": "G4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 314.95,
+   "end": 315.18,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 315.4,
+   "end": 315.66,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 315.68,
+   "end": 315.78,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 315.78,
+   "end": 316.13,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 316.13,
+   "end": 316.25,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Bakit",
+   "start": 316.37,
+   "end": 316.47,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "nasanay",
+   "start": 316.72,
+   "end": 316.84,
+   "note": "G4"
+  },
+  {
+   "syllable": "nasanay",
+   "start": 316.84,
+   "end": 317.06,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "nasanay",
+   "start": 317.52,
+   "end": 317.9,
+   "note": "E4"
+  },
+  {
+   "syllable": "nasanay",
+   "start": 317.9,
+   "end": 318.04,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "nasanay",
+   "start": 318.15,
+   "end": 318.44,
+   "note": "B3"
+  },
+  {
+   "syllable": "Isip",
+   "start": 319.01,
+   "end": 319.61,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Isip",
+   "start": 320.09,
+   "end": 320.23,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "natagdaman",
+   "start": 320.24,
+   "end": 320.64,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "natagdaman",
+   "start": 320.73,
+   "end": 321.02,
+   "note": "F4"
+  },
+  {
+   "syllable": "natagdaman",
+   "start": 321.11,
+   "end": 321.23,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "natagdaman",
+   "start": 321.25,
+   "end": 321.36,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "natagdaman",
+   "start": 321.38,
+   "end": 322.07,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 322.1,
+   "end": 322.26,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 322.26,
+   "end": 322.42,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "",
+   "start": 322.42,
+   "end": 322.8,
+   "note": "B3"
+  },
+  {
+   "syllable": "Sa",
+   "start": 323.05,
+   "end": 323.15,
+   "note": "B3"
+  },
+  {
+   "syllable": "Sa",
+   "start": 323.16,
+   "end": 323.51,
+   "note": "B3"
+  },
+  {
+   "syllable": "Sa",
+   "start": 323.64,
+   "end": 323.74,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Sa",
+   "start": 323.87,
+   "end": 323.99,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "puso",
+   "start": 324.33,
+   "end": 324.56,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "puso",
+   "start": 324.68,
+   "end": 324.83,
+   "note": "B4"
+  },
+  {
+   "syllable": "puso",
+   "start": 324.83,
+   "end": 325.06,
+   "note": "C5"
+  },
+  {
+   "syllable": "puso",
+   "start": 325.25,
+   "end": 325.36,
+   "note": "C5"
+  },
+  {
+   "syllable": "puso",
+   "start": 325.39,
+   "end": 325.56,
+   "note": "A4"
+  },
+  {
+   "syllable": "puso",
+   "start": 325.56,
+   "end": 325.67,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "Sa",
+   "start": 325.68,
+   "end": 326.56,
+   "note": "B4"
+  },
+  {
+   "syllable": "Sa",
+   "start": 326.71,
+   "end": 326.82,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 327.05,
+   "end": 327.15,
+   "note": "G4"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 327.22,
+   "end": 327.4,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 327.48,
+   "end": 327.6,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 327.68,
+   "end": 328.02,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 328.36,
+   "end": 328.5,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 328.6,
+   "end": 328.79,
+   "note": "B4"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 328.79,
+   "end": 329.63,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 329.64,
+   "end": 330.12,
+   "note": "B4"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 330.12,
+   "end": 330.31,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 330.31,
+   "end": 330.66,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "sayaw",
+   "start": 330.66,
+   "end": 331.33,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "",
+   "start": 331.33,
+   "end": 331.48,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 331.73,
+   "end": 332.48,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 332.53,
+   "end": 332.7,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 332.74,
+   "end": 333.58,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 333.59,
+   "end": 333.71,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 333.8,
+   "end": 334.07,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 334.09,
+   "end": 334.25,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 334.26,
+   "end": 334.58,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 334.82,
+   "end": 336.6,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 336.67,
+   "end": 336.85,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 336.85,
+   "end": 337.1,
+   "note": "D5"
+  },
+  {
+   "syllable": "",
+   "start": 337.1,
+   "end": 337.37,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "",
+   "start": 337.37,
+   "end": 338.04,
+   "note": "E5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 338.14,
+   "end": 338.45,
+   "note": "C5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 338.45,
+   "end": 338.87,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 338.93,
+   "end": 339.31,
+   "note": "B4"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 339.35,
+   "end": 339.59,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 339.68,
+   "end": 340.66,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 340.77,
+   "end": 341.59,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 341.82,
+   "end": 341.97,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 342.01,
+   "end": 342.24,
+   "note": "B4"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 342.35,
+   "end": 342.5,
+   "note": "B4"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 342.76,
+   "end": 342.92,
+   "note": "G4"
+  },
+  {
+   "syllable": "Huwag",
+   "start": 342.92,
+   "end": 344.41,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "pag",
+   "start": 344.69,
+   "end": 344.92,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "-usap",
+   "start": 344.92,
+   "end": 345.26,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "-usap",
+   "start": 345.26,
+   "end": 346.13,
+   "note": "E5"
+  },
+  {
+   "syllable": "-usap",
+   "start": 346.17,
+   "end": 346.58,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "-usap",
+   "start": 346.58,
+   "end": 346.79,
+   "note": "E5"
+  },
+  {
+   "syllable": "-usap",
+   "start": 346.93,
+   "end": 347.12,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "-usap",
+   "start": 347.16,
+   "end": 347.31,
+   "note": "B4"
+  },
+  {
+   "syllable": "-usap",
+   "start": 347.31,
+   "end": 347.5,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 347.75,
+   "end": 348.06,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 348.08,
+   "end": 348.4,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 348.45,
+   "end": 348.68,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 348.83,
+   "end": 349.63,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 349.71,
+   "end": 350.5,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 350.82,
+   "end": 351.52,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 351.68,
+   "end": 351.83,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 351.84,
+   "end": 352.34,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 352.37,
+   "end": 352.59,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 352.67,
+   "end": 352.79,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 352.8,
+   "end": 353.72,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "manglulang",
+   "start": 353.8,
+   "end": 354.1,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "manglulang",
+   "start": 354.17,
+   "end": 354.29,
+   "note": "D5"
+  },
+  {
+   "syllable": "manglulang",
+   "start": 354.29,
+   "end": 355.14,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 355.19,
+   "end": 355.43,
+   "note": "C5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 355.43,
+   "end": 355.86,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 355.86,
+   "end": 356.05,
+   "note": "C5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 356.16,
+   "end": 356.38,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 356.69,
+   "end": 357.78,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "sa",
+   "start": 357.98,
+   "end": 358.17,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "sa",
+   "start": 358.19,
+   "end": 358.56,
+   "note": "B4"
+  },
+  {
+   "syllable": "sa",
+   "start": 358.69,
+   "end": 358.86,
+   "note": "F♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 358.86,
+   "end": 359.72,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 359.72,
+   "end": 359.89,
+   "note": "G4"
+  },
+  {
+   "syllable": "sa",
+   "start": 359.91,
+   "end": 360.33,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "iyo",
+   "start": 360.61,
+   "end": 360.75,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 360.75,
+   "end": 361.33,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 361.63,
+   "end": 362.24,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 362.24,
+   "end": 362.42,
+   "note": "D5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 362.42,
+   "end": 362.69,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 362.69,
+   "end": 363.14,
+   "note": "E5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 363.14,
+   "end": 363.24,
+   "note": "D5"
+  },
+  {
+   "syllable": "sa",
+   "start": 363.8,
+   "end": 364.08,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 364.09,
+   "end": 364.74,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 364.76,
+   "end": 365.62,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "sa",
+   "start": 365.72,
+   "end": 366.64,
+   "note": "B4"
+  },
+  {
+   "syllable": "sa",
+   "start": 366.77,
+   "end": 367.23,
+   "note": "G4"
+  },
+  {
+   "syllable": "sa",
+   "start": 367.54,
+   "end": 367.86,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 367.87,
+   "end": 368.01,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 368.09,
+   "end": 368.45,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 368.46,
+   "end": 368.61,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 368.78,
+   "end": 369.2,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 369.61,
+   "end": 369.91,
+   "note": "F♯5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 370.15,
+   "end": 370.85,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 370.89,
+   "end": 371.03,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 371.03,
+   "end": 371.16,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 371.16,
+   "end": 371.48,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 371.48,
+   "end": 371.63,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 371.67,
+   "end": 372.66,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 372.85,
+   "end": 373.59,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 373.7,
+   "end": 373.84,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 373.9,
+   "end": 374.02,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 374.26,
+   "end": 374.36,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "",
+   "start": 374.67,
+   "end": 374.79,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 374.81,
+   "end": 375.16,
+   "note": "G4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 375.18,
+   "end": 375.53,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 375.69,
+   "end": 375.79,
+   "note": "G4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 375.82,
+   "end": 376.55,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 376.69,
+   "end": 376.83,
+   "note": "D5"
+  },
+  {
+   "syllable": "sa",
+   "start": 376.83,
+   "end": 376.97,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "sa",
+   "start": 376.97,
+   "end": 377.33,
+   "note": "E5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 377.33,
+   "end": 377.81,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 377.85,
+   "end": 378.2,
+   "note": "C5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 378.2,
+   "end": 378.4,
+   "note": "D5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 378.4,
+   "end": 379.02,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 379.02,
+   "end": 379.14,
+   "note": "D5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 379.14,
+   "end": 379.3,
+   "note": "C5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 379.33,
+   "end": 379.44,
+   "note": "C5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 379.44,
+   "end": 379.67,
+   "note": "B4"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 379.78,
+   "end": 379.95,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "Hindi",
+   "start": 379.97,
+   "end": 380.19,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 380.4,
+   "end": 380.71,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "sa",
+   "start": 380.73,
+   "end": 381.46,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 381.5,
+   "end": 381.6,
+   "note": "C5"
+  },
+  {
+   "syllable": "iyo",
+   "start": 381.62,
+   "end": 382.63,
+   "note": "B4"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 382.81,
+   "end": 383.55,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Kasulap",
+   "start": 383.66,
+   "end": 384.3,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "Masakit",
+   "start": 384.41,
+   "end": 384.52,
+   "note": "D♯4"
+  },
+  {
+   "syllable": "Mahulog",
+   "start": 384.66,
+   "end": 384.84,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "Mahulog",
+   "start": 385.05,
+   "end": 385.23,
+   "note": "E5"
+  },
+  {
+   "syllable": "kalungan",
+   "start": 385.36,
+   "end": 385.75,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "kalungan",
+   "start": 385.91,
+   "end": 386.33,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "kalungan",
+   "start": 386.33,
+   "end": 387.08,
+   "note": "D♯5"
+  },
+  {
+   "syllable": "kalungan",
+   "start": 387.08,
+   "end": 387.22,
+   "note": "D5"
+  },
+  {
+   "syllable": "kalungan",
+   "start": 387.22,
+   "end": 387.33,
+   "note": "C5"
+  },
+  {
+   "syllable": "",
+   "start": 387.51,
+   "end": 387.71,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 387.73,
+   "end": 387.97,
+   "note": "A♯4"
+  },
+  {
+   "syllable": "",
+   "start": 388.02,
+   "end": 388.18,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 388.78,
+   "end": 389.41,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 389.42,
+   "end": 389.65,
+   "note": "C♯5"
+  },
+  {
+   "syllable": "",
+   "start": 390.02,
+   "end": 390.17,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 391.68,
+   "end": 391.88,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 392.03,
+   "end": 392.26,
+   "note": "G♯4"
+  },
+  {
+   "syllable": "",
+   "start": 392.74,
+   "end": 392.84,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 392.93,
+   "end": 393.1,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "",
+   "start": 393.1,
+   "end": 393.34,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 393.97,
+   "end": 394.51,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 394.55,
+   "end": 394.78,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "",
+   "start": 398.46,
+   "end": 398.63,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "Kailangan",
+   "start": 399.21,
+   "end": 399.48,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "Kailangan",
+   "start": 399.5,
+   "end": 399.62,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "ka",
+   "start": 400.69,
+   "end": 400.86,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "Ang",
+   "start": 400.86,
+   "end": 401.24,
+   "note": "A♯3"
+  },
+  {
+   "syllable": "Ang",
+   "start": 401.24,
+   "end": 401.84,
+   "note": "B3"
+  },
+  {
+   "syllable": "katulad.",
+   "start": 401.85,
+   "end": 401.98,
+   "note": "B3"
+  },
+  {
+   "syllable": "katulad.",
+   "start": 402.0,
+   "end": 402.32,
+   "note": "C♯4"
+  },
+  {
+   "syllable": "katulad.",
+   "start": 402.34,
+   "end": 402.84,
+   "note": "G♯3"
+  },
+  {
+   "syllable": "katulad.",
+   "start": 402.94,
+   "end": 403.38,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 403.5,
+   "end": 403.64,
+   "note": "F♯3"
+  },
+  {
+   "syllable": "",
+   "start": 403.89,
+   "end": 404.11,
+   "note": "F♯3"
+  }
+ ]
+}

@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../core/note_utils.dart' show noteNameToFrequency;
 import 'admin_media_service.dart';
+import 'song_catalog_service.dart';
 
 /// One authored ground-truth syllable: the note the singer is meant to hit
 /// during [startTime]–[endTime] in the song's own timeline (i.e. the same
@@ -33,18 +34,21 @@ class GroundTruthSyllable {
 }
 
 class GroundTruthService {
-  // Song title (lowercased) -> bundled ground-truth asset. Only songs
-  // listed here have a real target melody; add more as files are authored.
-  static const Map<String, String> _assetBySongTitle = {
-    'nasa iyo na ang lahat': 'assets/ground_truth/Nasa_Iyo_Na_Ang_Lahat.json',
-  };
+  /// Every song's ground truth is assets/ground_truth/<Title - Artist>.json,
+  /// the same stem its backing track uses. Resolved from the catalog rather
+  /// than a separate title-to-filename table, so there is one list of songs
+  /// and no second table to drift out of step with it.
+  static String? assetPathFor(String songTitle) {
+    final name = SongCatalogService.assetNameFor(songTitle);
+    return name == null ? null : 'assets/ground_truth/$name.json';
+  }
 
   /// Whether this song ships with a ground-truth melody, ignoring any admin
   /// upload — lets the admin screen distinguish "using the built-in file"
   /// from "nothing available", which decides whether deleting an upload
   /// leaves the song with a working target melody.
   static bool hasBundledGroundTruth(String songTitle) =>
-      _assetBySongTitle.containsKey(songTitle.toLowerCase());
+      assetPathFor(songTitle) != null;
 
   /// Returns the song's ground-truth syllables sorted by time, or null if
   /// no ground truth is available for it (not an error — most songs don't
@@ -56,7 +60,7 @@ class GroundTruthService {
     // only source for a song the admin added — assets are read-only, so an
     // uploaded melody can never live in _assetBySongTitle.
     final uploadedPath = AdminMediaService.groundTruthPathFor(songTitle);
-    final assetPath = _assetBySongTitle[songTitle.toLowerCase()];
+    final assetPath = assetPathFor(songTitle);
     if (uploadedPath == null && assetPath == null) return null;
 
     try {

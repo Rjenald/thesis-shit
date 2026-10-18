@@ -8,7 +8,6 @@ import '../../constants/app_colors.dart';
 import '../../core/note_utils.dart' show PitchFeedback;
 import '../../core/singing_segment_builder.dart' show groupSegmentsByLyricLine;
 import '../../data/song_lyrics.dart';
-import '../../data/tagalog_bisaya_songs.dart';
 import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
 import '../../services/lyrics_service.dart' show LrcLine;
@@ -103,15 +102,9 @@ class _ResultsPageState extends State<ResultsPage> {
 
   Future<void> _autoDownload() async {
     final s = widget.session;
-    final match = TagalogBisayaSongs.songs.cast<KaraokeSong?>().firstWhere(
-      (song) =>
-          song!.title.toLowerCase() == s.songTitle.toLowerCase() &&
-          song.artist.toLowerCase() == s.songArtist.toLowerCase(),
-      orElse: () => null,
-    );
-    final language = match?.language ?? 'Unknown';
-
-    await DownloadsService.download(s.songTitle, s.songArtist, language);
+    // Every bundled song is OPM; the old lookup existed only to read a
+    // language off a 763-entry table of songs the app had no audio for.
+    await DownloadsService.download(s.songTitle, s.songArtist, 'Tagalog');
     if (!mounted) return;
     setState(() => _downloaded = true);
     ScaffoldMessenger.of(context).showSnackBar(

@@ -1,143 +1,60 @@
 import 'admin_media_service.dart';
 import 'song_audio_service.dart';
 
+/// One song the app can actually offer.
+class CatalogSong {
+  final String title;
+  final String artist;
+
+  const CatalogSong({required this.title, required this.artist});
+
+  /// The naming convention every asset for this song follows:
+  /// `assets/audio/<Title - Artist>.mp3` and
+  /// `assets/ground_truth/<Title - Artist>.json`.
+  String get assetName => '$title - $artist';
+
+  Map<String, String> toMap() => {
+        'title': title,
+        'artist': artist,
+        'image': '',
+        'hasAudio': 'true',
+      };
+}
+
+/// The songs this app ships with.
+///
+/// Every entry here has a real bundled backing track and ground-truth
+/// melody — the catalog previously listed hundreds of songs the app had no
+/// audio for, so most of it led to a dead end. Listing only what exists
+/// means a song in the catalog is always singable.
+///
+/// Adding a song is three steps: drop `<Title - Artist>.mp3` into
+/// assets/audio/, drop `<Title - Artist>.json` into assets/ground_truth/,
+/// and add a line here. pubspec bundles both folders wholesale, so there is
+/// nothing else to register.
 class SongCatalogService {
-  static const List<Map<String, String>> _songs = [
-    {
-      'title': 'Dadalhin',
-      'artist': 'Regine Velasquez',
-      'image':
-          'https://media.philstar.com/photos/2022/04/19/regine-1_2022-04-19_17-19-51.jpg',
-      'hasAudio': 'true',
-    },
-    {
-      'title': 'Paalam Muna Sandali',
-      'artist': 'Darren Espanto',
-      'image':
-          'https://tse4.mm.bing.net/th/id/OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
-      'hasAudio': 'true',
-    },
-    {
-      'title': 'Nasa Iyo Na Ang Lahat',
-      'artist': 'Daniel Padilla',
-      'image':
-          'https://images.genius.com/e817d67292e5c1ac1e72b0c8573161e5.900x900x1.jpg',
-      'hasAudio': 'true',
-    },
-    {
-      'title': 'Ulap',
-      'artist': 'Rob Daniel',
-      'image':
-          'https://tse3.mm.bing.net/th/id/OIP.4AnzA3S0-AUEBFjst492KwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3',
-      'hasAudio': 'true',
-    },
-    {
-      'title': 'Fallen',
-      'artist': 'Lola Amour',
-      'image':
-          'https://images.genius.com/b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
-      'hasAudio': 'true',
-    },
-    {
-      'title': 'Binibini',
-      'artist': 'Arthur Nery',
-      'image':
-          'https://i.pinimg.com/736x/c4/51/fd/c451fd1b67b8e80830aaca56188e46d8.jpg',
-    },
-    {
-      'title': 'Kumpas',
-      'artist': 'Moira Dela Torre',
-      'image':
-          'https://tse2.mm.bing.net/th/id/OIP.2Uaip4XK2mxVqOEL_zu4cAHaFj?rs=1&pid=ImgDetMain&o=7&rm=3',
-    },
-    {
-      'title': 'Randomantic',
-      'artist': 'James Reid',
-      'image':
-          'https://images.genius.com/f428806fd40d83f4a6f934680bdbd7e8.1000x1000x1.jpg',
-    },
-    {
-      'title': 'Ikaw Lang',
-      'artist': 'NOBITA',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b273a44cfbb6f42b4a184e6a29a1',
-    },
-    {
-      'title': 'Mundo',
-      'artist': 'IV of Spades',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b27394d280d8f53a4f8591387213',
-    },
-    {
-      'title': 'Araw-Araw',
-      'artist': 'Ben&Ben',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b273d8b4a5a9a1a1a1a1a1a1a1a1',
-    },
-    {
-      'title': 'Kathang Isip',
-      'artist': 'Ben&Ben',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b273d8b4a5a9a1a1a1a1a1a1a1a1',
-    },
-    {
-      'title': 'Tahanan',
-      'artist': 'Adie',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b2735ac9f1b521c247c1c7a15f46',
-    },
-    {
-      'title': 'Buwan',
-      'artist': 'Juan Karlos',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b2737e11d590e0b4cf8e0a06286d',
-    },
-    {
-      'title': 'Pano',
-      'artist': 'Zack Tabudlo',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b2732c2c0a13f48e0db4d1d23cc5',
-    },
-    {
-      'title': 'Ere',
-      'artist': 'Juan Karlos',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b2737e11d590e0b4cf8e0a06286d',
-    },
-    {
-      'title': 'Isa Pang Araw',
-      'artist': 'BINI',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b273a0e2f3dc5f96e8e2e3a6b9d5',
-    },
-    {
-      'title': 'With A Smile',
-      'artist': 'Eraserheads',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b2739e495fb707973f3d1382c4b1',
-    },
-    {
-      'title': 'Ang Huling El Bimbo',
-      'artist': 'Eraserheads',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b2739e495fb707973f3d1382c4b1',
-    },
-    {
-      'title': 'Anak',
-      'artist': 'Freddie Aguilar',
-      'image':
-          'https://i.scdn.co/image/ab67616d0000b273cd5b8e7c19f5e3c5e01c8f1d',
-    },
+  static const List<CatalogSong> bundled = [
+    CatalogSong(title: 'Araw-Araw', artist: 'Ben&Ben'),
+    CatalogSong(title: 'Binibini', artist: 'Zack Tabudlo'),
+    CatalogSong(title: 'Dadalhin', artist: 'Alcasid'),
+    CatalogSong(title: 'Ere', artist: 'Juan Karlos'),
+    CatalogSong(title: 'Fallen', artist: 'Lola Amour'),
+    CatalogSong(title: 'Mula Sa Puso', artist: 'Regine Velasquez'),
+    CatalogSong(title: 'Nasa Iyo Na Ang Lahat', artist: 'Daniel Padilla'),
+    CatalogSong(title: 'Paalam Muna Sandali', artist: 'Darren'),
+    CatalogSong(title: 'Tahanan', artist: 'Adie'),
+    CatalogSong(title: 'Ulap', artist: 'Rob Daniel'),
   ];
 
-  /// The songs this app ships with, ignoring anything the admin added.
-  static List<Map<String, String>> get bundledSongs => _songs;
+  /// The bundled songs, ignoring anything an admin added.
+  static List<Map<String, String>> get bundledSongs =>
+      bundled.map((s) => s.toMap()).toList();
 
-  /// Every song available to sing: the bundled catalog plus the ones an
-  /// admin added, which only exist in [AdminMediaService]'s index because
-  /// assets can't be written to at runtime.
+  /// Every song available to sing: the bundled ones plus anything an admin
+  /// added at runtime, which can only live in [AdminMediaService]'s index
+  /// because assets are read-only.
   static List<Map<String, String>> get allSongs => [
-        ..._songs,
+        ...bundledSongs,
         for (final s in AdminMediaService.customSongs)
           {
             'title': s.title,
@@ -147,27 +64,35 @@ class SongCatalogService {
           },
       ];
 
-  /// Songs that can actually be played with a backing track. An admin
-  /// upload counts, so a bundled song whose MP3 was only ever uploaded
-  /// shows up here too.
+  /// Songs that can be played with a backing track. Every bundled song
+  /// qualifies; an admin-added one only once its MP3 is uploaded.
   static List<Map<String, String>> get songsWithAudio => allSongs
       .where((s) =>
-          s['hasAudio'] == 'true' || SongAudioService.hasAudio(s['title'] ?? ''))
+          s['hasAudio'] == 'true' ||
+          SongAudioService.hasAudio(s['title'] ?? ''))
       .toList();
 
   static List<Map<String, String>> search(String query) {
     final q = query.toLowerCase();
     return allSongs
-        .where(
-          (s) =>
-              (s['title'] ?? '').toLowerCase().contains(q) ||
-              (s['artist'] ?? '').toLowerCase().contains(q),
-        )
+        .where((s) =>
+            (s['title'] ?? '').toLowerCase().contains(q) ||
+            (s['artist'] ?? '').toLowerCase().contains(q))
         .toList();
   }
 
   static bool containsTitle(String title) {
     final t = title.trim().toLowerCase();
-    return _songs.any((s) => (s['title'] ?? '').toLowerCase() == t);
+    return bundled.any((s) => s.title.toLowerCase() == t);
+  }
+
+  /// The `Title - Artist` asset stem for a bundled song, or null if the
+  /// app doesn't ship that song.
+  static String? assetNameFor(String title) {
+    final t = title.trim().toLowerCase();
+    for (final s in bundled) {
+      if (s.title.toLowerCase() == t) return s.assetName;
+    }
+    return null;
   }
 }
