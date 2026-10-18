@@ -193,6 +193,25 @@ Uint8List normalizeWavForSpeech(Uint8List wav) {
   return out;
 }
 
+/// Whisper's prompt window is small (a few hundred tokens), and anything
+/// past it is discarded — so a whole song's lyrics can't be handed over
+/// wholesale. This trims to a budget that comfortably fits, which is
+/// enough to name the vocabulary and spelling the decoder should prefer.
+/// Returns null for empty input, matching whisper.cpp's "no prompt".
+@visibleForTesting
+String? promptFromForTest(String? expectedText) => _promptFrom(expectedText);
+
+String? _promptFrom(String? expectedText) {
+  if (expectedText == null) return null;
+  final clean = expectedText.replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (clean.isEmpty) return null;
+  const maxChars = 600;
+  if (clean.length <= maxChars) return clean;
+  // Cut on a word boundary; a half-word would just be noise to bias on.
+  final cut = clean.lastIndexOf(' ', maxChars);
+  return clean.substring(0, cut > 0 ? cut : maxChars);
+}
+
 /// Runs Whisper over [recordedWavBytes] and returns raw word-level segments,
 /// with no alignment against any expected/reference text. Shared by
 /// [alignLyrics] (karaoke mode) and [transcribeWords] (reference-free mode).
@@ -200,6 +219,7 @@ Uint8List normalizeWavForSpeech(Uint8List wav) {
 Future<List<WhisperTranscribeSegment>?> _transcribeSegments(
   Uint8List recordedWavBytes, {
   String lang = 'tl',
+  String? expectedText,
 }) async {
   File? tempWav;
   try {
@@ -233,6 +253,23 @@ Future<List<WhisperTranscribeSegment>?> _transcribeSegments(
       lang: lang,
       withSegments: true,
       splitOnWord: true,
+      // Biases decoding toward the words we already know are coming. In
+      // karaoke the reference lyrics are known in advance, and tiny
+      // multilingual is weak enough on sung Tagalog that it was turning
+      // "kita" into "kata" — naming the vocabulary up front is the
+      // cheapest correction available.
+      initialPrompt: _promptFrom(expectedText),
+      // Stops the decoder carrying one segment's output into the next.
+      // Singing is slow and repetitive, which is exactly the condition
+      // where that carry-over turns into invented repetition.
+      noContext: true,
+      // The take that returned " [] [] [] [] []" was non-speech
+      // annotation tokens, not words. They never survive the word filter
+      // anyway, so there is nothing to lose by not generating them.
+      suppressNonSpeechTokens: true,
+      // Without this the model is re-read from disk on every call, which
+      // was a large part of why a 15-second take took 41 seconds.
+      keepModelLoaded: true,
     ).timeout(const Duration(seconds: 90));
     debugPrint('Whisper transcribe() returned after ${sw.elapsedMilliseconds}ms, '
         'wavBytes=${recordedWavBytes.length}, '
@@ -361,11 +398,20 @@ LyricAlignmentResult? alignTranscribedWords({
 /// alignment against any reference lyrics — for reference-free ("without
 /// karaoke") recordings where there's nothing to align against.
 /// Returns an empty list if transcription fails or nothing was recognized.
+/// [expectedText] is the words the singer is expected to produce — the
+/// song's lyrics, where they're known. Whisper uses it only to bias
+/// decoding toward that vocabulary; it does not constrain the output, so a
+/// singer who sings something else is still transcribed as what they sang.
 Future<List<TranscribedWord>> transcribeWords(
   Uint8List recordedWavBytes, {
   String lang = 'tl',
+  String? expectedText,
 }) async {
-  final segments = await _transcribeSegments(recordedWavBytes, lang: lang);
+  final segments = await _transcribeSegments(
+    recordedWavBytes,
+    lang: lang,
+    expectedText: expectedText,
+  );
   if (segments == null) return [];
 
   final words = <TranscribedWord>[];

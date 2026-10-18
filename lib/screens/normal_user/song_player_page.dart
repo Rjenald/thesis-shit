@@ -408,7 +408,21 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         // silently discarding both, which previously made buildSingingSegments
         // never even run and the whole ground-truth UI look empty even
         // though nothing was actually wrong with the pitch analysis itself.
-        final transcribeFuture = transcribeWords(micOnlyWav!).catchError((e, st) {
+        // The lyrics for this song are known, so Whisper is told what
+        // vocabulary to expect. Only the lines inside the recorded window
+        // are used — priming with words from parts they never sang would
+        // bias the decoder toward text that isn't in the audio.
+        final expectedLyrics = _lyrics
+            .where((l) =>
+                l.timestamp >= _recordStartPosition &&
+                l.timestamp <= recordEndOffset)
+            .map((l) => l.text)
+            .join(' ');
+
+        final transcribeFuture = transcribeWords(
+          micOnlyWav!,
+          expectedText: expectedLyrics.isEmpty ? null : expectedLyrics,
+        ).catchError((e, st) {
           debugPrint('Whisper transcription step failed: $e\n$st');
           return <TranscribedWord>[];
         });

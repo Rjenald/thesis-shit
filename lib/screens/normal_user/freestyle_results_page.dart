@@ -35,13 +35,20 @@ class FreestyleResultsPage extends StatefulWidget {
   final Uint8List? pendingWavBytes;
   final List<int>? pendingPcmSamples;
 
+  /// The song's words in Analysis Karaoke, null in Freestyle. Passed to
+  /// Whisper purely as decoding bias — it never constrains the output, so
+  /// a singer who departs from the lyrics is still transcribed as what
+  /// they actually sang.
+  final String? expectedLyrics;
+
   const FreestyleResultsPage({super.key, required FreestyleSummary summary})
       : summary = summary,
         recordingId = null,
         pendingCreatedAt = null,
         pendingDurationSeconds = null,
         pendingWavBytes = null,
-        pendingPcmSamples = null;
+        pendingPcmSamples = null,
+        expectedLyrics = null;
 
   const FreestyleResultsPage.processing({
     super.key,
@@ -50,6 +57,7 @@ class FreestyleResultsPage extends StatefulWidget {
     required int durationSeconds,
     required Uint8List wavBytes,
     required List<int> pcmSamples,
+    this.expectedLyrics,
   })  : summary = null,
         recordingId = recordingId,
         pendingCreatedAt = createdAt,
@@ -116,7 +124,8 @@ class _FreestyleResultsPageState
       // "failed to analyze" error instead, same as any other failure here.
       final results = await Future.wait([
         crepe.analyzeOffline(widget.pendingPcmSamples!, hopMs: 50),
-        transcribeWords(widget.pendingWavBytes!),
+        transcribeWords(widget.pendingWavBytes!,
+            expectedText: widget.expectedLyrics),
       ]).timeout(const Duration(minutes: 2));
       final pitchFrames = results[0] as List<PitchFrame>;
       final words = results[1] as List<TranscribedWord>;

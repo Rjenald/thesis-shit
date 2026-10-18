@@ -333,6 +333,10 @@ class _FreestyleRecordingPageState
               durationSeconds: durationSecs,
               wavBytes: wavBytes,
               pcmSamples: _pcmBytesToInt16(pcmBytes),
+              // Analysis Karaoke knows the song's words; Freestyle doesn't.
+              expectedLyrics: widget.lyrics.isEmpty
+                  ? null
+                  : widget.lyrics.map((l) => l.text).join(' '),
             ),
           ),
         );
