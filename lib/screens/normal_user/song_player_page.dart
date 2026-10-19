@@ -351,6 +351,21 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     final recordEndOffset =
         _recordStartPosition + Duration(milliseconds: recordedDurationMs);
 
+    // Logged outside the `if (wav != null)` below, because that is exactly
+    // the case worth seeing: with no captured PCM the whole ground-truth
+    // pass is skipped and the result screen shows a score and drills but no
+    // Pitch Timeline, while every other diagnostic here stays silent.
+    // _rawHz comes from the live pitch stream and _recordedPcm from the raw
+    // byte stream, so one can be full while the other is empty.
+    debugPrint('Recording captured: pcmBytes=${_recordedPcm.length} '
+        '(${recordedDurationMs}ms), liveReadings=${_rawHz.length}, '
+        'detector=$_detectorLabel, '
+        'start=$_recordStartPosition end=$recordEndOffset');
+    if (_recordedPcm.isEmpty) {
+      debugPrint('  !! no PCM captured — skipping ground-truth analysis, '
+          'so there will be no Pitch Timeline for this take.');
+    }
+
     LyricAlignmentResult? alignment;
     List<SingingSegment> singingSegments = const [];
     // Mixing the backing track into the recording (ffmpeg, via
