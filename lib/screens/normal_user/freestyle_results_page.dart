@@ -125,6 +125,11 @@ class _FreestyleResultsPageState
       final results = await Future.wait([
         crepe.analyzeOffline(widget.pendingPcmSamples!, hopMs: 50),
         transcribeWords(widget.pendingWavBytes!,
+            // Analysis Karaoke songs come from an online search and can be
+            // in any language, so detection beats assuming Tagalog.
+            // Freestyle keeps the Tagalog default: with no lyrics there is
+            // no prior, and this is a Filipino-focused app.
+            lang: widget.expectedLyrics == null ? 'tl' : 'auto',
             expectedText: widget.expectedLyrics),
       ]).timeout(const Duration(minutes: 2));
       final pitchFrames = results[0] as List<PitchFrame>;

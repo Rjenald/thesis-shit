@@ -19,6 +19,7 @@ import '../../data/song_lyrics.dart';
 import '../../services/ground_truth_service.dart';
 import '../../services/lyrics_service.dart';
 import '../../services/song_audio_service.dart';
+import '../../services/song_catalog_service.dart';
 import 'results_page.dart';
 
 class SongPlayerPage extends StatefulWidget {
@@ -436,6 +437,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
         final transcribeFuture = transcribeWords(
           micOnlyWav!,
+          // Per-song: forcing Tagalog on an English song degrades the whole
+          // decode, and at least one catalogued song is sung in English.
+          lang: SongCatalogService.languageFor(widget.songTitle),
           expectedText: expectedLyrics.isEmpty ? null : expectedLyrics,
         ).catchError((e, st) {
           debugPrint('Whisper transcription step failed: $e\n$st');

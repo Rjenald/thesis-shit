@@ -6,6 +6,14 @@ class CatalogSong {
   final String title;
   final String artist;
 
+  /// Whisper language code for this song's lyrics.
+  ///
+  /// The language token conditions the entire decode, so telling Whisper a
+  /// song is Tagalog when it is sung in English measurably hurts it. Most
+  /// of this catalog is OPM, hence the default, but it is per-song because
+  /// at least one entry is not.
+  final String language;
+
   /// Cover art URL, empty when none is known. Every place that renders this
   /// has an errorBuilder falling back to a placeholder, so an empty or
   /// unreachable URL degrades to an icon rather than a broken image — which
@@ -16,6 +24,7 @@ class CatalogSong {
     required this.title,
     required this.artist,
     this.image = '',
+    this.language = 'tl',
   });
 
   /// The naming convention every asset for this song follows:
@@ -56,6 +65,8 @@ class SongCatalogService {
     CatalogSong(
       title: 'Fallen',
       artist: 'Lola Amour',
+      // Sung entirely in English; its bundled lyrics contain no Tagalog.
+      language: 'en',
       image: 'https://images.genius.com/'
           'b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
     ),
@@ -119,6 +130,16 @@ class SongCatalogService {
   static bool containsTitle(String title) {
     final t = title.trim().toLowerCase();
     return bundled.any((s) => s.title.toLowerCase() == t);
+  }
+
+  /// The Whisper language code for a bundled song, defaulting to Tagalog
+  /// for anything not in the catalog (an admin-added song, say).
+  static String languageFor(String title) {
+    final t = title.trim().toLowerCase();
+    for (final s in bundled) {
+      if (s.title.toLowerCase() == t) return s.language;
+    }
+    return 'tl';
   }
 
   /// The `Title - Artist` asset stem for a bundled song, or null if the
