@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/playable_piano.dart';
 import '../../core/audio_service.dart';
 import '../../core/note_utils.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -146,8 +147,26 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgDark,
+      // Scrollable, because this column mixes fixed-height pieces with
+      // Spacers, and a Spacer cannot shrink past zero: on a short screen
+      // the fixed content simply overflows, which is what the striped
+      // banner was.
+      //
+      // SliverFillRemaining rather than the usual LayoutBuilder +
+      // ConstrainedBox + IntrinsicHeight recipe. That recipe runs its
+      // builder during LAYOUT, so everything inside registers its
+      // inherited dependencies then — and this page is full of gesture
+      // detectors, which read MediaQuery. A dependency registered during
+      // layout can outlive the element holding it, which is the
+      // `'_dependents.isEmpty': is not true` assert. The sliver gets the
+      // same "fill the viewport, scroll when taller" behaviour with no
+      // layout-time builder at all.
       body: SafeArea(
-        child: Column(
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
           children: [
             // ── Header ──────────────────────────────────────────────────────
             Padding(
@@ -169,13 +188,22 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
                       if (context.mounted) Navigator.pop(context);
                     },
                   ),
-                  const Text(
-                    'Voice Classification',
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
+                  // Expanded, because a 20px bold title beside a 48px icon
+                  // button has no give: it overflowed by 109px at 360
+                  // logical pixels wide. A narrow handset or a raised
+                  // system text scale does the same thing on a real
+                  // device.
+                  const Expanded(
+                    child: Text(
+                      'Voice Classification',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                      ),
                     ),
                   ),
                 ],
@@ -332,13 +360,13 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
                       ),
                     ),
                     padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                    child: CustomPaint(
-                      painter: _PianoPainter(
-                        detectedMidi: _detectedMidi,
-                        highlightColor: _feedbackColor,
-                        isListening: _isListening,
-                      ),
-                      size: Size.infinite,
+                    // This screen has no glow animation, so the glow is
+                    // held steady rather than faked.
+                    child: PlayablePiano(
+                      detectedMidi: _detectedMidi,
+                      highlightColor: _feedbackColor,
+                      isListening: _isListening,
+                      height: double.infinity,
                     ),
                   ),
                 ],
@@ -423,6 +451,9 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
                 if (index != 3) Navigator.pop(context);
               },
             ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -469,140 +500,3 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
 // Draws one octave C4–C5 (MIDI 60–72).
 // Any detected MIDI note is mapped to its pitch class in this octave before
 // highlighting, so singing C2 still lights up the C key, etc.
-
-class _PianoPainter extends CustomPainter {
-  final int? detectedMidi;
-  final Color highlightColor;
-  final bool isListening;
-
-  const _PianoPainter({
-    required this.detectedMidi,
-    required this.highlightColor,
-    required this.isListening,
-  });
-
-  // White keys: C4(60) D4(62) E4(64) F4(65) G4(67) A4(69) B4(71) C5(72)
-  static const List<int> _whiteKeys = [60, 62, 64, 65, 67, 69, 71, 72];
-
-  // Note name labels for white keys
-  static const List<String> _noteLabels = [
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'A',
-    'B',
-    'C',
-  ];
-
-  // Black keys: MIDI value → centre position as a multiple of whiteKeyWidth
-  static const Map<int, double> _blackKeyCenters = {
-    61: 1.0, // C#4
-    63: 2.0, // D#4
-    66: 4.0, // F#4
-    68: 5.0, // G#4
-    70: 6.0, // A#4
-  };
-
-  // Map any MIDI note to its pitch class in C4–B4 (MIDI 60–71).
-  int? _normalise(int? midi) {
-    if (midi == null) return null;
-    return 60 + (midi % 12);
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final highlighted = _normalise(detectedMidi);
-
-    final numWhite = _whiteKeys.length; // 8
-    final whiteW = size.width / numWhite;
-    final whiteH = size.height;
-    final blackW = whiteW * 0.56;
-    final blackH = whiteH * 0.60;
-
-    // ── White keys ──────────────────────────────────────────────────────────
-    for (int i = 0; i < _whiteKeys.length; i++) {
-      final midi = _whiteKeys[i];
-      final isHit = isListening && midi == highlighted;
-
-      final rect = Rect.fromLTWH(i * whiteW + 1, 0, whiteW - 2, whiteH - 1);
-      final rRect = RRect.fromRectAndCorners(
-        rect,
-        bottomLeft: const Radius.circular(5),
-        bottomRight: const Radius.circular(5),
-      );
-
-      // Fill
-      canvas.drawRRect(
-        rRect,
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = isHit
-              ? highlightColor.withValues(alpha: 0.88)
-              : Colors.white,
-      );
-
-      // Border / glow ring
-      canvas.drawRRect(
-        rRect,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..color = isHit ? highlightColor : Colors.black38
-          ..strokeWidth = isHit ? 2.0 : 1.0,
-      );
-
-      // Note label at bottom
-      final textSpan = TextSpan(
-        text: _noteLabels[i],
-        style: TextStyle(
-          color: isHit ? Colors.black : Colors.black45,
-          fontSize: whiteW * 0.28,
-          fontWeight: isHit ? FontWeight.bold : FontWeight.normal,
-          fontFamily: 'Roboto',
-        ),
-      );
-      final tp = TextPainter(text: textSpan, textDirection: TextDirection.ltr);
-      tp.layout(maxWidth: whiteW);
-      tp.paint(
-        canvas,
-        Offset(i * whiteW + (whiteW - tp.width) / 2, whiteH - tp.height - 4),
-      );
-    }
-
-    // ── Black keys (drawn on top) ────────────────────────────────────────────
-    _blackKeyCenters.forEach((midi, centerFrac) {
-      final isHit = isListening && midi == highlighted;
-      final x = centerFrac * whiteW - blackW / 2;
-      final rect = Rect.fromLTWH(x, 0, blackW, blackH);
-      final rRect = RRect.fromRectAndCorners(
-        rect,
-        bottomLeft: const Radius.circular(4),
-        bottomRight: const Radius.circular(4),
-      );
-
-      canvas.drawRRect(
-        rRect,
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = isHit ? highlightColor : Colors.black,
-      );
-
-      if (isHit) {
-        canvas.drawRRect(
-          rRect,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..color = highlightColor.withValues(alpha: 0.6)
-            ..strokeWidth = 1.5,
-        );
-      }
-    });
-  }
-
-  @override
-  bool shouldRepaint(_PianoPainter old) =>
-      old.detectedMidi != detectedMidi ||
-      old.highlightColor != highlightColor ||
-      old.isListening != isListening;
-}

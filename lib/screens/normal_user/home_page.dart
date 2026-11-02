@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../models/session_result.dart';
 import '../../services/session_storage_service.dart';
 import '../../services/song_audio_service.dart';
@@ -341,19 +342,13 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Row(
           children: [
+            // Square corners on the right: this sits flush against the
+            // card's text column.
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
                 left: Radius.circular(12),
               ),
-              child: image.isNotEmpty
-                  ? Image.network(
-                      image,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _songPlaceholder(),
-                    )
-                  : _songPlaceholder(),
+              child: SongCoverArt(image: image, size: 70, borderRadius: 0),
             ),
             Expanded(
               child: Padding(
@@ -438,12 +433,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _songPlaceholder() => Container(
-    width: 70,
-    height: 70,
-    color: const Color(0xFF1E1E1E),
-    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 26),
-  );
 
   // ── Home feed (Spotify-style rows of horizontal cards) ────────────────────
 
@@ -598,18 +587,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: s.songImage.isNotEmpty
-                      ? Image.network(
-                          s.songImage,
-                          width: 130,
-                          height: 130,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _gridPlaceholder(),
-                        )
-                      : _gridPlaceholder(),
-                ),
+                SongCoverArt(image: s.songImage, size: 130),
                 Positioned(
                   top: 4,
                   right: 4,
@@ -709,18 +687,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: image.isNotEmpty
-                      ? Image.network(
-                          image,
-                          width: 130,
-                          height: 130,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _gridPlaceholder(),
-                        )
-                      : _gridPlaceholder(),
-                ),
+                SongCoverArt(image: image, size: 130),
                 if (hasAudio)
                   Positioned(
                     right: 6,
@@ -796,7 +763,7 @@ class _HomePageState extends State<HomePage> {
                           ? DecorationImage(
                               image: NetworkImage(image),
                               fit: BoxFit.cover,
-                              onError: (_, __) {},
+                              onError: (_, _) {},
                             )
                           : null,
                     ),
@@ -830,12 +797,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _gridPlaceholder() => Container(
-    width: 130,
-    height: 130,
-    color: const Color(0xFF1E1E1E),
-    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 32),
-  );
 
   // ── Profile menu overlay ───────────────────────────────────────────────────
 

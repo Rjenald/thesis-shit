@@ -3,18 +3,20 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
 import '../../core/note_utils.dart' show PitchFeedback;
 import '../../core/singing_segment_builder.dart' show groupSegmentsByLyricLine;
 import '../../data/song_lyrics.dart';
 import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
+import '../../services/ground_truth_service.dart';
 import '../../services/lyrics_service.dart' show LrcLine;
 import '../../services/session_storage_service.dart';
 import '../../services/song_audio_service.dart';
 import '../../widgets/karaoke_summary_card.dart';
 import '../../widgets/pitch_timeline_view.dart';
+import '../../widgets/result_share_sheet.dart';
+import '../../widgets/shareable_result_card.dart';
 import '../../models/singing_segment.dart' show SingingPerformanceSummary;
 import 'practice_drill_page.dart';
 import 'solfagepitch_page.dart';
@@ -61,14 +63,59 @@ class _ResultsPageState extends State<ResultsPage> {
   List<LrcLine> get _lyrics =>
       LocalSongLyrics.getLyrics(widget.session.songTitle) ?? const [];
 
+  /// Whether this song has a reference melody at all, as opposed to this
+  /// particular take having failed to produce one.
+  ///
+  /// Null until checked. Needed because an empty [SessionResult.singingSegments]
+  /// has two very different causes and the screen used to show neither: the
+  /// song ships no ground truth (ordinary — most don't yet), or it does and
+  /// something in this take's analysis went wrong. Saying which is the whole
+  /// difference between "nothing to compare against" and "something broke".
+  bool? _songHasReference;
+
   @override
   void initState() {
     super.initState();
     _recordedVoiceWav = widget.recordedVoiceWav;
+    _checkForReferenceMelody();
     // Auto-save session so it appears in "Recently Visited" on Home page
     _autoSaveSession();
     WidgetsBinding.instance.addPostFrameCallback((_) => _autoDownload());
     _awaitMixedAudio();
+  }
+
+  /// Only asked when there is no timeline to show, and only to explain why.
+  Future<void> _checkForReferenceMelody() async {
+    if (widget.session.singingSegments.isNotEmpty) return;
+    try {
+      final gt = await GroundTruthService.loadForSong(
+          widget.session.songTitle);
+      if (mounted) {
+        setState(() => _songHasReference = gt != null && gt.isNotEmpty);
+      }
+    } catch (_) {
+      // Not worth surfacing: the fallback copy covers both cases.
+      if (mounted) setState(() => _songHasReference = null);
+    }
+  }
+
+  /// What to tell the singer in place of the timeline, or null when there
+  /// is a timeline to show.
+  String? get _timelineEmptyReason {
+    if (widget.session.singingSegments.isNotEmpty) return null;
+    switch (_songHasReference) {
+      case true:
+        return 'This song has a reference melody, but no note-by-note '
+            'comparison came out of this take — usually no audio reached '
+            'the recorder. Try recording again.';
+      case false:
+        return 'No reference melody has been added for this song yet, so '
+            'there is nothing to compare each note against. The score '
+            'above comes from how steady your pitch was, not from whether '
+            'you hit this song\'s notes.';
+      default:
+        return 'No note-by-note comparison is available for this take.';
+    }
   }
 
   Future<void> _awaitMixedAudio() async {
@@ -191,22 +238,57 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
+  /// Opens the share sheet with a rendered result card.
+  ///
+  /// This used to share plain text. An image is what the social apps
+  /// actually display, and it carries the same figures, so the caption is
+  /// now a fallback for the apps that take text as well rather than the
+  /// whole payload.
   void _shareSong() {
     final s = widget.session;
     final scoreInt = s.score.round();
-    final text =
-        'I just sang "${s.songTitle}" by ${s.songArtist} on Huni Karaoke!\n'
-        'Score: $scoreInt% - ${_feedbackLabel(scoreInt)}\n\n'
-        'Try it on Huni Karaoke App';
-    Share.share(text, subject: '${s.songTitle} - My Karaoke Score');
+    ResultShareSheet.show(
+      context,
+      baseName: s.songTitle,
+      shareText:
+          'I just sang "${s.songTitle}" by ${s.songArtist} on Huni — '
+          '$scoreInt% (${_feedbackLabel(scoreInt)})',
+      card: ShareableResultCard(
+        songTitle: s.songTitle,
+        songArtist: s.songArtist,
+        completedAt: s.completedAt,
+        score: s.score,
+        scoreLabel: _feedbackLabel(scoreInt),
+        stats: _shareStats(s),
+      ),
+    );
+  }
+
+  /// The three figures worth putting on a shared card.
+  ///
+  /// Only lines that could be sung are counted, which is the same basis
+  /// the score itself uses — counting silent or unauthored lines would
+  /// make the card disagree with the number next to it.
+  List<ShareStat> _shareStats(SessionResult s) {
+    final total = s.totalLines;
+    return [
+      ShareStat('On pitch', '${s.correctLines}/$total'),
+      if (s.flatLines + s.sharpLines > 0)
+        ShareStat('Off pitch', '${s.flatLines + s.sharpLines}')
+      else
+        ShareStat('Lines', '$total'),
+      ShareStat('Duration', _formatDuration(s.durationSeconds)),
+    ];
+  }
+
+  static String _formatDuration(int seconds) {
+    final m = seconds ~/ 60;
+    final sec = seconds % 60;
+    return '$m:${sec.toString().padLeft(2, '0')}';
   }
 
   static const _onTuneColor = Color(0xFF4CAF50);
   static const _silentColor = Color(0xFF757575);
-  /// A word Whisper did hear, but well away from where the lyric expected
-  /// it — a timing problem, not a missed word, so it reads as its own state
-  /// in the alignment legend rather than being lumped in with either.
-  static const _lateColor = Color(0xFFFF9800);
   static const _flatColor = Color(0xFF448AFF);
   static const _sharpColor = Color(0xFFFF5252);
 
@@ -434,10 +516,9 @@ class _ResultsPageState extends State<ResultsPage> {
                   PitchTimelineView(
                     segments: s.singingSegments,
                     lyrics: _lyrics,
+                    emptyReason: _timelineEmptyReason,
                   ),
                   if (s.singingSegments.isNotEmpty) const SizedBox(height: 20),
-                  _buildLyricAlignment(),
-                  const SizedBox(height: 20),
                   _buildRecommendations(s),
                   const SizedBox(height: 24),
                   _buildRecommendationButton(),
@@ -738,269 +819,6 @@ class _ResultsPageState extends State<ResultsPage> {
   // Whisper actually heard it sung, from a real on-device transcription
   // of the recording — not the static playback-position timestamps used
   // for the live scrolling highlight.
-  Widget _buildLyricAlignment() {
-    final alignment = widget.session.lyricAlignment;
-    if (alignment == null || alignment.totalCount == 0) return const SizedBox.shrink();
-
-    final matchRate = alignment.matchRatePercent;
-    final avgOffsetMs = alignment.avgAbsTimingOffsetMs;
-
-    // Long songs would otherwise produce hundreds of chips; the count of
-    // what's left out is shown rather than silently truncating.
-    const chipLimit = 80;
-    final shownWords = alignment.words.take(chipLimit).toList();
-    final hiddenCount = alignment.totalCount - shownWords.length;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.lyrics_outlined,
-                  color: AppColors.primaryCyan, size: 16),
-              const SizedBox(width: 6),
-              const Expanded(
-                child: Text(
-                  'Lyric Alignment',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Roboto',
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Whisper-Tiny',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    fontSize: 9.5,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _alignmentStat(
-                      '${matchRate.toStringAsFixed(0)}%', 'Words matched'),
-                ),
-                Container(
-                  width: 1,
-                  height: 30,
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
-                Expanded(
-                  child: _alignmentStat(
-                      '${avgOffsetMs.round()}ms', 'Avg. timing offset'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          // Legend — same three colors, in the same order, as the word
-          // chips below use.
-          Wrap(
-            spacing: 14,
-            runSpacing: 6,
-            children: [
-              _alignmentLegendDot(_onTuneColor, 'On time'),
-              _alignmentLegendDot(_lateColor, 'Off timing'),
-              _alignmentLegendDot(_silentColor, 'Missed'),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Divider(color: Colors.white.withValues(alpha: 0.07), height: 1),
-          const SizedBox(height: 14),
-          _alignmentBlock(
-            'EXPECTED',
-            alignment.words.map((w) => w.expectedWord).join(' '),
-            Colors.white.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 12),
-          // What Whisper actually heard, in the same order — a word the
-          // singer missed simply isn't in this line.
-          _alignmentBlock(
-            'DETECTED',
-            alignment.words
-                .where((w) => w.matched)
-                .map((w) => w.recognizedWord!)
-                .join(' '),
-            Colors.white.withValues(alpha: 0.9),
-          ),
-          const SizedBox(height: 14),
-          // Per-word verdict. Wraps rather than scrolling sideways, so a
-          // long line stays fully readable on a narrow screen.
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final w in shownWords)
-                _alignmentWordChip(
-                  w.expectedWord,
-                  w.matched,
-                  !w.matched
-                      ? _silentColor
-                      : (w.timingOffsetMs!.abs() > 400
-                          ? _lateColor
-                          : _onTuneColor),
-                ),
-              if (hiddenCount > 0)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    '+$hiddenCount more',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.35),
-                      fontSize: 10.5,
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _alignmentLegendDot(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 10.5,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _alignmentWordChip(String word, bool matched, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.13),
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: color.withValues(alpha: 0.45)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            matched ? '✓' : '✗',
-            style: TextStyle(
-                color: color, fontSize: 10, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            word,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Roboto',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// A labelled block of lyric text — label stacked above the text rather
-  /// than beside it, so a long line gets the card's full width instead of
-  /// being squeezed into a narrow column on a phone screen.
-  Widget _alignmentBlock(String label, String text, Color textColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.35),
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Roboto',
-            letterSpacing: 1.0,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          text.isEmpty ? '—' : text,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 12.5,
-            fontFamily: 'Roboto',
-            height: 1.4,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _alignmentStat(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 19,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Roboto',
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 10.5,
-            fontFamily: 'Roboto',
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── FLATNESS / SHARPNESS HEATMAP ──
-  // One block per singable line, colored by how far — and which
-  // direction — the singer drifted from the target pitch on that line.
   Widget _buildHeatmapStrip(SessionResult s) {
     final singable = s.singableLines;
     if (singable.isEmpty) return const SizedBox.shrink();

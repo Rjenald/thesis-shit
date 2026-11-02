@@ -9,7 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 import '../core/note_utils.dart' show noteNameToFrequency;
 import 'admin_media_service.dart';
 import 'song_catalog_service.dart';
@@ -43,12 +43,42 @@ class GroundTruthService {
     return name == null ? null : 'assets/ground_truth/$name.json';
   }
 
-  /// Whether this song ships with a ground-truth melody, ignoring any admin
-  /// upload — lets the admin screen distinguish "using the built-in file"
-  /// from "nothing available", which decides whether deleting an upload
-  /// leaves the song with a working target melody.
-  static bool hasBundledGroundTruth(String songTitle) =>
+  /// Whether this song has a ground-truth asset **path**, which is not the
+  /// same as having the file.
+  ///
+  /// [assetPathFor] builds a path from the catalog entry, so this is true
+  /// for every catalogued song whether or not anything was ever authored
+  /// for it. Cheap and synchronous, which is its only merit.
+  ///
+  /// The admin screen used this to decide between "Built-in" and
+  /// "Missing" and so could never show "Missing" for a catalogued song —
+  /// it reported a built-in melody for all ten while nine of them had no
+  /// file at all. Use [bundledGroundTruthExists] for that.
+  static bool hasCataloguedGroundTruthPath(String songTitle) =>
       assetPathFor(songTitle) != null;
+
+  /// Whether the bundled ground-truth file is actually there.
+  ///
+  /// Asked of the asset manifest rather than by loading the file. Loading
+  /// is the obvious way and the wrong one here: the admin screen checks
+  /// every song at once, and `rootBundle.load` on ten backing tracks
+  /// would pull ~80MB of MP3 into memory to answer a yes/no question.
+  /// The manifest is one small read for the whole catalog, and Flutter
+  /// caches it.
+  ///
+  /// Ignores any admin upload, so the admin screen can tell "deleting
+  /// this upload leaves a working melody" from "deleting it leaves
+  /// nothing".
+  static Future<bool> bundledGroundTruthExists(String songTitle) async {
+    final path = assetPathFor(songTitle);
+    if (path == null) return false;
+    try {
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      return manifest.listAssets().contains(path);
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// Returns the song's ground-truth syllables sorted by time, or null if
   /// no ground truth is available for it (not an error — most songs don't

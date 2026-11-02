@@ -19,9 +19,15 @@ class PitchServerConfig {
   ///
   /// Android emulator → 10.0.2.2 (the host's localhost).
   /// Real device → the host's LAN address, from `ipconfig`.
+  /// The default is this machine's address as of 2026-11-02. It WILL go
+  /// stale the next time the laptop joins a different network, and the
+  /// symptom is not an error but a 10-second silence followed by a
+  /// timeout, because an address on another network drops packets rather
+  /// than refusing them. Prefer the --dart-define; .vscode/launch.json
+  /// already passes it.
   static const String serverIp = String.fromEnvironment(
     'PITCH_SERVER_IP',
-    defaultValue: '172.20.137.126',
+    defaultValue: '10.125.177.126',
   );
 
   static const int serverPort =

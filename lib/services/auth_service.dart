@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -142,15 +143,29 @@ class AuthService {
           ? AuthResult.offline(message)
           : AuthResult.failure(message);
     } on SocketException {
+      // Something answered and refused, so the address is reachable and
+      // the server simply is not running there.
       return AuthResult.offline(
-          'Cannot reach the Huni server at ${PitchServerConfig.serverIp}. '
-          'Check it is running and that you are on the same network.');
+          'Nothing is listening at $_base. Start the auth API: '
+          'python backend/auth_api.py');
+    } on TimeoutException {
+      // Nothing answered at all for ${_timeout.inSeconds}s. A live host
+      // refuses a closed port immediately, so silence almost always means
+      // the app is pointed at an address that is not on this network --
+      // typically a hard-coded IP left over from a different one. This
+      // used to fall through to the generic handler below and produce
+      // "check your connection", which is the least useful of the three
+      // messages for by far the most common cause.
+      return AuthResult.offline(
+          'No reply from $_base after ${_timeout.inSeconds}s. That address '
+          'is probably not on this network — relaunch with '
+          '--dart-define=PITCH_SERVER_IP=<your PC\'s IP from ipconfig>.');
     } on HttpException {
       return AuthResult.offline('Lost connection to the Huni server.');
     } catch (e) {
       debugPrint('Auth request failed: $e');
       return AuthResult.offline(
-          'Could not reach the Huni server. Check your connection.');
+          'Could not reach the Huni server at $_base ($e).');
     }
   }
 }

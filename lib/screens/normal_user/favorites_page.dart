@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'library_page.dart';
@@ -160,31 +161,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
-          ClipOval(
-            child: (song['image'] ?? '').isNotEmpty
-                ? Image.network(
-                    song['image']!,
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 48,
-                        height: 48,
-                        color: Colors.grey,
-                        child: const Icon(Icons.music_note, color: Colors.white),
-                      );
-                    },
-                  )
-                : Container(
-                    width: 48,
-                    height: 48,
-                    color: const Color(0xFF1E1E1E),
-                    child: const Icon(
-                      Icons.music_note,
-                      color: AppColors.primaryCyan,
-                    ),
-                  ),
+          // Round, as this list has always shown it.
+          SongCoverArt(
+            image: song['image'] ?? '',
+            size: 48,
+            borderRadius: 24,
           ),
           const SizedBox(width: 12),
           Expanded(

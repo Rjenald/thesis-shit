@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// How often each song gets picked to sing in Analysis Karaoke.
+/// How often each song gets picked to sing in Search & Sing.
 ///
 /// This is demand data: the songs people actually want are the ones worth
 /// spending authoring effort on, so the admin screen can rank them and the

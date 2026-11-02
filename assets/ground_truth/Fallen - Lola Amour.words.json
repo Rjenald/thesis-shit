@@ -1,0 +1,1482 @@
+{
+ "stem": "Fallen - Lola Amour",
+ "source": "MMS_FA forced alignment of the vocal stem",
+ "words": [
+  {
+   "text": "What",
+   "start": 18.469,
+   "end": 18.649,
+   "score": 0.1428
+  },
+  {
+   "text": "if",
+   "start": 18.789,
+   "end": 18.929,
+   "score": 0.8927
+  },
+  {
+   "text": "I",
+   "start": 19.11,
+   "end": 19.13,
+   "score": 0.0026
+  },
+  {
+   "text": "told",
+   "start": 19.33,
+   "end": 19.67,
+   "score": 0.3852
+  },
+  {
+   "text": "you",
+   "start": 19.73,
+   "end": 19.83,
+   "score": 0.3628
+  },
+  {
+   "text": "that",
+   "start": 19.95,
+   "end": 20.15,
+   "score": 0.3186
+  },
+  {
+   "text": "I've",
+   "start": 20.23,
+   "end": 20.37,
+   "score": 0.0008
+  },
+  {
+   "text": "fallen",
+   "start": 20.41,
+   "end": 21.131,
+   "score": 0.5752
+  },
+  {
+   "text": "And",
+   "start": 23.172,
+   "end": 23.312,
+   "score": 0.8347
+  },
+  {
+   "text": "I",
+   "start": 23.372,
+   "end": 23.392,
+   "score": 0.0013
+  },
+  {
+   "text": "like",
+   "start": 23.612,
+   "end": 23.872,
+   "score": 0.7332
+  },
+  {
+   "text": "the",
+   "start": 23.912,
+   "end": 23.992,
+   "score": 0.0181
+  },
+  {
+   "text": "way",
+   "start": 24.092,
+   "end": 24.252,
+   "score": 0.5184
+  },
+  {
+   "text": "you",
+   "start": 24.352,
+   "end": 24.612,
+   "score": 0.4042
+  },
+  {
+   "text": "say",
+   "start": 24.792,
+   "end": 25.013,
+   "score": 0.4668
+  },
+  {
+   "text": "my",
+   "start": 25.073,
+   "end": 25.153,
+   "score": 0.4844
+  },
+  {
+   "text": "name",
+   "start": 25.273,
+   "end": 25.973,
+   "score": 0.651
+  },
+  {
+   "text": "My",
+   "start": 28.014,
+   "end": 28.094,
+   "score": 0.4942
+  },
+  {
+   "text": "heart",
+   "start": 28.194,
+   "end": 28.394,
+   "score": 0.4923
+  },
+  {
+   "text": "skips",
+   "start": 28.454,
+   "end": 28.794,
+   "score": 0.9605
+  },
+  {
+   "text": "a",
+   "start": 28.874,
+   "end": 28.894,
+   "score": 0.0165
+  },
+  {
+   "text": "beat",
+   "start": 28.994,
+   "end": 29.235,
+   "score": 0.4595
+  },
+  {
+   "text": "when",
+   "start": 29.315,
+   "end": 29.495,
+   "score": 0.6118
+  },
+  {
+   "text": "I",
+   "start": 29.555,
+   "end": 29.575,
+   "score": 0.0049
+  },
+  {
+   "text": "hear",
+   "start": 29.735,
+   "end": 29.995,
+   "score": 0.3634
+  },
+  {
+   "text": "you",
+   "start": 30.015,
+   "end": 30.115,
+   "score": 0.3575
+  },
+  {
+   "text": "calling",
+   "start": 30.175,
+   "end": 30.935,
+   "score": 0.4485
+  },
+  {
+   "text": "And",
+   "start": 32.996,
+   "end": 33.137,
+   "score": 0.8181
+  },
+  {
+   "text": "I",
+   "start": 33.177,
+   "end": 33.197,
+   "score": 0.0012
+  },
+  {
+   "text": "like",
+   "start": 33.437,
+   "end": 33.677,
+   "score": 0.7194
+  },
+  {
+   "text": "that",
+   "start": 33.717,
+   "end": 34.097,
+   "score": 0.1439
+  },
+  {
+   "text": "it",
+   "start": 34.117,
+   "end": 34.237,
+   "score": 0.147
+  },
+  {
+   "text": "won't",
+   "start": 34.237,
+   "end": 34.577,
+   "score": 0.2733
+  },
+  {
+   "text": "go",
+   "start": 34.677,
+   "end": 34.777,
+   "score": 0.8192
+  },
+  {
+   "text": "away",
+   "start": 35.018,
+   "end": 35.498,
+   "score": 0.2376
+  },
+  {
+   "text": "But",
+   "start": 39.24,
+   "end": 39.42,
+   "score": 0.3497
+  },
+  {
+   "text": "never",
+   "start": 39.52,
+   "end": 39.86,
+   "score": 0.3793
+  },
+  {
+   "text": "mind",
+   "start": 39.98,
+   "end": 40.66,
+   "score": 0.494
+  },
+  {
+   "text": "don't",
+   "start": 42.161,
+   "end": 42.301,
+   "score": 0.2636
+  },
+  {
+   "text": "wanna",
+   "start": 42.321,
+   "end": 42.521,
+   "score": 0.337
+  },
+  {
+   "text": "give",
+   "start": 42.581,
+   "end": 42.801,
+   "score": 0.7791
+  },
+  {
+   "text": "you",
+   "start": 42.821,
+   "end": 42.961,
+   "score": 0.6569
+  },
+  {
+   "text": "any",
+   "start": 43.202,
+   "end": 43.502,
+   "score": 0.6109
+  },
+  {
+   "text": "trouble",
+   "start": 43.642,
+   "end": 44.242,
+   "score": 0.5884
+  },
+  {
+   "text": "Never",
+   "start": 44.402,
+   "end": 44.762,
+   "score": 0.5745
+  },
+  {
+   "text": "mind",
+   "start": 44.882,
+   "end": 45.603,
+   "score": 0.7131
+  },
+  {
+   "text": "never",
+   "start": 46.883,
+   "end": 47.184,
+   "score": 0.3549
+  },
+  {
+   "text": "mind",
+   "start": 47.324,
+   "end": 49.305,
+   "score": 0.4174
+  },
+  {
+   "text": "I'm",
+   "start": 49.385,
+   "end": 49.605,
+   "score": 0.2946
+  },
+  {
+   "text": "okay",
+   "start": 49.685,
+   "end": 50.165,
+   "score": 0.3615
+  },
+  {
+   "text": "with",
+   "start": 50.265,
+   "end": 50.485,
+   "score": 0.4935
+  },
+  {
+   "text": "being",
+   "start": 50.525,
+   "end": 50.945,
+   "score": 0.4952
+  },
+  {
+   "text": "by",
+   "start": 51.006,
+   "end": 51.286,
+   "score": 0.6063
+  },
+  {
+   "text": "your",
+   "start": 51.366,
+   "end": 51.526,
+   "score": 0.3403
+  },
+  {
+   "text": "side",
+   "start": 51.626,
+   "end": 52.306,
+   "score": 0.4991
+  },
+  {
+   "text": "for",
+   "start": 52.386,
+   "end": 52.726,
+   "score": 0.7058
+  },
+  {
+   "text": "as",
+   "start": 52.806,
+   "end": 52.946,
+   "score": 0.4549
+  },
+  {
+   "text": "long",
+   "start": 53.047,
+   "end": 53.347,
+   "score": 0.9849
+  },
+  {
+   "text": "as",
+   "start": 53.407,
+   "end": 53.507,
+   "score": 0.4914
+  },
+  {
+   "text": "I",
+   "start": 53.707,
+   "end": 53.727,
+   "score": 0.9749
+  },
+  {
+   "text": "can",
+   "start": 53.807,
+   "end": 54.087,
+   "score": 0.4511
+  },
+  {
+   "text": "hide",
+   "start": 54.147,
+   "end": 54.807,
+   "score": 0.2791
+  },
+  {
+   "text": "What",
+   "start": 55.168,
+   "end": 55.388,
+   "score": 0.2441
+  },
+  {
+   "text": "if",
+   "start": 55.508,
+   "end": 55.648,
+   "score": 0.9907
+  },
+  {
+   "text": "I",
+   "start": 55.788,
+   "end": 55.808,
+   "score": 0.0016
+  },
+  {
+   "text": "told",
+   "start": 56.008,
+   "end": 56.388,
+   "score": 0.569
+  },
+  {
+   "text": "you",
+   "start": 56.468,
+   "end": 56.568,
+   "score": 0.7403
+  },
+  {
+   "text": "that",
+   "start": 56.628,
+   "end": 56.868,
+   "score": 0.1788
+  },
+  {
+   "text": "I've",
+   "start": 56.928,
+   "end": 57.129,
+   "score": 0.0005
+  },
+  {
+   "text": "fallen",
+   "start": 57.129,
+   "end": 57.829,
+   "score": 0.6473
+  },
+  {
+   "text": "What",
+   "start": 58.449,
+   "end": 58.609,
+   "score": 0.0003
+  },
+  {
+   "text": "if",
+   "start": 58.629,
+   "end": 77.699,
+   "score": 0.0024
+  },
+  {
+   "text": "I",
+   "start": 81.421,
+   "end": 81.441,
+   "score": 0.0002
+  },
+  {
+   "text": "told",
+   "start": 81.821,
+   "end": 82.221,
+   "score": 0.0025
+  },
+  {
+   "text": "you",
+   "start": 82.221,
+   "end": 82.281,
+   "score": 0.0072
+  },
+  {
+   "text": "that",
+   "start": 82.281,
+   "end": 82.361,
+   "score": 0.0027
+  },
+  {
+   "text": "I've",
+   "start": 82.361,
+   "end": 82.421,
+   "score": 0.0005
+  },
+  {
+   "text": "fallen",
+   "start": 82.421,
+   "end": 82.561,
+   "score": 0.0071
+  },
+  {
+   "text": "A",
+   "start": 82.561,
+   "end": 82.581,
+   "score": 0.0047
+  },
+  {
+   "text": "heart",
+   "start": 82.581,
+   "end": 82.681,
+   "score": 0.0025
+  },
+  {
+   "text": "shaped",
+   "start": 82.681,
+   "end": 83.002,
+   "score": 0.4244
+  },
+  {
+   "text": "arrow",
+   "start": 83.022,
+   "end": 83.302,
+   "score": 0.3439
+  },
+  {
+   "text": "through",
+   "start": 83.442,
+   "end": 83.682,
+   "score": 0.3132
+  },
+  {
+   "text": "my",
+   "start": 83.742,
+   "end": 83.902,
+   "score": 0.3212
+  },
+  {
+   "text": "chest",
+   "start": 84.022,
+   "end": 84.982,
+   "score": 0.5449
+  },
+  {
+   "text": "I'll",
+   "start": 87.064,
+   "end": 87.184,
+   "score": 0.0002
+  },
+  {
+   "text": "make",
+   "start": 87.284,
+   "end": 87.624,
+   "score": 0.5032
+  },
+  {
+   "text": "you",
+   "start": 87.624,
+   "end": 87.724,
+   "score": 0.3608
+  },
+  {
+   "text": "breakfast",
+   "start": 87.844,
+   "end": 88.464,
+   "score": 0.6325
+  },
+  {
+   "text": "every",
+   "start": 88.564,
+   "end": 88.804,
+   "score": 0.5918
+  },
+  {
+   "text": "morning",
+   "start": 88.924,
+   "end": 89.625,
+   "score": 0.6222
+  },
+  {
+   "text": "And",
+   "start": 91.946,
+   "end": 92.166,
+   "score": 0.3246
+  },
+  {
+   "text": "pick",
+   "start": 92.206,
+   "end": 92.446,
+   "score": 0.3563
+  },
+  {
+   "text": "you",
+   "start": 92.506,
+   "end": 92.666,
+   "score": 0.4642
+  },
+  {
+   "text": "up",
+   "start": 92.746,
+   "end": 92.886,
+   "score": 0.4701
+  },
+  {
+   "text": "when",
+   "start": 93.007,
+   "end": 93.367,
+   "score": 0.6485
+  },
+  {
+   "text": "you're",
+   "start": 93.427,
+   "end": 93.787,
+   "score": 0.3832
+  },
+  {
+   "text": "a",
+   "start": 93.887,
+   "end": 93.907,
+   "score": 0.0007
+  },
+  {
+   "text": "mess",
+   "start": 93.907,
+   "end": 94.767,
+   "score": 0.4432
+  },
+  {
+   "text": "I",
+   "start": 99.41,
+   "end": 99.43,
+   "score": 0.454
+  },
+  {
+   "text": "know",
+   "start": 99.53,
+   "end": 100.49,
+   "score": 0.2164
+  },
+  {
+   "text": "that",
+   "start": 100.79,
+   "end": 101.411,
+   "score": 0.1149
+  },
+  {
+   "text": "it",
+   "start": 101.451,
+   "end": 101.631,
+   "score": 0.2376
+  },
+  {
+   "text": "won't",
+   "start": 101.631,
+   "end": 101.971,
+   "score": 0.4438
+  },
+  {
+   "text": "ever",
+   "start": 102.031,
+   "end": 102.251,
+   "score": 0.473
+  },
+  {
+   "text": "stop",
+   "start": 102.351,
+   "end": 102.691,
+   "score": 0.7076
+  },
+  {
+   "text": "You",
+   "start": 102.931,
+   "end": 103.092,
+   "score": 0.5291
+  },
+  {
+   "text": "know",
+   "start": 103.172,
+   "end": 103.452,
+   "score": 0.7543
+  },
+  {
+   "text": "I'll",
+   "start": 103.572,
+   "end": 103.712,
+   "score": 0.0031
+  },
+  {
+   "text": "be",
+   "start": 103.792,
+   "end": 103.912,
+   "score": 0.6643
+  },
+  {
+   "text": "there",
+   "start": 104.112,
+   "end": 104.332,
+   "score": 0.1974
+  },
+  {
+   "text": "when",
+   "start": 104.432,
+   "end": 104.632,
+   "score": 0.7443
+  },
+  {
+   "text": "you",
+   "start": 104.692,
+   "end": 104.772,
+   "score": 0.6254
+  },
+  {
+   "text": "call",
+   "start": 104.872,
+   "end": 105.253,
+   "score": 0.0021
+  },
+  {
+   "text": "me",
+   "start": 105.253,
+   "end": 105.373,
+   "score": 0.9015
+  },
+  {
+   "text": "whether",
+   "start": 105.693,
+   "end": 105.993,
+   "score": 0.2752
+  },
+  {
+   "text": "you",
+   "start": 105.993,
+   "end": 106.133,
+   "score": 0.3119
+  },
+  {
+   "text": "like",
+   "start": 106.233,
+   "end": 106.573,
+   "score": 0.7466
+  },
+  {
+   "text": "it",
+   "start": 106.633,
+   "end": 106.753,
+   "score": 0.832
+  },
+  {
+   "text": "or",
+   "start": 106.813,
+   "end": 106.913,
+   "score": 0.4521
+  },
+  {
+   "text": "not",
+   "start": 107.234,
+   "end": 107.554,
+   "score": 0.6174
+  },
+  {
+   "text": "Without",
+   "start": 107.874,
+   "end": 108.474,
+   "score": 0.3178
+  },
+  {
+   "text": "a",
+   "start": 108.494,
+   "end": 108.514,
+   "score": 0.0639
+  },
+  {
+   "text": "warning",
+   "start": 108.594,
+   "end": 109.295,
+   "score": 0.5411
+  },
+  {
+   "text": "now",
+   "start": 109.355,
+   "end": 109.575,
+   "score": 0.3443
+  },
+  {
+   "text": "I'm",
+   "start": 109.615,
+   "end": 109.735,
+   "score": 0.0022
+  },
+  {
+   "text": "falling",
+   "start": 109.835,
+   "end": 110.495,
+   "score": 0.5392
+  },
+  {
+   "text": "for",
+   "start": 110.575,
+   "end": 110.775,
+   "score": 0.6111
+  },
+  {
+   "text": "this",
+   "start": 110.895,
+   "end": 111.096,
+   "score": 0.4665
+  },
+  {
+   "text": "picture",
+   "start": 111.176,
+   "end": 111.696,
+   "score": 0.4771
+  },
+  {
+   "text": "on",
+   "start": 111.736,
+   "end": 111.856,
+   "score": 0.5931
+  },
+  {
+   "text": "my",
+   "start": 111.936,
+   "end": 112.096,
+   "score": 0.5722
+  },
+  {
+   "text": "phone",
+   "start": 112.196,
+   "end": 112.636,
+   "score": 0.4325
+  },
+  {
+   "text": "But",
+   "start": 113.017,
+   "end": 113.237,
+   "score": 0.1863
+  },
+  {
+   "text": "don't",
+   "start": 113.317,
+   "end": 113.597,
+   "score": 0.4602
+  },
+  {
+   "text": "mind",
+   "start": 113.637,
+   "end": 113.917,
+   "score": 0.1175
+  },
+  {
+   "text": "me",
+   "start": 113.977,
+   "end": 114.057,
+   "score": 0.849
+  },
+  {
+   "text": "I'm",
+   "start": 114.317,
+   "end": 114.457,
+   "score": 0.1791
+  },
+  {
+   "text": "just",
+   "start": 114.497,
+   "end": 114.677,
+   "score": 0.4829
+  },
+  {
+   "text": "falling",
+   "start": 114.717,
+   "end": 115.478,
+   "score": 0.571
+  },
+  {
+   "text": "I'll",
+   "start": 115.598,
+   "end": 115.718,
+   "score": 0.001
+  },
+  {
+   "text": "get",
+   "start": 115.738,
+   "end": 115.978,
+   "score": 0.4121
+  },
+  {
+   "text": "back",
+   "start": 116.058,
+   "end": 116.378,
+   "score": 0.7323
+  },
+  {
+   "text": "up",
+   "start": 116.498,
+   "end": 116.638,
+   "score": 0.7222
+  },
+  {
+   "text": "on",
+   "start": 116.778,
+   "end": 116.878,
+   "score": 0.4797
+  },
+  {
+   "text": "my",
+   "start": 116.918,
+   "end": 117.159,
+   "score": 0.6664
+  },
+  {
+   "text": "own",
+   "start": 117.259,
+   "end": 117.719,
+   "score": 0.518
+  },
+  {
+   "text": "Please",
+   "start": 117.879,
+   "end": 118.239,
+   "score": 0.1074
+  },
+  {
+   "text": "don't",
+   "start": 118.259,
+   "end": 118.619,
+   "score": 0.3873
+  },
+  {
+   "text": "say",
+   "start": 119.06,
+   "end": 119.44,
+   "score": 0.3574
+  },
+  {
+   "text": "my",
+   "start": 120.06,
+   "end": 120.36,
+   "score": 0.6267
+  },
+  {
+   "text": "name",
+   "start": 120.66,
+   "end": 121.661,
+   "score": 0.5107
+  },
+  {
+   "text": "help",
+   "start": 121.921,
+   "end": 122.121,
+   "score": 0.0995
+  },
+  {
+   "text": "me",
+   "start": 122.201,
+   "end": 122.341,
+   "score": 0.6661
+  },
+  {
+   "text": "put",
+   "start": 122.761,
+   "end": 123.242,
+   "score": 0.8336
+  },
+  {
+   "text": "out",
+   "start": 124.082,
+   "end": 124.862,
+   "score": 0.1416
+  },
+  {
+   "text": "this",
+   "start": 124.962,
+   "end": 125.363,
+   "score": 0.4963
+  },
+  {
+   "text": "flame",
+   "start": 125.483,
+   "end": 127.484,
+   "score": 0.3962
+  },
+  {
+   "text": "I'd",
+   "start": 127.584,
+   "end": 127.704,
+   "score": 0.5104
+  },
+  {
+   "text": "rather",
+   "start": 127.744,
+   "end": 128.104,
+   "score": 0.5177
+  },
+  {
+   "text": "hold",
+   "start": 128.304,
+   "end": 128.624,
+   "score": 0.8865
+  },
+  {
+   "text": "onto",
+   "start": 128.684,
+   "end": 129.045,
+   "score": 0.5951
+  },
+  {
+   "text": "this",
+   "start": 129.245,
+   "end": 129.465,
+   "score": 0.4827
+  },
+  {
+   "text": "feeling",
+   "start": 129.525,
+   "end": 130.085,
+   "score": 0.6538
+  },
+  {
+   "text": "that",
+   "start": 130.145,
+   "end": 130.365,
+   "score": 0.4984
+  },
+  {
+   "text": "you",
+   "start": 130.465,
+   "end": 130.585,
+   "score": 0.5364
+  },
+  {
+   "text": "don't",
+   "start": 130.745,
+   "end": 131.106,
+   "score": 0.565
+  },
+  {
+   "text": "even",
+   "start": 131.166,
+   "end": 131.586,
+   "score": 0.5067
+  },
+  {
+   "text": "believe",
+   "start": 131.666,
+   "end": 132.306,
+   "score": 0.5876
+  },
+  {
+   "text": "in",
+   "start": 132.366,
+   "end": 132.626,
+   "score": 0.7489
+  },
+  {
+   "text": "What",
+   "start": 133.547,
+   "end": 133.727,
+   "score": 0.4122
+  },
+  {
+   "text": "if",
+   "start": 133.847,
+   "end": 134.027,
+   "score": 0.9801
+  },
+  {
+   "text": "I",
+   "start": 134.267,
+   "end": 134.287,
+   "score": 0.3344
+  },
+  {
+   "text": "told",
+   "start": 134.387,
+   "end": 134.747,
+   "score": 0.7308
+  },
+  {
+   "text": "you",
+   "start": 134.787,
+   "end": 134.907,
+   "score": 0.77
+  },
+  {
+   "text": "that",
+   "start": 135.008,
+   "end": 135.228,
+   "score": 0.2668
+  },
+  {
+   "text": "I've",
+   "start": 135.308,
+   "end": 135.448,
+   "score": 0.0011
+  },
+  {
+   "text": "fallen",
+   "start": 135.468,
+   "end": 136.268,
+   "score": 0.6654
+  },
+  {
+   "text": "What",
+   "start": 136.828,
+   "end": 137.069,
+   "score": 0.0046
+  },
+  {
+   "text": "if",
+   "start": 137.069,
+   "end": 137.129,
+   "score": 0.0017
+  },
+  {
+   "text": "I",
+   "start": 137.129,
+   "end": 137.149,
+   "score": 0.0024
+  },
+  {
+   "text": "told",
+   "start": 137.169,
+   "end": 160.82,
+   "score": 0.0054
+  },
+  {
+   "text": "you",
+   "start": 161.681,
+   "end": 161.801,
+   "score": 0.0048
+  },
+  {
+   "text": "that",
+   "start": 162.001,
+   "end": 162.221,
+   "score": 0.0272
+  },
+  {
+   "text": "I've",
+   "start": 162.221,
+   "end": 162.281,
+   "score": 0.0028
+  },
+  {
+   "text": "fallen",
+   "start": 162.441,
+   "end": 163.262,
+   "score": 0.0262
+  },
+  {
+   "text": "What",
+   "start": 163.262,
+   "end": 163.342,
+   "score": 0.0824
+  },
+  {
+   "text": "if",
+   "start": 163.382,
+   "end": 163.422,
+   "score": 0.0121
+  },
+  {
+   "text": "I",
+   "start": 163.462,
+   "end": 163.482,
+   "score": 0.2861
+  },
+  {
+   "text": "told",
+   "start": 163.482,
+   "end": 163.562,
+   "score": 0.0018
+  },
+  {
+   "text": "you",
+   "start": 163.562,
+   "end": 163.622,
+   "score": 0.0005
+  },
+  {
+   "text": "that",
+   "start": 163.642,
+   "end": 163.782,
+   "score": 0.0841
+  },
+  {
+   "text": "I've",
+   "start": 163.902,
+   "end": 164.582,
+   "score": 0.0588
+  },
+  {
+   "text": "fallen",
+   "start": 164.662,
+   "end": 168.144,
+   "score": 0.0129
+  },
+  {
+   "text": "What",
+   "start": 168.144,
+   "end": 168.224,
+   "score": 0.0469
+  },
+  {
+   "text": "if",
+   "start": 168.284,
+   "end": 168.324,
+   "score": 0.0117
+  },
+  {
+   "text": "I",
+   "start": 168.344,
+   "end": 168.364,
+   "score": 0.2482
+  },
+  {
+   "text": "told",
+   "start": 168.524,
+   "end": 168.804,
+   "score": 0.0045
+  },
+  {
+   "text": "you",
+   "start": 168.804,
+   "end": 168.864,
+   "score": 0.0071
+  },
+  {
+   "text": "that",
+   "start": 168.904,
+   "end": 168.985,
+   "score": 0.0075
+  },
+  {
+   "text": "I've",
+   "start": 169.265,
+   "end": 169.465,
+   "score": 0.0609
+  },
+  {
+   "text": "fallen",
+   "start": 169.565,
+   "end": 169.805,
+   "score": 0.0318
+  },
+  {
+   "text": "What",
+   "start": 169.825,
+   "end": 170.085,
+   "score": 0.158
+  },
+  {
+   "text": "if",
+   "start": 170.105,
+   "end": 170.185,
+   "score": 0.2205
+  },
+  {
+   "text": "I",
+   "start": 170.205,
+   "end": 170.225,
+   "score": 0.0065
+  },
+  {
+   "text": "told",
+   "start": 170.285,
+   "end": 170.485,
+   "score": 0.0416
+  },
+  {
+   "text": "you",
+   "start": 170.485,
+   "end": 170.605,
+   "score": 0.006
+  },
+  {
+   "text": "that",
+   "start": 170.605,
+   "end": 170.725,
+   "score": 0.1329
+  },
+  {
+   "text": "I've",
+   "start": 170.745,
+   "end": 170.805,
+   "score": 0.0556
+  },
+  {
+   "text": "fallen",
+   "start": 170.805,
+   "end": 171.026,
+   "score": 0.0178
+  },
+  {
+   "text": "What",
+   "start": 171.046,
+   "end": 171.286,
+   "score": 0.1247
+  },
+  {
+   "text": "if",
+   "start": 171.286,
+   "end": 171.326,
+   "score": 0.0105
+  },
+  {
+   "text": "I",
+   "start": 171.326,
+   "end": 171.346,
+   "score": 0.2285
+  },
+  {
+   "text": "told",
+   "start": 171.346,
+   "end": 171.426,
+   "score": 0.0023
+  },
+  {
+   "text": "you",
+   "start": 171.426,
+   "end": 171.606,
+   "score": 0.0075
+  },
+  {
+   "text": "that",
+   "start": 171.806,
+   "end": 173.067,
+   "score": 0.0036
+  },
+  {
+   "text": "I've",
+   "start": 173.267,
+   "end": 176.788,
+   "score": 0.0197
+  },
+  {
+   "text": "fallen",
+   "start": 176.868,
+   "end": 180.37,
+   "score": 0.0154
+  },
+  {
+   "text": "What",
+   "start": 180.43,
+   "end": 180.57,
+   "score": 0.0051
+  },
+  {
+   "text": "if",
+   "start": 180.59,
+   "end": 180.63,
+   "score": 0.0393
+  },
+  {
+   "text": "I",
+   "start": 180.65,
+   "end": 180.67,
+   "score": 0.0057
+  },
+  {
+   "text": "told",
+   "start": 180.69,
+   "end": 180.77,
+   "score": 0.0063
+  },
+  {
+   "text": "you",
+   "start": 180.77,
+   "end": 180.83,
+   "score": 0.0017
+  },
+  {
+   "text": "that",
+   "start": 180.83,
+   "end": 180.931,
+   "score": 0.1599
+  },
+  {
+   "text": "I've",
+   "start": 180.931,
+   "end": 180.991,
+   "score": 0.0013
+  },
+  {
+   "text": "fallen",
+   "start": 180.991,
+   "end": 181.131,
+   "score": 0.0446
+  },
+  {
+   "text": "What",
+   "start": 181.131,
+   "end": 181.211,
+   "score": 0.0053
+  },
+  {
+   "text": "if",
+   "start": 181.231,
+   "end": 181.291,
+   "score": 0.0023
+  },
+  {
+   "text": "I",
+   "start": 181.311,
+   "end": 181.331,
+   "score": 0.0032
+  },
+  {
+   "text": "told",
+   "start": 181.331,
+   "end": 181.411,
+   "score": 0.0076
+  },
+  {
+   "text": "you",
+   "start": 181.411,
+   "end": 181.491,
+   "score": 0.0032
+  },
+  {
+   "text": "that",
+   "start": 181.491,
+   "end": 181.591,
+   "score": 0.0152
+  },
+  {
+   "text": "I've",
+   "start": 181.591,
+   "end": 181.671,
+   "score": 0.14
+  },
+  {
+   "text": "fallen",
+   "start": 181.771,
+   "end": 182.051,
+   "score": 0.0295
+  },
+  {
+   "text": "What",
+   "start": 182.051,
+   "end": 183.732,
+   "score": 0.1274
+  },
+  {
+   "text": "if",
+   "start": 183.792,
+   "end": 186.693,
+   "score": 0.0017
+  },
+  {
+   "text": "I",
+   "start": 186.753,
+   "end": 186.773,
+   "score": 0.0559
+  },
+  {
+   "text": "told",
+   "start": 186.914,
+   "end": 189.315,
+   "score": 0.0024
+  },
+  {
+   "text": "you",
+   "start": 189.315,
+   "end": 190.195,
+   "score": 0.0006
+  },
+  {
+   "text": "that",
+   "start": 190.435,
+   "end": 190.735,
+   "score": 0.0125
+  },
+  {
+   "text": "I've",
+   "start": 191.156,
+   "end": 191.656,
+   "score": 0.0036
+  },
+  {
+   "text": "fallen",
+   "start": 191.816,
+   "end": 193.277,
+   "score": 0.0208
+  },
+  {
+   "text": "I",
+   "start": 193.477,
+   "end": 193.497,
+   "score": 0.0045
+  },
+  {
+   "text": "said",
+   "start": 193.497,
+   "end": 193.757,
+   "score": 0.161
+  },
+  {
+   "text": "never",
+   "start": 193.837,
+   "end": 194.177,
+   "score": 0.0915
+  },
+  {
+   "text": "mind",
+   "start": 194.297,
+   "end": 196.518,
+   "score": 0.1094
+  }
+ ]
+}

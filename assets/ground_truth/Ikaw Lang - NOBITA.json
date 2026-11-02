@@ -1,0 +1,3160 @@
+{
+ "data": [
+  {
+   "syllable": "",
+   "start": 1.87,
+   "end": 2.14,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 2.36,
+   "end": 2.8,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 3.42,
+   "end": 3.86,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 4.45,
+   "end": 4.72,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 5.47,
+   "end": 5.74,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 5.92,
+   "end": 6.18,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 6.41,
+   "end": 6.91,
+   "note": "C#4"
+  },
+  {
+   "syllable": "Oh",
+   "start": 7.81,
+   "end": 8.08,
+   "note": "B3"
+  },
+  {
+   "syllable": "kay",
+   "start": 8.13,
+   "end": 8.31,
+   "note": "C#4"
+  },
+  {
+   "syllable": "gan",
+   "start": 8.31,
+   "end": 8.78,
+   "note": "B3"
+  },
+  {
+   "syllable": "dang",
+   "start": 8.83,
+   "end": 9.25,
+   "note": "D4"
+  },
+  {
+   "syllable": "dang",
+   "start": 9.25,
+   "end": 10.45,
+   "note": "D#4"
+  },
+  {
+   "syllable": "pag",
+   "start": 10.86,
+   "end": 11.18,
+   "note": "C#4"
+  },
+  {
+   "syllable": "dan",
+   "start": 11.41,
+   "end": 11.73,
+   "note": "C#4"
+  },
+  {
+   "syllable": "dan",
+   "start": 11.73,
+   "end": 11.91,
+   "note": "D#4"
+  },
+  {
+   "syllable": "Ang",
+   "start": 12.0,
+   "end": 12.34,
+   "note": "C#4"
+  },
+  {
+   "syllable": "Ang",
+   "start": 12.38,
+   "end": 12.67,
+   "note": "B3"
+  },
+  {
+   "syllable": "yong",
+   "start": 12.67,
+   "end": 13.21,
+   "note": "C#4"
+  },
+  {
+   "syllable": "yong",
+   "start": 13.21,
+   "end": 13.58,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 13.8,
+   "end": 14.59,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mga",
+   "start": 14.59,
+   "end": 15.13,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 15.26,
+   "end": 15.68,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 15.78,
+   "end": 15.98,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 16.05,
+   "end": 16.19,
+   "note": "C#4"
+  },
+  {
+   "syllable": "Ku",
+   "start": 16.54,
+   "end": 16.64,
+   "note": "C#4"
+  },
+  {
+   "syllable": "mi",
+   "start": 16.7,
+   "end": 16.88,
+   "note": "B3"
+  },
+  {
+   "syllable": "mi",
+   "start": 16.88,
+   "end": 17.16,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ki",
+   "start": 17.19,
+   "end": 17.31,
+   "note": "D#4"
+  },
+  {
+   "syllable": "nang",
+   "start": 17.31,
+   "end": 17.64,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ki",
+   "start": 17.64,
+   "end": 17.82,
+   "note": "D#4"
+  },
+  {
+   "syllable": "nang",
+   "start": 17.82,
+   "end": 18.99,
+   "note": "C#4"
+  },
+  {
+   "syllable": "'Di",
+   "start": 20.33,
+   "end": 20.6,
+   "note": "B3"
+  },
+  {
+   "syllable": "ma",
+   "start": 20.64,
+   "end": 20.92,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ma",
+   "start": 20.92,
+   "end": 21.15,
+   "note": "D#4"
+  },
+  {
+   "syllable": "tin",
+   "start": 21.15,
+   "end": 21.65,
+   "note": "C#4"
+  },
+  {
+   "syllable": "di",
+   "start": 21.69,
+   "end": 21.81,
+   "note": "B3"
+  },
+  {
+   "syllable": "han",
+   "start": 21.93,
+   "end": 22.09,
+   "note": "D4"
+  },
+  {
+   "syllable": "han",
+   "start": 22.09,
+   "end": 22.27,
+   "note": "D#4"
+  },
+  {
+   "syllable": "han",
+   "start": 22.27,
+   "end": 22.69,
+   "note": "E4"
+  },
+  {
+   "syllable": "han",
+   "start": 22.69,
+   "end": 23.86,
+   "note": "C#4"
+  },
+  {
+   "syllable": "Ang",
+   "start": 24.39,
+   "end": 24.84,
+   "note": "B3"
+  },
+  {
+   "syllable": "yong",
+   "start": 24.91,
+   "end": 25.06,
+   "note": "A4"
+  },
+  {
+   "syllable": "yong",
+   "start": 25.06,
+   "end": 25.69,
+   "note": "B4"
+  },
+  {
+   "syllable": "mga",
+   "start": 25.69,
+   "end": 25.81,
+   "note": "A#4"
+  },
+  {
+   "syllable": "mga",
+   "start": 25.81,
+   "end": 26.42,
+   "note": "G#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 26.46,
+   "end": 27.36,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 27.56,
+   "end": 27.68,
+   "note": "G4"
+  },
+  {
+   "syllable": "La",
+   "start": 28.02,
+   "end": 28.24,
+   "note": "G4"
+  },
+  {
+   "syllable": "La",
+   "start": 28.33,
+   "end": 28.58,
+   "note": "B3"
+  },
+  {
+   "syllable": "ang",
+   "start": 28.91,
+   "end": 29.13,
+   "note": "A4"
+  },
+  {
+   "syllable": "ang",
+   "start": 29.13,
+   "end": 29.71,
+   "note": "B4"
+  },
+  {
+   "syllable": "mga",
+   "start": 29.78,
+   "end": 30.54,
+   "note": "G#4"
+  },
+  {
+   "syllable": "ning",
+   "start": 30.63,
+   "end": 31.19,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ning",
+   "start": 31.19,
+   "end": 31.43,
+   "note": "C#4"
+  },
+  {
+   "syllable": "La",
+   "start": 32.35,
+   "end": 32.64,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ngit",
+   "start": 32.7,
+   "end": 32.88,
+   "note": "G#4"
+  },
+  {
+   "syllable": "ay",
+   "start": 33.04,
+   "end": 33.23,
+   "note": "D4"
+  },
+  {
+   "syllable": "ay",
+   "start": 33.23,
+   "end": 33.36,
+   "note": "D#4"
+  },
+  {
+   "syllable": "bu",
+   "start": 33.49,
+   "end": 33.73,
+   "note": "E4"
+  },
+  {
+   "syllable": "ba",
+   "start": 33.83,
+   "end": 34.17,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ba",
+   "start": 34.27,
+   "end": 34.48,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 35.42,
+   "end": 35.61,
+   "note": "G#5"
+  },
+  {
+   "syllable": "ma",
+   "start": 36.36,
+   "end": 36.6,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ba",
+   "start": 36.63,
+   "end": 36.76,
+   "note": "G#4"
+  },
+  {
+   "syllable": "ba",
+   "start": 36.86,
+   "end": 36.98,
+   "note": "D4"
+  },
+  {
+   "syllable": "pa",
+   "start": 36.98,
+   "end": 37.16,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 37.16,
+   "end": 37.62,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 37.62,
+   "end": 37.78,
+   "note": "B3"
+  },
+  {
+   "syllable": "la",
+   "start": 37.92,
+   "end": 38.71,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 38.77,
+   "end": 38.97,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 39.12,
+   "end": 39.23,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 39.23,
+   "end": 40.82,
+   "note": "C#4"
+  },
+  {
+   "syllable": "Tu",
+   "start": 42.0,
+   "end": 42.1,
+   "note": "C4"
+  },
+  {
+   "syllable": "mi",
+   "start": 42.24,
+   "end": 42.36,
+   "note": "B3"
+  },
+  {
+   "syllable": "ngin",
+   "start": 42.36,
+   "end": 42.69,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 42.69,
+   "end": 43.06,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 43.17,
+   "end": 43.3,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 43.3,
+   "end": 43.42,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 43.42,
+   "end": 43.66,
+   "note": "G#3"
+  },
+  {
+   "syllable": "sa",
+   "start": 43.87,
+   "end": 44.12,
+   "note": "D4"
+  },
+  {
+   "syllable": "'king",
+   "start": 44.12,
+   "end": 44.42,
+   "note": "D#4"
+  },
+  {
+   "syllable": "'king",
+   "start": 44.47,
+   "end": 44.86,
+   "note": "G#3"
+  },
+  {
+   "syllable": "mga",
+   "start": 44.92,
+   "end": 45.15,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 45.37,
+   "end": 45.7,
+   "note": "G#3"
+  },
+  {
+   "syllable": "hin",
+   "start": 46.39,
+   "end": 46.6,
+   "note": "G3"
+  },
+  {
+   "syllable": "di",
+   "start": 46.69,
+   "end": 46.91,
+   "note": "D4"
+  },
+  {
+   "syllable": "di",
+   "start": 46.91,
+   "end": 47.1,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mo",
+   "start": 47.1,
+   "end": 47.28,
+   "note": "F4"
+  },
+  {
+   "syllable": "mo",
+   "start": 47.34,
+   "end": 47.53,
+   "note": "G3"
+  },
+  {
+   "syllable": "na",
+   "start": 47.61,
+   "end": 47.75,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 47.86,
+   "end": 48.1,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 48.1,
+   "end": 48.27,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 48.38,
+   "end": 48.72,
+   "note": "G3"
+  },
+  {
+   "syllable": "la",
+   "start": 48.82,
+   "end": 49.13,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ngan",
+   "start": 49.13,
+   "end": 49.25,
+   "note": "D#4"
+  },
+  {
+   "syllable": "pang",
+   "start": 49.25,
+   "end": 49.4,
+   "note": "C#4"
+  },
+  {
+   "syllable": "pang",
+   "start": 49.4,
+   "end": 49.88,
+   "note": "G3"
+  },
+  {
+   "syllable": "Mag",
+   "start": 50.38,
+   "end": 50.85,
+   "note": "F3"
+  },
+  {
+   "syllable": "nong",
+   "start": 50.94,
+   "end": 51.13,
+   "note": "C#4"
+  },
+  {
+   "syllable": "nong",
+   "start": 51.13,
+   "end": 51.41,
+   "note": "D#4"
+  },
+  {
+   "syllable": "nang",
+   "start": 51.41,
+   "end": 51.59,
+   "note": "C#4"
+  },
+  {
+   "syllable": "u",
+   "start": 51.78,
+   "end": 52.11,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 52.11,
+   "end": 52.22,
+   "note": "B3"
+  },
+  {
+   "syllable": "u",
+   "start": 52.35,
+   "end": 52.47,
+   "note": "D4"
+  },
+  {
+   "syllable": "lit",
+   "start": 52.47,
+   "end": 52.76,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 52.76,
+   "end": 53.82,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 54.4,
+   "end": 54.52,
+   "note": "F#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 54.52,
+   "end": 54.69,
+   "note": "E4"
+  },
+  {
+   "syllable": "lang",
+   "start": 54.69,
+   "end": 55.13,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 55.13,
+   "end": 55.62,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 55.62,
+   "end": 55.76,
+   "note": "B3"
+  },
+  {
+   "syllable": "i",
+   "start": 55.87,
+   "end": 55.97,
+   "note": "D4"
+  },
+  {
+   "syllable": "big",
+   "start": 55.97,
+   "end": 56.26,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 56.26,
+   "end": 56.47,
+   "note": "E4"
+  },
+  {
+   "syllable": "big",
+   "start": 56.47,
+   "end": 56.63,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 56.63,
+   "end": 56.76,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 56.87,
+   "end": 57.26,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 57.5,
+   "end": 57.61,
+   "note": "A#3"
+  },
+  {
+   "syllable": "At",
+   "start": 57.61,
+   "end": 57.8,
+   "note": "B3"
+  },
+  {
+   "syllable": "kung",
+   "start": 58.34,
+   "end": 58.61,
+   "note": "C#4"
+  },
+  {
+   "syllable": "'di",
+   "start": 58.67,
+   "end": 59.34,
+   "note": "D#4"
+  },
+  {
+   "syllable": "kum",
+   "start": 59.48,
+   "end": 59.65,
+   "note": "G#3"
+  },
+  {
+   "syllable": "bin",
+   "start": 59.68,
+   "end": 59.85,
+   "note": "A3"
+  },
+  {
+   "syllable": "do'y",
+   "start": 60.02,
+   "end": 60.35,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mag",
+   "start": 60.37,
+   "end": 60.84,
+   "note": "G#3"
+  },
+  {
+   "syllable": "wa",
+   "start": 60.84,
+   "end": 61.1,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 61.1,
+   "end": 61.35,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 61.44,
+   "end": 61.73,
+   "note": "G#3"
+  },
+  {
+   "syllable": "ka",
+   "start": 61.73,
+   "end": 61.88,
+   "note": "G3"
+  },
+  {
+   "syllable": "wa",
+   "start": 62.89,
+   "end": 63.07,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kan",
+   "start": 63.16,
+   "end": 63.33,
+   "note": "D#4"
+  },
+  {
+   "syllable": "kan",
+   "start": 63.33,
+   "end": 63.47,
+   "note": "B3"
+  },
+  {
+   "syllable": "ang",
+   "start": 63.47,
+   "end": 63.78,
+   "note": "F#3"
+  },
+  {
+   "syllable": "so't",
+   "start": 63.94,
+   "end": 64.98,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 64.98,
+   "end": 65.23,
+   "note": "E4"
+  },
+  {
+   "syllable": "Na",
+   "start": 65.23,
+   "end": 65.34,
+   "note": "D#4"
+  },
+  {
+   "syllable": "Na",
+   "start": 65.34,
+   "end": 66.17,
+   "note": "C#4"
+  },
+  {
+   "syllable": "i",
+   "start": 66.21,
+   "end": 66.36,
+   "note": "A#3"
+  },
+  {
+   "syllable": "lang",
+   "start": 66.42,
+   "end": 66.92,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 66.92,
+   "end": 67.12,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 67.12,
+   "end": 67.33,
+   "note": "C#4"
+  },
+  {
+   "syllable": "s'yang",
+   "start": 67.47,
+   "end": 67.64,
+   "note": "C#4"
+  },
+  {
+   "syllable": "i",
+   "start": 67.72,
+   "end": 67.89,
+   "note": "B3"
+  },
+  {
+   "syllable": "ni",
+   "start": 67.89,
+   "end": 68.0,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 68.0,
+   "end": 68.15,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 68.33,
+   "end": 68.84,
+   "note": "C#4"
+  },
+  {
+   "syllable": "big",
+   "start": 68.99,
+   "end": 69.21,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 69.21,
+   "end": 69.32,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 69.32,
+   "end": 69.61,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 70.36,
+   "end": 70.5,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 70.5,
+   "end": 71.12,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 71.12,
+   "end": 71.27,
+   "note": "C#4"
+  },
+  {
+   "syllable": "i",
+   "start": 71.36,
+   "end": 71.46,
+   "note": "D4"
+  },
+  {
+   "syllable": "i",
+   "start": 71.46,
+   "end": 71.73,
+   "note": "C#4"
+  },
+  {
+   "syllable": "bi",
+   "start": 71.88,
+   "end": 71.98,
+   "note": "D4"
+  },
+  {
+   "syllable": "bi",
+   "start": 71.98,
+   "end": 72.14,
+   "note": "D#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 72.24,
+   "end": 72.41,
+   "note": "E4"
+  },
+  {
+   "syllable": "gin",
+   "start": 72.41,
+   "end": 72.62,
+   "note": "D#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 72.62,
+   "end": 72.78,
+   "note": "C#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 72.91,
+   "end": 73.27,
+   "note": "B3"
+  },
+  {
+   "syllable": "gin",
+   "start": 73.35,
+   "end": 73.55,
+   "note": "A#3"
+  },
+  {
+   "syllable": "At",
+   "start": 73.55,
+   "end": 74.07,
+   "note": "B3"
+  },
+  {
+   "syllable": "sa",
+   "start": 74.37,
+   "end": 74.65,
+   "note": "B3"
+  },
+  {
+   "syllable": "yong",
+   "start": 74.65,
+   "end": 75.15,
+   "note": "C#4"
+  },
+  {
+   "syllable": "yong",
+   "start": 75.15,
+   "end": 75.45,
+   "note": "D#4"
+  },
+  {
+   "syllable": "yong",
+   "start": 75.58,
+   "end": 75.89,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 75.95,
+   "end": 76.19,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 76.56,
+   "end": 77.07,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lam",
+   "start": 77.07,
+   "end": 77.33,
+   "note": "D#4"
+  },
+  {
+   "syllable": "bing",
+   "start": 77.33,
+   "end": 78.27,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ko",
+   "start": 78.36,
+   "end": 78.8,
+   "note": "E4"
+  },
+  {
+   "syllable": "ay",
+   "start": 78.83,
+   "end": 79.07,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ay",
+   "start": 79.07,
+   "end": 79.5,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ay",
+   "start": 79.5,
+   "end": 79.6,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 79.67,
+   "end": 79.89,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 80.0,
+   "end": 80.15,
+   "note": "D#4"
+  },
+  {
+   "syllable": "na",
+   "start": 80.62,
+   "end": 81.1,
+   "note": "C#4"
+  },
+  {
+   "syllable": "log",
+   "start": 81.19,
+   "end": 81.32,
+   "note": "A#3"
+  },
+  {
+   "syllable": "din",
+   "start": 81.36,
+   "end": 82.24,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ko",
+   "start": 82.35,
+   "end": 82.45,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lam",
+   "start": 82.45,
+   "end": 82.8,
+   "note": "G#4"
+  },
+  {
+   "syllable": "lam",
+   "start": 82.8,
+   "end": 82.92,
+   "note": "A4"
+  },
+  {
+   "syllable": "lam",
+   "start": 82.92,
+   "end": 83.39,
+   "note": "B4"
+  },
+  {
+   "syllable": "kung",
+   "start": 83.39,
+   "end": 83.91,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 84.04,
+   "end": 84.17,
+   "note": "G#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 84.22,
+   "end": 84.32,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ga",
+   "start": 84.41,
+   "end": 84.64,
+   "note": "E4"
+  },
+  {
+   "syllable": "ga",
+   "start": 84.71,
+   "end": 84.92,
+   "note": "D#4"
+  },
+  {
+   "syllable": "win",
+   "start": 84.92,
+   "end": 85.13,
+   "note": "E4"
+  },
+  {
+   "syllable": "win",
+   "start": 85.13,
+   "end": 85.98,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ko",
+   "start": 86.36,
+   "end": 86.51,
+   "note": "G4"
+  },
+  {
+   "syllable": "lam",
+   "start": 86.51,
+   "end": 86.89,
+   "note": "A4"
+  },
+  {
+   "syllable": "lam",
+   "start": 86.89,
+   "end": 87.55,
+   "note": "A#4"
+  },
+  {
+   "syllable": "sa",
+   "start": 87.69,
+   "end": 87.87,
+   "note": "G#4"
+  },
+  {
+   "syllable": "an",
+   "start": 87.9,
+   "end": 88.14,
+   "note": "F#4"
+  },
+  {
+   "syllable": "an",
+   "start": 88.14,
+   "end": 88.8,
+   "note": "G4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 88.85,
+   "end": 89.54,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 89.54,
+   "end": 90.3,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 90.3,
+   "end": 90.49,
+   "note": "E4"
+  },
+  {
+   "syllable": "lik",
+   "start": 90.73,
+   "end": 91.59,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 91.84,
+   "end": 92.36,
+   "note": "D#4"
+  },
+  {
+   "syllable": "sa",
+   "start": 92.47,
+   "end": 92.7,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 92.7,
+   "end": 93.17,
+   "note": "C#4"
+  },
+  {
+   "syllable": "bi",
+   "start": 93.17,
+   "end": 93.3,
+   "note": "E4"
+  },
+  {
+   "syllable": "bi",
+   "start": 93.45,
+   "end": 94.1,
+   "note": "F#4"
+  },
+  {
+   "syllable": "Ti",
+   "start": 94.3,
+   "end": 94.5,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ti",
+   "start": 94.5,
+   "end": 94.71,
+   "note": "E4"
+  },
+  {
+   "syllable": "Ti",
+   "start": 94.71,
+   "end": 94.85,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ngi",
+   "start": 94.85,
+   "end": 95.14,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 95.14,
+   "end": 95.87,
+   "note": "D#4"
+  },
+  {
+   "syllable": "nan",
+   "start": 96.56,
+   "end": 97.15,
+   "note": "C#4"
+  },
+  {
+   "syllable": "na",
+   "start": 97.15,
+   "end": 97.26,
+   "note": "D#4"
+  },
+  {
+   "syllable": "tin",
+   "start": 97.43,
+   "end": 97.87,
+   "note": "F#4"
+  },
+  {
+   "syllable": "'Di",
+   "start": 98.14,
+   "end": 98.59,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 98.63,
+   "end": 98.73,
+   "note": "A4"
+  },
+  {
+   "syllable": "ka",
+   "start": 98.73,
+   "end": 98.94,
+   "note": "G#4"
+  },
+  {
+   "syllable": "la",
+   "start": 98.97,
+   "end": 99.08,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 99.14,
+   "end": 99.24,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ing",
+   "start": 99.47,
+   "end": 100.04,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 100.25,
+   "end": 100.7,
+   "note": "E4"
+  },
+  {
+   "syllable": "hu",
+   "start": 101.6,
+   "end": 102.03,
+   "note": "F#4"
+  },
+  {
+   "syllable": "log",
+   "start": 102.03,
+   "end": 102.53,
+   "note": "E4"
+  },
+  {
+   "syllable": "ka",
+   "start": 102.57,
+   "end": 102.67,
+   "note": "D#4"
+  },
+  {
+   "syllable": "sa",
+   "start": 102.82,
+   "end": 102.93,
+   "note": "C#4"
+  },
+  {
+   "syllable": "'kin",
+   "start": 102.93,
+   "end": 103.71,
+   "note": "E4"
+  },
+  {
+   "syllable": "'kin",
+   "start": 103.71,
+   "end": 104.27,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 104.38,
+   "end": 104.54,
+   "note": "D4"
+  },
+  {
+   "syllable": "Tu",
+   "start": 106.18,
+   "end": 106.36,
+   "note": "B3"
+  },
+  {
+   "syllable": "ngin",
+   "start": 106.36,
+   "end": 106.69,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 106.69,
+   "end": 107.39,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 107.43,
+   "end": 107.59,
+   "note": "G#3"
+  },
+  {
+   "syllable": "a",
+   "start": 107.91,
+   "end": 108.07,
+   "note": "C#4"
+  },
+  {
+   "syllable": "a",
+   "start": 108.07,
+   "end": 108.21,
+   "note": "D#4"
+  },
+  {
+   "syllable": "king",
+   "start": 108.21,
+   "end": 108.37,
+   "note": "F#4"
+  },
+  {
+   "syllable": "king",
+   "start": 108.37,
+   "end": 108.83,
+   "note": "G#3"
+  },
+  {
+   "syllable": "mga",
+   "start": 108.83,
+   "end": 109.13,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ma",
+   "start": 109.13,
+   "end": 109.23,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 109.35,
+   "end": 109.66,
+   "note": "G#3"
+  },
+  {
+   "syllable": "At",
+   "start": 109.7,
+   "end": 110.16,
+   "note": "D#4"
+  },
+  {
+   "syllable": "hin",
+   "start": 110.41,
+   "end": 110.56,
+   "note": "G3"
+  },
+  {
+   "syllable": "di",
+   "start": 110.66,
+   "end": 110.89,
+   "note": "C#4"
+  },
+  {
+   "syllable": "di",
+   "start": 110.89,
+   "end": 111.12,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mo",
+   "start": 111.41,
+   "end": 111.63,
+   "note": "G3"
+  },
+  {
+   "syllable": "na",
+   "start": 111.63,
+   "end": 111.8,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 111.8,
+   "end": 111.93,
+   "note": "A#3"
+  },
+  {
+   "syllable": "na",
+   "start": 111.93,
+   "end": 112.13,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 112.13,
+   "end": 112.29,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 112.29,
+   "end": 112.68,
+   "note": "E4"
+  },
+  {
+   "syllable": "la",
+   "start": 112.93,
+   "end": 113.11,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ngan",
+   "start": 113.15,
+   "end": 113.29,
+   "note": "D#4"
+  },
+  {
+   "syllable": "pang",
+   "start": 113.4,
+   "end": 113.69,
+   "note": "G3"
+  },
+  {
+   "syllable": "Mag",
+   "start": 113.8,
+   "end": 114.38,
+   "note": "D#4"
+  },
+  {
+   "syllable": "Mag",
+   "start": 114.44,
+   "end": 114.83,
+   "note": "F3"
+  },
+  {
+   "syllable": "nong",
+   "start": 114.89,
+   "end": 115.11,
+   "note": "C#4"
+  },
+  {
+   "syllable": "nong",
+   "start": 115.11,
+   "end": 115.4,
+   "note": "D#4"
+  },
+  {
+   "syllable": "nang",
+   "start": 115.4,
+   "end": 115.55,
+   "note": "C#4"
+  },
+  {
+   "syllable": "pa",
+   "start": 115.66,
+   "end": 115.81,
+   "note": "B3"
+  },
+  {
+   "syllable": "u",
+   "start": 115.81,
+   "end": 116.11,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 116.28,
+   "end": 116.47,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 116.47,
+   "end": 116.75,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 116.75,
+   "end": 117.24,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 117.38,
+   "end": 117.75,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 118.38,
+   "end": 118.5,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 118.5,
+   "end": 119.1,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 119.1,
+   "end": 119.62,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 119.62,
+   "end": 119.75,
+   "note": "B3"
+  },
+  {
+   "syllable": "i",
+   "start": 119.79,
+   "end": 119.99,
+   "note": "D4"
+  },
+  {
+   "syllable": "big",
+   "start": 119.99,
+   "end": 120.22,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 120.22,
+   "end": 120.4,
+   "note": "E4"
+  },
+  {
+   "syllable": "big",
+   "start": 120.4,
+   "end": 120.59,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 120.59,
+   "end": 120.75,
+   "note": "C#4"
+  },
+  {
+   "syllable": "big",
+   "start": 120.84,
+   "end": 121.31,
+   "note": "B3"
+  },
+  {
+   "syllable": "kung",
+   "start": 122.38,
+   "end": 122.65,
+   "note": "C#4"
+  },
+  {
+   "syllable": "'di",
+   "start": 122.71,
+   "end": 123.35,
+   "note": "D#4"
+  },
+  {
+   "syllable": "kum",
+   "start": 123.42,
+   "end": 123.78,
+   "note": "G#3"
+  },
+  {
+   "syllable": "do'y",
+   "start": 124.0,
+   "end": 124.35,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mag",
+   "start": 124.41,
+   "end": 124.58,
+   "note": "G#3"
+  },
+  {
+   "syllable": "ti",
+   "start": 124.7,
+   "end": 124.85,
+   "note": "G#3"
+  },
+  {
+   "syllable": "wa",
+   "start": 124.85,
+   "end": 125.11,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 125.11,
+   "end": 125.3,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 125.43,
+   "end": 125.71,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 125.84,
+   "end": 126.35,
+   "note": "D#4"
+  },
+  {
+   "syllable": "wa",
+   "start": 126.86,
+   "end": 127.08,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kan",
+   "start": 127.16,
+   "end": 127.28,
+   "note": "D#4"
+  },
+  {
+   "syllable": "kan",
+   "start": 127.28,
+   "end": 127.42,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 127.42,
+   "end": 127.8,
+   "note": "G3"
+  },
+  {
+   "syllable": "so't",
+   "start": 127.98,
+   "end": 128.87,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 128.87,
+   "end": 129.19,
+   "note": "E4"
+  },
+  {
+   "syllable": "Na",
+   "start": 129.28,
+   "end": 129.63,
+   "note": "C#4"
+  },
+  {
+   "syllable": "i",
+   "start": 129.63,
+   "end": 130.19,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 130.36,
+   "end": 130.87,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 130.87,
+   "end": 131.07,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 131.07,
+   "end": 131.26,
+   "note": "C#4"
+  },
+  {
+   "syllable": "s'yang",
+   "start": 131.45,
+   "end": 131.64,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 131.83,
+   "end": 131.96,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 131.96,
+   "end": 132.08,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 132.28,
+   "end": 132.85,
+   "note": "C#4"
+  },
+  {
+   "syllable": "big",
+   "start": 132.94,
+   "end": 133.05,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 133.05,
+   "end": 133.63,
+   "note": "C#4"
+  },
+  {
+   "syllable": "I",
+   "start": 133.9,
+   "end": 134.05,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 134.34,
+   "end": 134.48,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 134.54,
+   "end": 135.07,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 135.07,
+   "end": 135.53,
+   "note": "C#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 135.93,
+   "end": 136.6,
+   "note": "E4"
+  },
+  {
+   "syllable": "gin",
+   "start": 136.6,
+   "end": 136.73,
+   "note": "C#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 136.77,
+   "end": 136.89,
+   "note": "D#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 136.89,
+   "end": 137.92,
+   "note": "B3"
+  },
+  {
+   "syllable": "sin",
+   "start": 137.92,
+   "end": 138.12,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 138.12,
+   "end": 140.84,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 140.95,
+   "end": 141.7,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 141.92,
+   "end": 142.12,
+   "note": "A#3"
+  },
+  {
+   "syllable": "At",
+   "start": 142.44,
+   "end": 142.66,
+   "note": "A#4"
+  },
+  {
+   "syllable": "At",
+   "start": 142.73,
+   "end": 142.99,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 143.03,
+   "end": 144.19,
+   "note": "F#4"
+  },
+  {
+   "syllable": "At",
+   "start": 144.27,
+   "end": 144.38,
+   "note": "E4"
+  },
+  {
+   "syllable": "At",
+   "start": 144.38,
+   "end": 145.0,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 146.05,
+   "end": 146.35,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 148.9,
+   "end": 149.23,
+   "note": "B5"
+  },
+  {
+   "syllable": "At",
+   "start": 149.57,
+   "end": 149.75,
+   "note": "B4"
+  },
+  {
+   "syllable": "At",
+   "start": 150.48,
+   "end": 151.43,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 151.52,
+   "end": 151.67,
+   "note": "C4"
+  },
+  {
+   "syllable": "At",
+   "start": 151.89,
+   "end": 152.88,
+   "note": "B3"
+  },
+  {
+   "syllable": "At",
+   "start": 153.44,
+   "end": 153.7,
+   "note": "C4"
+  },
+  {
+   "syllable": "pag",
+   "start": 153.86,
+   "end": 154.47,
+   "note": "B3"
+  },
+  {
+   "syllable": "li",
+   "start": 154.47,
+   "end": 154.61,
+   "note": "C#4"
+  },
+  {
+   "syllable": "san",
+   "start": 154.61,
+   "end": 154.76,
+   "note": "C4"
+  },
+  {
+   "syllable": "san",
+   "start": 154.82,
+   "end": 155.04,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ng",
+   "start": 155.04,
+   "end": 155.26,
+   "note": "E4"
+  },
+  {
+   "syllable": "a",
+   "start": 155.26,
+   "end": 155.66,
+   "note": "D#4"
+  },
+  {
+   "syllable": "raw",
+   "start": 155.66,
+   "end": 155.9,
+   "note": "E4"
+  },
+  {
+   "syllable": "raw",
+   "start": 155.9,
+   "end": 156.11,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 156.31,
+   "end": 156.65,
+   "note": "D#4"
+  },
+  {
+   "syllable": "'di",
+   "start": 156.82,
+   "end": 157.25,
+   "note": "B3"
+  },
+  {
+   "syllable": "ka",
+   "start": 157.31,
+   "end": 157.9,
+   "note": "A#4"
+  },
+  {
+   "syllable": "ma",
+   "start": 157.9,
+   "end": 158.15,
+   "note": "F#4"
+  },
+  {
+   "syllable": "hal",
+   "start": 158.36,
+   "end": 158.98,
+   "note": "D#4"
+  },
+  {
+   "syllable": "hal",
+   "start": 158.98,
+   "end": 159.28,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 159.33,
+   "end": 159.96,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 159.96,
+   "end": 160.18,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 160.3,
+   "end": 160.98,
+   "note": "D#4"
+  },
+  {
+   "syllable": "At",
+   "start": 161.36,
+   "end": 161.62,
+   "note": "D#4"
+  },
+  {
+   "syllable": "At",
+   "start": 161.72,
+   "end": 162.26,
+   "note": "B3"
+  },
+  {
+   "syllable": "na",
+   "start": 162.26,
+   "end": 162.45,
+   "note": "C#4"
+  },
+  {
+   "syllable": "da",
+   "start": 162.54,
+   "end": 162.83,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ra",
+   "start": 162.86,
+   "end": 163.12,
+   "note": "E4"
+  },
+  {
+   "syllable": "ma'y",
+   "start": 163.12,
+   "end": 163.68,
+   "note": "D#4"
+  },
+  {
+   "syllable": "hin",
+   "start": 163.68,
+   "end": 163.87,
+   "note": "E4"
+  },
+  {
+   "syllable": "di",
+   "start": 163.87,
+   "end": 164.5,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mag",
+   "start": 164.61,
+   "end": 164.73,
+   "note": "A4"
+  },
+  {
+   "syllable": "mag",
+   "start": 164.73,
+   "end": 164.88,
+   "note": "B4"
+  },
+  {
+   "syllable": "ta",
+   "start": 165.14,
+   "end": 165.77,
+   "note": "A#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 165.82,
+   "end": 166.1,
+   "note": "F#4"
+  },
+  {
+   "syllable": "gal",
+   "start": 166.14,
+   "end": 166.45,
+   "note": "B4"
+  },
+  {
+   "syllable": "gal",
+   "start": 166.45,
+   "end": 168.51,
+   "note": "C#5"
+  },
+  {
+   "syllable": "",
+   "start": 168.51,
+   "end": 169.2,
+   "note": "B4"
+  },
+  {
+   "syllable": "",
+   "start": 169.31,
+   "end": 169.49,
+   "note": "B3"
+  },
+  {
+   "syllable": "Ma",
+   "start": 169.8,
+   "end": 170.32,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lay",
+   "start": 170.32,
+   "end": 170.99,
+   "note": "E4"
+  },
+  {
+   "syllable": "bang",
+   "start": 170.99,
+   "end": 171.37,
+   "note": "D#4"
+  },
+  {
+   "syllable": "hin",
+   "start": 171.37,
+   "end": 171.63,
+   "note": "E4"
+  },
+  {
+   "syllable": "di",
+   "start": 171.63,
+   "end": 172.45,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mag",
+   "start": 172.53,
+   "end": 172.68,
+   "note": "A4"
+  },
+  {
+   "syllable": "mag",
+   "start": 172.68,
+   "end": 172.98,
+   "note": "B4"
+  },
+  {
+   "syllable": "pa",
+   "start": 172.98,
+   "end": 173.5,
+   "note": "A#4"
+  },
+  {
+   "syllable": "pa",
+   "start": 173.57,
+   "end": 173.75,
+   "note": "F#4"
+  },
+  {
+   "syllable": "gal",
+   "start": 173.88,
+   "end": 174.42,
+   "note": "D#4"
+  },
+  {
+   "syllable": "gal",
+   "start": 174.42,
+   "end": 174.68,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 174.87,
+   "end": 175.39,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 175.39,
+   "end": 175.57,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 175.79,
+   "end": 176.36,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 176.36,
+   "end": 176.5,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 176.5,
+   "end": 176.61,
+   "note": "F#4"
+  },
+  {
+   "syllable": "I",
+   "start": 176.9,
+   "end": 177.19,
+   "note": "D#4"
+  },
+  {
+   "syllable": "I",
+   "start": 177.19,
+   "end": 177.3,
+   "note": "C4"
+  },
+  {
+   "syllable": "bi",
+   "start": 177.3,
+   "end": 177.82,
+   "note": "B3"
+  },
+  {
+   "syllable": "bi",
+   "start": 177.82,
+   "end": 178.01,
+   "note": "C#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 178.08,
+   "end": 178.57,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 178.72,
+   "end": 179.02,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 179.14,
+   "end": 179.41,
+   "note": "E4"
+  },
+  {
+   "syllable": "hit",
+   "start": 179.41,
+   "end": 179.87,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ga",
+   "start": 180.02,
+   "end": 180.16,
+   "note": "A#4"
+  },
+  {
+   "syllable": "no",
+   "start": 180.36,
+   "end": 180.47,
+   "note": "B4"
+  },
+  {
+   "syllable": "pa",
+   "start": 180.61,
+   "end": 180.87,
+   "note": "B4"
+  },
+  {
+   "syllable": "ta",
+   "start": 181.07,
+   "end": 181.51,
+   "note": "F#4"
+  },
+  {
+   "syllable": "gal",
+   "start": 181.65,
+   "end": 181.8,
+   "note": "B4"
+  },
+  {
+   "syllable": "gal",
+   "start": 181.8,
+   "end": 185.57,
+   "note": "C#5"
+  },
+  {
+   "syllable": "gal",
+   "start": 185.63,
+   "end": 187.83,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 187.89,
+   "end": 188.34,
+   "note": "C#5"
+  },
+  {
+   "syllable": "Tu",
+   "start": 188.46,
+   "end": 188.57,
+   "note": "C4"
+  },
+  {
+   "syllable": "Tu",
+   "start": 188.6,
+   "end": 188.8,
+   "note": "B3"
+  },
+  {
+   "syllable": "mi",
+   "start": 188.8,
+   "end": 189.09,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ngin",
+   "start": 189.09,
+   "end": 189.66,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 189.86,
+   "end": 190.07,
+   "note": "F#4"
+  },
+  {
+   "syllable": "sa",
+   "start": 190.31,
+   "end": 190.74,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mga",
+   "start": 190.77,
+   "end": 191.37,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ma",
+   "start": 191.37,
+   "end": 191.58,
+   "note": "G#4"
+  },
+  {
+   "syllable": "ma",
+   "start": 191.58,
+   "end": 191.77,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 191.8,
+   "end": 192.19,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 192.19,
+   "end": 192.31,
+   "note": "C#4"
+  },
+  {
+   "syllable": "di",
+   "start": 192.84,
+   "end": 193.74,
+   "note": "D#4"
+  },
+  {
+   "syllable": "na",
+   "start": 193.74,
+   "end": 194.98,
+   "note": "E4"
+  },
+  {
+   "syllable": "la",
+   "start": 194.98,
+   "end": 195.23,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 195.23,
+   "end": 195.52,
+   "note": "E4"
+  },
+  {
+   "syllable": "ngan",
+   "start": 195.52,
+   "end": 195.71,
+   "note": "D#4"
+  },
+  {
+   "syllable": "pang",
+   "start": 195.74,
+   "end": 196.08,
+   "note": "E4"
+  },
+  {
+   "syllable": "pang",
+   "start": 196.08,
+   "end": 196.32,
+   "note": "D#4"
+  },
+  {
+   "syllable": "nong",
+   "start": 196.9,
+   "end": 197.23,
+   "note": "E4"
+  },
+  {
+   "syllable": "nong",
+   "start": 197.32,
+   "end": 197.61,
+   "note": "F#4"
+  },
+  {
+   "syllable": "nang",
+   "start": 197.67,
+   "end": 197.84,
+   "note": "D#4"
+  },
+  {
+   "syllable": "u",
+   "start": 198.15,
+   "end": 198.31,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 198.37,
+   "end": 198.48,
+   "note": "D#4"
+  },
+  {
+   "syllable": "u",
+   "start": 198.6,
+   "end": 198.79,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 198.79,
+   "end": 199.62,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 199.62,
+   "end": 199.8,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lit",
+   "start": 199.92,
+   "end": 200.06,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 200.58,
+   "end": 200.8,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 200.88,
+   "end": 201.3,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 201.3,
+   "end": 201.78,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 201.78,
+   "end": 201.94,
+   "note": "B3"
+  },
+  {
+   "syllable": "big",
+   "start": 202.11,
+   "end": 202.98,
+   "note": "E4"
+  },
+  {
+   "syllable": "big",
+   "start": 203.11,
+   "end": 204.48,
+   "note": "F#4"
+  },
+  {
+   "syllable": "kung",
+   "start": 204.51,
+   "end": 204.62,
+   "note": "G#4"
+  },
+  {
+   "syllable": "'di",
+   "start": 204.8,
+   "end": 205.17,
+   "note": "D#4"
+  },
+  {
+   "syllable": "kum",
+   "start": 205.48,
+   "end": 205.67,
+   "note": "F#4"
+  },
+  {
+   "syllable": "bin",
+   "start": 205.67,
+   "end": 205.93,
+   "note": "D#4"
+  },
+  {
+   "syllable": "si",
+   "start": 205.96,
+   "end": 206.2,
+   "note": "F#4"
+  },
+  {
+   "syllable": "do'y",
+   "start": 206.24,
+   "end": 206.41,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mag",
+   "start": 206.44,
+   "end": 207.03,
+   "note": "F#4"
+  },
+  {
+   "syllable": "la",
+   "start": 207.16,
+   "end": 207.5,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ka",
+   "start": 207.57,
+   "end": 207.96,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 207.96,
+   "end": 208.2,
+   "note": "C#4"
+  },
+  {
+   "syllable": "wa",
+   "start": 208.69,
+   "end": 208.88,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 208.88,
+   "end": 210.12,
+   "note": "E4"
+  },
+  {
+   "syllable": "so't",
+   "start": 210.12,
+   "end": 210.29,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ma",
+   "start": 210.33,
+   "end": 210.6,
+   "note": "E4"
+  },
+  {
+   "syllable": "ni",
+   "start": 210.6,
+   "end": 210.86,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 210.86,
+   "end": 211.15,
+   "note": "E4"
+  },
+  {
+   "syllable": "Na",
+   "start": 211.15,
+   "end": 211.37,
+   "note": "D#4"
+  },
+  {
+   "syllable": "Na",
+   "start": 211.37,
+   "end": 211.65,
+   "note": "E4"
+  },
+  {
+   "syllable": "i",
+   "start": 211.65,
+   "end": 212.16,
+   "note": "D#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 212.29,
+   "end": 212.47,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 212.6,
+   "end": 212.84,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 212.84,
+   "end": 213.18,
+   "note": "C#4"
+  },
+  {
+   "syllable": "s'yang",
+   "start": 213.29,
+   "end": 213.55,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ni",
+   "start": 213.55,
+   "end": 213.73,
+   "note": "B3"
+  },
+  {
+   "syllable": "ni",
+   "start": 213.88,
+   "end": 213.99,
+   "note": "D#4"
+  },
+  {
+   "syllable": "big",
+   "start": 214.07,
+   "end": 214.66,
+   "note": "C#4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 216.1,
+   "end": 216.3,
+   "note": "F#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 216.37,
+   "end": 216.51,
+   "note": "E4"
+  },
+  {
+   "syllable": "lang",
+   "start": 216.51,
+   "end": 216.83,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ang",
+   "start": 216.83,
+   "end": 217.37,
+   "note": "C#4"
+  },
+  {
+   "syllable": "bi",
+   "start": 217.68,
+   "end": 217.83,
+   "note": "D#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 217.88,
+   "end": 218.13,
+   "note": "E4"
+  },
+  {
+   "syllable": "gin",
+   "start": 218.13,
+   "end": 218.36,
+   "note": "D#4"
+  },
+  {
+   "syllable": "gin",
+   "start": 218.36,
+   "end": 218.48,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 218.64,
+   "end": 219.34,
+   "note": "F#4"
+  },
+  {
+   "syllable": "",
+   "start": 219.34,
+   "end": 219.48,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 219.59,
+   "end": 219.86,
+   "note": "D#4"
+  },
+  {
+   "syllable": "La",
+   "start": 220.02,
+   "end": 220.23,
+   "note": "B3"
+  },
+  {
+   "syllable": "La",
+   "start": 220.23,
+   "end": 220.42,
+   "note": "D4"
+  },
+  {
+   "syllable": "La",
+   "start": 220.42,
+   "end": 220.86,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 220.94,
+   "end": 221.41,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 221.51,
+   "end": 221.95,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 221.95,
+   "end": 222.44,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 222.44,
+   "end": 222.72,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 222.72,
+   "end": 222.88,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 222.92,
+   "end": 223.4,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 223.46,
+   "end": 223.85,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 223.91,
+   "end": 224.12,
+   "note": "C4"
+  },
+  {
+   "syllable": "la",
+   "start": 224.12,
+   "end": 224.33,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 224.33,
+   "end": 224.8,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 224.8,
+   "end": 225.15,
+   "note": "G3"
+  },
+  {
+   "syllable": "La",
+   "start": 225.15,
+   "end": 225.33,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 225.39,
+   "end": 225.82,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 225.85,
+   "end": 225.96,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 225.96,
+   "end": 226.09,
+   "note": "F#3"
+  },
+  {
+   "syllable": "la",
+   "start": 226.13,
+   "end": 226.26,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 226.32,
+   "end": 226.56,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 226.56,
+   "end": 226.75,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 226.75,
+   "end": 227.47,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 227.8,
+   "end": 228.01,
+   "note": "G3"
+  },
+  {
+   "syllable": "la",
+   "start": 228.01,
+   "end": 228.55,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 228.69,
+   "end": 229.6,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 229.6,
+   "end": 229.71,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 229.78,
+   "end": 230.05,
+   "note": "F4"
+  },
+  {
+   "syllable": "la",
+   "start": 230.05,
+   "end": 231.66,
+   "note": "F#4"
+  },
+  {
+   "syllable": "La",
+   "start": 231.92,
+   "end": 232.48,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 232.65,
+   "end": 233.54,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 233.71,
+   "end": 235.12,
+   "note": "F#4"
+  },
+  {
+   "syllable": "la",
+   "start": 235.57,
+   "end": 235.79,
+   "note": "B3"
+  },
+  {
+   "syllable": "la",
+   "start": 235.83,
+   "end": 235.97,
+   "note": "D4"
+  },
+  {
+   "syllable": "La",
+   "start": 235.97,
+   "end": 236.46,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 236.53,
+   "end": 236.8,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 237.28,
+   "end": 237.47,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 237.52,
+   "end": 237.68,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 237.97,
+   "end": 238.28,
+   "note": "C#4"
+  },
+  {
+   "syllable": "La",
+   "start": 238.5,
+   "end": 238.74,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 239.01,
+   "end": 239.19,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 239.22,
+   "end": 239.67,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 239.76,
+   "end": 239.89,
+   "note": "C4"
+  },
+  {
+   "syllable": "la",
+   "start": 239.95,
+   "end": 240.43,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 240.5,
+   "end": 240.69,
+   "note": "G3"
+  },
+  {
+   "syllable": "la",
+   "start": 241.38,
+   "end": 241.56,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 241.95,
+   "end": 242.19,
+   "note": "C#4"
+  },
+  {
+   "syllable": "la",
+   "start": 242.19,
+   "end": 242.38,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 242.38,
+   "end": 242.83,
+   "note": "C#4"
+  },
+  {
+   "syllable": "lang",
+   "start": 243.39,
+   "end": 244.11,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 244.33,
+   "end": 245.23,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 245.44,
+   "end": 245.55,
+   "note": "F#4"
+  },
+  {
+   "syllable": "",
+   "start": 245.96,
+   "end": 246.48,
+   "note": "F#4"
+  },
+  {
+   "syllable": "",
+   "start": 246.48,
+   "end": 246.66,
+   "note": "A#4"
+  },
+  {
+   "syllable": "la",
+   "start": 246.7,
+   "end": 247.18,
+   "note": "C#5"
+  },
+  {
+   "syllable": "la",
+   "start": 247.29,
+   "end": 247.45,
+   "note": "G#3"
+  },
+  {
+   "syllable": "la",
+   "start": 247.45,
+   "end": 247.98,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 248.12,
+   "end": 249.07,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 249.18,
+   "end": 250.5,
+   "note": "F#4"
+  },
+  {
+   "syllable": "",
+   "start": 250.93,
+   "end": 251.64,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 251.98,
+   "end": 252.22,
+   "note": "F#5"
+  },
+  {
+   "syllable": "",
+   "start": 252.37,
+   "end": 252.61,
+   "note": "F#5"
+  },
+  {
+   "syllable": "",
+   "start": 252.91,
+   "end": 253.18,
+   "note": "F#5"
+  },
+  {
+   "syllable": "",
+   "start": 253.53,
+   "end": 253.65,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 253.65,
+   "end": 254.09,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 254.09,
+   "end": 254.36,
+   "note": "F#3"
+  },
+  {
+   "syllable": "Sin",
+   "start": 254.74,
+   "end": 255.14,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 255.14,
+   "end": 256.49,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 256.78,
+   "end": 261.6,
+   "note": "B3"
+  }
+ ]
+}

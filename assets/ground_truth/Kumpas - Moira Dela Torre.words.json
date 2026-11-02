@@ -1,0 +1,1134 @@
+{
+ "stem": "Kumpas - Moira Dela Torre",
+ "source": "MMS_FA forced alignment of the vocal stem",
+ "words": [
+  {
+   "text": "Pa'no",
+   "start": 10.745,
+   "end": 11.626,
+   "score": 0.9024
+  },
+  {
+   "text": "bang",
+   "start": 11.766,
+   "end": 12.146,
+   "score": 0.935
+  },
+  {
+   "text": "mababawi",
+   "start": 12.266,
+   "end": 13.907,
+   "score": 0.7422
+  },
+  {
+   "text": "Lahat",
+   "start": 14.407,
+   "end": 15.088,
+   "score": 0.9298
+  },
+  {
+   "text": "ng",
+   "start": 15.168,
+   "end": 15.768,
+   "score": 0.8737
+  },
+  {
+   "text": "mga",
+   "start": 15.848,
+   "end": 16.228,
+   "score": 0.9108
+  },
+  {
+   "text": "nasabi",
+   "start": 16.648,
+   "end": 17.729,
+   "score": 0.8489
+  },
+  {
+   "text": "Di",
+   "start": 22.391,
+   "end": 22.551,
+   "score": 0.9328
+  },
+  {
+   "text": "naman",
+   "start": 23.112,
+   "end": 23.912,
+   "score": 0.9745
+  },
+  {
+   "text": "inakalang",
+   "start": 24.012,
+   "end": 25.613,
+   "score": 0.9601
+  },
+  {
+   "text": "Siya'y",
+   "start": 26.073,
+   "end": 26.633,
+   "score": 0.5447
+  },
+  {
+   "text": "aalis",
+   "start": 26.933,
+   "end": 28.034,
+   "score": 0.5788
+  },
+  {
+   "text": "lang",
+   "start": 28.234,
+   "end": 28.574,
+   "score": 0.9433
+  },
+  {
+   "text": "bigla",
+   "start": 28.714,
+   "end": 29.335,
+   "score": 0.6453
+  },
+  {
+   "text": "ng",
+   "start": 30.135,
+   "end": 30.335,
+   "score": 0.9165
+  },
+  {
+   "text": "walang",
+   "start": 30.395,
+   "end": 31.276,
+   "score": 0.9625
+  },
+  {
+   "text": "babala",
+   "start": 31.556,
+   "end": 32.216,
+   "score": 0.951
+  },
+  {
+   "text": "Sa",
+   "start": 34.437,
+   "end": 34.597,
+   "score": 0.9547
+  },
+  {
+   "text": "isang",
+   "start": 34.757,
+   "end": 35.958,
+   "score": 0.8122
+  },
+  {
+   "text": "iglap",
+   "start": 36.078,
+   "end": 36.878,
+   "score": 0.7464
+  },
+  {
+   "text": "Nagbago",
+   "start": 37.399,
+   "end": 38.499,
+   "score": 0.677
+  },
+  {
+   "text": "ang",
+   "start": 38.759,
+   "end": 38.939,
+   "score": 0.5582
+  },
+  {
+   "text": "lahat",
+   "start": 39.06,
+   "end": 39.62,
+   "score": 0.6716
+  },
+  {
+   "text": "Susuko",
+   "start": 40.42,
+   "end": 41.401,
+   "score": 0.2786
+  },
+  {
+   "text": "na",
+   "start": 41.921,
+   "end": 42.041,
+   "score": 0.9878
+  },
+  {
+   "text": "dapat",
+   "start": 42.181,
+   "end": 43.082,
+   "score": 0.3825
+  },
+  {
+   "text": "nang",
+   "start": 43.262,
+   "end": 43.722,
+   "score": 0.4858
+  },
+  {
+   "text": "dumating",
+   "start": 43.722,
+   "end": 45.083,
+   "score": 0.425
+  },
+  {
+   "text": "ka",
+   "start": 45.203,
+   "end": 45.403,
+   "score": 0.7484
+  },
+  {
+   "text": "Ikaw",
+   "start": 49.265,
+   "end": 49.825,
+   "score": 0.6583
+  },
+  {
+   "text": "ang",
+   "start": 50.045,
+   "end": 50.265,
+   "score": 0.8881
+  },
+  {
+   "text": "kumpas",
+   "start": 50.385,
+   "end": 51.746,
+   "score": 0.7947
+  },
+  {
+   "text": "pag",
+   "start": 52.146,
+   "end": 52.326,
+   "score": 0.9779
+  },
+  {
+   "text": "naliligaw",
+   "start": 52.406,
+   "end": 54.247,
+   "score": 0.7831
+  },
+  {
+   "text": "Ikaw",
+   "start": 55.068,
+   "end": 55.768,
+   "score": 0.743
+  },
+  {
+   "text": "ang",
+   "start": 55.868,
+   "end": 56.128,
+   "score": 0.8494
+  },
+  {
+   "text": "kulay",
+   "start": 56.248,
+   "end": 57.109,
+   "score": 0.631
+  },
+  {
+   "text": "sa",
+   "start": 57.249,
+   "end": 57.409,
+   "score": 0.9832
+  },
+  {
+   "text": "langit",
+   "start": 57.769,
+   "end": 58.669,
+   "score": 0.9538
+  },
+  {
+   "text": "na",
+   "start": 58.749,
+   "end": 58.889,
+   "score": 0.9751
+  },
+  {
+   "text": "bughaw",
+   "start": 59.25,
+   "end": 60.11,
+   "score": 0.5166
+  },
+  {
+   "text": "Sa",
+   "start": 60.87,
+   "end": 60.97,
+   "score": 0.951
+  },
+  {
+   "text": "bawat",
+   "start": 61.131,
+   "end": 61.931,
+   "score": 0.745
+  },
+  {
+   "text": "bagyo",
+   "start": 62.051,
+   "end": 62.751,
+   "score": 0.4408
+  },
+  {
+   "text": "na",
+   "start": 63.792,
+   "end": 63.892,
+   "score": 0.964
+  },
+  {
+   "text": "dumadayo",
+   "start": 64.012,
+   "end": 65.593,
+   "score": 0.6475
+  },
+  {
+   "text": "Ikaw",
+   "start": 66.733,
+   "end": 67.354,
+   "score": 0.7878
+  },
+  {
+   "text": "ang",
+   "start": 67.434,
+   "end": 67.674,
+   "score": 0.6375
+  },
+  {
+   "text": "kanlungan",
+   "start": 67.834,
+   "end": 69.435,
+   "score": 0.6111
+  },
+  {
+   "text": "na",
+   "start": 69.535,
+   "end": 69.635,
+   "score": 0.9746
+  },
+  {
+   "text": "kailangan",
+   "start": 69.775,
+   "end": 71.076,
+   "score": 0.8202
+  },
+  {
+   "text": "ko",
+   "start": 71.256,
+   "end": 71.416,
+   "score": 0.8651
+  },
+  {
+   "text": "Kahit",
+   "start": 72.656,
+   "end": 73.577,
+   "score": 0.9414
+  },
+  {
+   "text": "hindi",
+   "start": 73.657,
+   "end": 74.337,
+   "score": 0.8374
+  },
+  {
+   "text": "ko",
+   "start": 74.697,
+   "end": 74.817,
+   "score": 0.2793
+  },
+  {
+   "text": "alam",
+   "start": 75.238,
+   "end": 75.958,
+   "score": 0.7298
+  },
+  {
+   "text": "Ilang",
+   "start": 76.618,
+   "end": 77.019,
+   "score": 0.7732
+  },
+  {
+   "text": "beses",
+   "start": 77.099,
+   "end": 77.879,
+   "score": 0.7497
+  },
+  {
+   "text": "mo",
+   "start": 78.039,
+   "end": 78.179,
+   "score": 0.6396
+  },
+  {
+   "text": "akong",
+   "start": 78.339,
+   "end": 79.36,
+   "score": 0.4387
+  },
+  {
+   "text": "niligtas",
+   "start": 79.42,
+   "end": 81.461,
+   "score": 0.5946
+  },
+  {
+   "text": "Dito",
+   "start": 82.641,
+   "end": 83.122,
+   "score": 0.2183
+  },
+  {
+   "text": "sa",
+   "start": 83.742,
+   "end": 83.802,
+   "score": 0.0026
+  },
+  {
+   "text": "hantungan",
+   "start": 83.922,
+   "end": 85.823,
+   "score": 0.8259
+  },
+  {
+   "text": "ng",
+   "start": 87.124,
+   "end": 87.284,
+   "score": 0.0037
+  },
+  {
+   "text": "aming",
+   "start": 87.364,
+   "end": 88.344,
+   "score": 0.5801
+  },
+  {
+   "text": "wagas",
+   "start": 88.444,
+   "end": 90.305,
+   "score": 0.7111
+  },
+  {
+   "text": "Pa'nong",
+   "start": 99.31,
+   "end": 100.31,
+   "score": 0.6672
+  },
+  {
+   "text": "maniniwala",
+   "start": 100.33,
+   "end": 102.371,
+   "score": 0.9229
+  },
+  {
+   "text": "Wala",
+   "start": 103.172,
+   "end": 103.592,
+   "score": 0.4732
+  },
+  {
+   "text": "na",
+   "start": 103.732,
+   "end": 103.872,
+   "score": 0.9847
+  },
+  {
+   "text": "sa",
+   "start": 104.192,
+   "end": 104.352,
+   "score": 0.9845
+  },
+  {
+   "text": "'king",
+   "start": 104.652,
+   "end": 105.093,
+   "score": 0.8324
+  },
+  {
+   "text": "harapan",
+   "start": 105.213,
+   "end": 106.613,
+   "score": 0.947
+  },
+  {
+   "text": "Wala",
+   "start": 107.394,
+   "end": 111.096,
+   "score": 0.0038
+  },
+  {
+   "text": "naman",
+   "start": 111.676,
+   "end": 112.296,
+   "score": 0.808
+  },
+  {
+   "text": "to",
+   "start": 112.396,
+   "end": 112.556,
+   "score": 0.0018
+  },
+  {
+   "text": "sa",
+   "start": 113.077,
+   "end": 113.217,
+   "score": 0.003
+  },
+  {
+   "text": "plano",
+   "start": 113.337,
+   "end": 114.037,
+   "score": 0.9842
+  },
+  {
+   "text": "ako'y",
+   "start": 114.617,
+   "end": 115.138,
+   "score": 0.8622
+  },
+  {
+   "text": "masaktan",
+   "start": 115.298,
+   "end": 116.958,
+   "score": 0.4933
+  },
+  {
+   "text": "ng",
+   "start": 117.099,
+   "end": 117.159,
+   "score": 0.6592
+  },
+  {
+   "text": "gan'to",
+   "start": 117.239,
+   "end": 117.879,
+   "score": 0.8248
+  },
+  {
+   "text": "Pa'no",
+   "start": 118.699,
+   "end": 119.36,
+   "score": 0.2418
+  },
+  {
+   "text": "na",
+   "start": 120.12,
+   "end": 120.26,
+   "score": 0.4946
+  },
+  {
+   "text": "eto",
+   "start": 120.48,
+   "end": 120.8,
+   "score": 0.5198
+  },
+  {
+   "text": "Sa",
+   "start": 122.981,
+   "end": 123.122,
+   "score": 0.9479
+  },
+  {
+   "text": "isang",
+   "start": 123.282,
+   "end": 124.402,
+   "score": 0.8012
+  },
+  {
+   "text": "iglap",
+   "start": 124.602,
+   "end": 125.423,
+   "score": 0.7492
+  },
+  {
+   "text": "Nalunod",
+   "start": 125.943,
+   "end": 127.564,
+   "score": 0.4072
+  },
+  {
+   "text": "ako",
+   "start": 127.664,
+   "end": 128.044,
+   "score": 0.7528
+  },
+  {
+   "text": "Hindi",
+   "start": 129.005,
+   "end": 129.425,
+   "score": 0.9869
+  },
+  {
+   "text": "ko",
+   "start": 129.825,
+   "end": 129.965,
+   "score": 0.9835
+  },
+  {
+   "text": "na",
+   "start": 130.545,
+   "end": 130.645,
+   "score": 0.9936
+  },
+  {
+   "text": "kayang",
+   "start": 130.785,
+   "end": 131.706,
+   "score": 0.7886
+  },
+  {
+   "text": "inahon",
+   "start": 131.766,
+   "end": 132.786,
+   "score": 0.1671
+  },
+  {
+   "text": "mo",
+   "start": 133.227,
+   "end": 133.547,
+   "score": 0.0001
+  },
+  {
+   "text": "ako",
+   "start": 133.647,
+   "end": 133.947,
+   "score": 0.4758
+  },
+  {
+   "text": "Ikaw",
+   "start": 137.829,
+   "end": 138.569,
+   "score": 0.9128
+  },
+  {
+   "text": "ang",
+   "start": 138.649,
+   "end": 138.909,
+   "score": 0.7998
+  },
+  {
+   "text": "kumpas",
+   "start": 139.01,
+   "end": 140.41,
+   "score": 0.6299
+  },
+  {
+   "text": "'pag",
+   "start": 140.73,
+   "end": 140.95,
+   "score": 0.6996
+  },
+  {
+   "text": "naliligaw",
+   "start": 140.95,
+   "end": 142.971,
+   "score": 0.8312
+  },
+  {
+   "text": "Ikaw",
+   "start": 143.672,
+   "end": 144.372,
+   "score": 0.7656
+  },
+  {
+   "text": "ang",
+   "start": 144.432,
+   "end": 144.692,
+   "score": 0.5624
+  },
+  {
+   "text": "kulay",
+   "start": 144.812,
+   "end": 145.673,
+   "score": 0.7176
+  },
+  {
+   "text": "sa",
+   "start": 145.813,
+   "end": 145.973,
+   "score": 0.9832
+  },
+  {
+   "text": "langit",
+   "start": 146.353,
+   "end": 147.174,
+   "score": 0.9203
+  },
+  {
+   "text": "na",
+   "start": 147.274,
+   "end": 147.394,
+   "score": 0.9769
+  },
+  {
+   "text": "bughaw",
+   "start": 147.754,
+   "end": 148.634,
+   "score": 0.4998
+  },
+  {
+   "text": "Sa",
+   "start": 149.455,
+   "end": 149.575,
+   "score": 0.9477
+  },
+  {
+   "text": "bawat",
+   "start": 149.715,
+   "end": 150.515,
+   "score": 0.9453
+  },
+  {
+   "text": "bagyo",
+   "start": 150.635,
+   "end": 151.316,
+   "score": 0.7108
+  },
+  {
+   "text": "na",
+   "start": 152.336,
+   "end": 152.436,
+   "score": 0.9895
+  },
+  {
+   "text": "dumadayo",
+   "start": 152.596,
+   "end": 154.177,
+   "score": 0.8041
+  },
+  {
+   "text": "Ikaw",
+   "start": 155.338,
+   "end": 155.938,
+   "score": 0.7526
+  },
+  {
+   "text": "ang",
+   "start": 156.018,
+   "end": 156.318,
+   "score": 0.5131
+  },
+  {
+   "text": "kanlungan",
+   "start": 156.438,
+   "end": 158.019,
+   "score": 0.634
+  },
+  {
+   "text": "na",
+   "start": 158.119,
+   "end": 158.219,
+   "score": 0.98
+  },
+  {
+   "text": "kailangan",
+   "start": 158.319,
+   "end": 159.66,
+   "score": 0.8351
+  },
+  {
+   "text": "ko",
+   "start": 159.84,
+   "end": 160.02,
+   "score": 0.7861
+  },
+  {
+   "text": "At",
+   "start": 160.68,
+   "end": 160.9,
+   "score": 0.0049
+  },
+  {
+   "text": "kahit",
+   "start": 161.241,
+   "end": 162.201,
+   "score": 0.8132
+  },
+  {
+   "text": "nung",
+   "start": 162.241,
+   "end": 162.621,
+   "score": 0.2441
+  },
+  {
+   "text": "di",
+   "start": 162.761,
+   "end": 162.881,
+   "score": 0.7792
+  },
+  {
+   "text": "ko",
+   "start": 163.242,
+   "end": 163.342,
+   "score": 0.4338
+  },
+  {
+   "text": "alam",
+   "start": 163.842,
+   "end": 164.682,
+   "score": 0.7126
+  },
+  {
+   "text": "Ilang",
+   "start": 165.183,
+   "end": 165.563,
+   "score": 0.6648
+  },
+  {
+   "text": "beses",
+   "start": 165.623,
+   "end": 166.343,
+   "score": 0.862
+  },
+  {
+   "text": "ko",
+   "start": 166.563,
+   "end": 166.683,
+   "score": 0.3287
+  },
+  {
+   "text": "akong",
+   "start": 167.024,
+   "end": 167.904,
+   "score": 0.2956
+  },
+  {
+   "text": "niligtas",
+   "start": 167.904,
+   "end": 170.525,
+   "score": 0.5102
+  },
+  {
+   "text": "Dito",
+   "start": 170.725,
+   "end": 171.606,
+   "score": 0.2595
+  },
+  {
+   "text": "sa",
+   "start": 172.226,
+   "end": 172.286,
+   "score": 0.0021
+  },
+  {
+   "text": "hantungan",
+   "start": 172.386,
+   "end": 175.028,
+   "score": 0.813
+  },
+  {
+   "text": "ng",
+   "start": 175.148,
+   "end": 175.728,
+   "score": 0.0042
+  },
+  {
+   "text": "aming",
+   "start": 175.908,
+   "end": 176.908,
+   "score": 0.6069
+  },
+  {
+   "text": "wakas",
+   "start": 176.968,
+   "end": 182.191,
+   "score": 0.7377
+  },
+  {
+   "text": "ah",
+   "start": 182.471,
+   "end": 183.032,
+   "score": 0.0305
+  },
+  {
+   "text": "At",
+   "start": 183.132,
+   "end": 184.592,
+   "score": 0.058
+  },
+  {
+   "text": "nung",
+   "start": 187.654,
+   "end": 187.994,
+   "score": 0.0274
+  },
+  {
+   "text": "akala",
+   "start": 188.274,
+   "end": 193.937,
+   "score": 0.027
+  },
+  {
+   "text": "ko",
+   "start": 194.077,
+   "end": 194.257,
+   "score": 0.0042
+  },
+  {
+   "text": "ubos",
+   "start": 194.517,
+   "end": 201.881,
+   "score": 0.2404
+  },
+  {
+   "text": "na",
+   "start": 202.421,
+   "end": 202.581,
+   "score": 0.9668
+  },
+  {
+   "text": "Ikaw",
+   "start": 203.062,
+   "end": 203.442,
+   "score": 0.0543
+  },
+  {
+   "text": "ang",
+   "start": 203.522,
+   "end": 203.742,
+   "score": 0.5389
+  },
+  {
+   "text": "naging",
+   "start": 203.862,
+   "end": 204.642,
+   "score": 0.4566
+  },
+  {
+   "text": "pahinga",
+   "start": 205.563,
+   "end": 207.744,
+   "score": 0.3447
+  },
+  {
+   "text": "Ikaw",
+   "start": 219.05,
+   "end": 219.61,
+   "score": 0.7824
+  },
+  {
+   "text": "'yung",
+   "start": 219.77,
+   "end": 220.07,
+   "score": 0.6724
+  },
+  {
+   "text": "kumpas",
+   "start": 220.21,
+   "end": 221.571,
+   "score": 0.7345
+  },
+  {
+   "text": "no'ng",
+   "start": 222.031,
+   "end": 222.231,
+   "score": 0.8255
+  },
+  {
+   "text": "naliligaw",
+   "start": 222.291,
+   "end": 224.092,
+   "score": 0.8006
+  },
+  {
+   "text": "Ikaw",
+   "start": 224.992,
+   "end": 225.453,
+   "score": 0.1768
+  },
+  {
+   "text": "kulay",
+   "start": 225.593,
+   "end": 226.373,
+   "score": 0.4533
+  },
+  {
+   "text": "ka",
+   "start": 226.513,
+   "end": 226.673,
+   "score": 0.9468
+  },
+  {
+   "text": "sa",
+   "start": 227.034,
+   "end": 227.194,
+   "score": 0.9602
+  },
+  {
+   "text": "langit",
+   "start": 227.554,
+   "end": 228.434,
+   "score": 0.8319
+  },
+  {
+   "text": "na",
+   "start": 228.534,
+   "end": 228.654,
+   "score": 0.9603
+  },
+  {
+   "text": "bughaw",
+   "start": 229.055,
+   "end": 229.895,
+   "score": 0.4741
+  },
+  {
+   "text": "Sa",
+   "start": 230.675,
+   "end": 230.775,
+   "score": 0.9411
+  },
+  {
+   "text": "bawat",
+   "start": 230.935,
+   "end": 231.716,
+   "score": 0.3529
+  },
+  {
+   "text": "bagyo",
+   "start": 231.896,
+   "end": 232.616,
+   "score": 0.4329
+  },
+  {
+   "text": "na",
+   "start": 233.857,
+   "end": 233.977,
+   "score": 0.9815
+  },
+  {
+   "text": "dumayo",
+   "start": 234.317,
+   "end": 235.438,
+   "score": 0.7794
+  },
+  {
+   "text": "Ikaw",
+   "start": 236.558,
+   "end": 237.059,
+   "score": 0.7758
+  },
+  {
+   "text": "ang",
+   "start": 237.359,
+   "end": 237.559,
+   "score": 0.4911
+  },
+  {
+   "text": "kanlungan",
+   "start": 237.699,
+   "end": 239.32,
+   "score": 0.5841
+  },
+  {
+   "text": "na",
+   "start": 239.46,
+   "end": 239.58,
+   "score": 0.958
+  },
+  {
+   "text": "nahanap",
+   "start": 239.7,
+   "end": 240.821,
+   "score": 0.6903
+  },
+  {
+   "text": "ko",
+   "start": 241.141,
+   "end": 241.301,
+   "score": 0.5328
+  },
+  {
+   "text": "Kahit",
+   "start": 242.482,
+   "end": 243.503,
+   "score": 0.5176
+  },
+  {
+   "text": "no'ng",
+   "start": 243.723,
+   "end": 243.943,
+   "score": 0.7528
+  },
+  {
+   "text": "'di",
+   "start": 244.023,
+   "end": 244.163,
+   "score": 0.693
+  },
+  {
+   "text": "ko",
+   "start": 244.483,
+   "end": 244.643,
+   "score": 0.6363
+  },
+  {
+   "text": "alam",
+   "start": 245.084,
+   "end": 245.804,
+   "score": 0.5072
+  },
+  {
+   "text": "ilang",
+   "start": 246.445,
+   "end": 246.845,
+   "score": 0.6186
+  },
+  {
+   "text": "beses",
+   "start": 246.905,
+   "end": 247.666,
+   "score": 0.6398
+  },
+  {
+   "text": "mo",
+   "start": 247.866,
+   "end": 248.006,
+   "score": 0.7725
+  },
+  {
+   "text": "akong",
+   "start": 248.166,
+   "end": 249.367,
+   "score": 0.3447
+  },
+  {
+   "text": "niligtas",
+   "start": 249.447,
+   "end": 251.308,
+   "score": 0.1672
+  },
+  {
+   "text": "Dito",
+   "start": 255.271,
+   "end": 255.752,
+   "score": 0.279
+  },
+  {
+   "text": "sa",
+   "start": 256.392,
+   "end": 256.532,
+   "score": 0.0082
+  },
+  {
+   "text": "hantungan",
+   "start": 256.552,
+   "end": 258.494,
+   "score": 0.6706
+  },
+  {
+   "text": "at",
+   "start": 261.656,
+   "end": 261.876,
+   "score": 0.7258
+  },
+  {
+   "text": "aking",
+   "start": 262.096,
+   "end": 263.197,
+   "score": 0.7604
+  },
+  {
+   "text": "wakas",
+   "start": 263.337,
+   "end": 264.798,
+   "score": 0.5188
+  }
+ ]
+}

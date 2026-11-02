@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../core/audio_service.dart';
 import '../../core/crepe_pitch_service.dart';
 import '../../core/lyric_alignment_service.dart';
@@ -180,8 +181,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     final ms = pos.inMilliseconds;
     int idx = -1;
     for (int i = 0; i < _lyrics.length; i++) {
-      if (_lyrics[i].timestamp.inMilliseconds <= ms) idx = i;
-      else break;
+      if (_lyrics[i].timestamp.inMilliseconds <= ms) {
+        idx = i;
+      } else {
+        break;
+      }
     }
     if (idx == -1 && _isPlaying && _lyrics.first.timestamp.inMilliseconds == 0) {
       idx = 0;
@@ -367,7 +371,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
           'so there will be no Pitch Timeline for this take.');
     }
 
-    LyricAlignmentResult? alignment;
     List<SingingSegment> singingSegments = const [];
     // Mixing the backing track into the recording (ffmpeg, via
     // mixSongAndVoice) is the slowest of these three independent steps, but
@@ -424,30 +427,48 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         // silently discarding both, which previously made buildSingingSegments
         // never even run and the whole ground-truth UI look empty even
         // though nothing was actually wrong with the pitch analysis itself.
-        // The lyrics for this song are known, so Whisper is told what
-        // vocabulary to expect. Only the lines inside the recorded window
-        // are used — priming with words from parts they never sang would
-        // bias the decoder toward text that isn't in the audio.
-        final expectedLyrics = _lyrics
-            .where((l) =>
-                l.timestamp >= _recordStartPosition &&
-                l.timestamp <= recordEndOffset)
-            .map((l) => l.text)
-            .join(' ');
-
+        // The lyrics are NOT handed to Whisper, even though this song's
+        // are known. The transcript is only displayed — as the words we
+        // heard — so biasing the decoder toward the expected text would
+        // show those words to a singer who sang something else, and
+        // nothing on screen would distinguish that from a correct
+        // reading. Scoring comes from pitch and is unaffected.
         final transcribeFuture = transcribeWords(
           micOnlyWav!,
           // Per-song: forcing Tagalog on an English song degrades the whole
           // decode, and at least one catalogued song is sung in English.
           lang: SongCatalogService.languageFor(widget.songTitle),
-          expectedText: expectedLyrics.isEmpty ? null : expectedLyrics,
         ).catchError((e, st) {
           debugPrint('Whisper transcription step failed: $e\n$st');
           return <TranscribedWord>[];
         });
+        // Only the syllable windows are worth model time: the segment
+        // builder reads frames inside a ground-truth syllable's window and
+        // discards everything else, so a full sweep spent most of its
+        // inference on frames nothing would ever look at. Padded by the
+        // same tolerance the builder's nearest-frame fallback uses, so
+        // narrowing the analysis cannot remove a frame it would have used.
+        final analysisWindows = hasGroundTruth
+            ? groundTruth
+                .where((g) =>
+                    g.endTime >= _recordStartPosition &&
+                    g.startTime <= recordEndOffset)
+                .map((g) => AnalysisWindow(
+                      g.startTime.inMilliseconds -
+                          _recordStartPosition.inMilliseconds,
+                      g.endTime.inMilliseconds -
+                          _recordStartPosition.inMilliseconds,
+                    ).padded(kNearestFrameToleranceMs))
+                .toList()
+            : const <AnalysisWindow>[];
+
         final crepeFuture = hasGroundTruth
             ? _offlineCrepe
-                .analyzeOffline(_pcmBytesToInt16(_recordedPcm), hopMs: 50)
+                .analyzeOffline(
+                _pcmBytesToInt16(_recordedPcm),
+                hopMs: 50,
+                windows: analysisWindows,
+              )
                 .catchError((e, st) {
                 debugPrint('CREPE analysis step failed: $e\n$st');
                 return <PitchFrame>[];
@@ -463,14 +484,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         debugPrint('recognizedWords=${recognizedWords.length}, '
             'pitchFrames=${pitchFrames.length} '
             '(voiced=${pitchFrames.where((f) => f.hasSignal).length})');
-
-        if (_lyrics.isNotEmpty) {
-          alignment = alignTranscribedWords(
-            lyrics: _lyrics,
-            recognizedWords: recognizedWords,
-            recordStartOffset: _recordStartPosition,
-          );
-        }
 
         if (hasGroundTruth) {
           singingSegments = buildSingingSegments(
@@ -500,9 +513,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       songImage: widget.songImage, completedAt: DateTime.now(),
       lyricResults: _buildLyricResults(recordEndOffset), durationSeconds: _position.inSeconds,
       singingSegments: singingSegments,
-      // Carried on the session itself, so it's saved with everything else
-      // and still there when this take is reopened from the Library.
-      lyricAlignment: alignment,
     );
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (_) => ResultsPage(
@@ -639,7 +649,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     b.setUint16(34,bps,Endian.little);
     b.setUint8(36,0x64);b.setUint8(37,0x61);b.setUint8(38,0x74);b.setUint8(39,0x61);
     b.setUint32(40,n,Endian.little);
-    for(int i=0;i<n;i++) b.setUint8(44+i,pcm[i]&0xFF);
+    for(int i=0;i<n;i++) {
+      b.setUint8(44+i,pcm[i]&0xFF);
+    }
     return b.buffer.asUint8List();
   }
 
@@ -777,10 +789,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
               ],
             ),
             clipBehavior: Clip.antiAlias,
-            child: widget.songImage.isNotEmpty
-                ? Image.network(widget.songImage, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _albumPlaceholder())
-                : _albumPlaceholder(),
+            // borderRadius 0: the parent Container already clips this
+            // with its own rounded shape and antialiasing.
+            child: SongCoverArt(
+              image: widget.songImage,
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: 0,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -802,10 +818,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
   }
 
-  Widget _albumPlaceholder() => Container(
-    color: const Color(0xFF1E1E1E),
-    child: const Center(child: Icon(Icons.music_note, color: AppColors.primaryCyan, size: 28)),
-  );
 
   // ── LYRICS BODY — Spotify-style scrolling lyrics ──
   Widget _buildLyricsBody() {

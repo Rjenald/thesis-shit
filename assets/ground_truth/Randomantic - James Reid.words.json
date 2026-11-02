@@ -1,0 +1,2148 @@
+{
+ "stem": "Randomantic - James Reid",
+ "source": "MMS_FA forced alignment of the vocal stem",
+ "words": [
+  {
+   "text": "Kahit",
+   "start": 0.28,
+   "end": 0.9,
+   "score": 0.0005
+  },
+  {
+   "text": "wala",
+   "start": 0.94,
+   "end": 1.341,
+   "score": 0.0011
+  },
+  {
+   "text": "na",
+   "start": 1.861,
+   "end": 1.981,
+   "score": 0.0006
+  },
+  {
+   "text": "Kahit",
+   "start": 3.462,
+   "end": 6.063,
+   "score": 0.0011
+  },
+  {
+   "text": "kahit",
+   "start": 6.063,
+   "end": 8.664,
+   "score": 0.0012
+  },
+  {
+   "text": "wala",
+   "start": 8.684,
+   "end": 9.085,
+   "score": 0.0859
+  },
+  {
+   "text": "na",
+   "start": 9.625,
+   "end": 9.725,
+   "score": 0.1263
+  },
+  {
+   "text": "Kahit",
+   "start": 9.785,
+   "end": 10.065,
+   "score": 0.0003
+  },
+  {
+   "text": "kahit",
+   "start": 10.065,
+   "end": 10.165,
+   "score": 0.0012
+  },
+  {
+   "text": "wala",
+   "start": 10.165,
+   "end": 10.245,
+   "score": 0.0013
+  },
+  {
+   "text": "na",
+   "start": 10.245,
+   "end": 10.285,
+   "score": 0.0013
+  },
+  {
+   "text": "Kahit",
+   "start": 10.285,
+   "end": 10.445,
+   "score": 0.0011
+  },
+  {
+   "text": "kahit",
+   "start": 10.465,
+   "end": 10.725,
+   "score": 0.0014
+  },
+  {
+   "text": "wala",
+   "start": 10.745,
+   "end": 10.865,
+   "score": 0.0011
+  },
+  {
+   "text": "na",
+   "start": 10.865,
+   "end": 10.945,
+   "score": 0.0033
+  },
+  {
+   "text": "Pa'no",
+   "start": 10.945,
+   "end": 11.206,
+   "score": 0.7366
+  },
+  {
+   "text": "kung",
+   "start": 11.306,
+   "end": 11.546,
+   "score": 0.527
+  },
+  {
+   "text": "bigla",
+   "start": 11.606,
+   "end": 12.086,
+   "score": 0.5209
+  },
+  {
+   "text": "na",
+   "start": 12.286,
+   "end": 12.386,
+   "score": 0.9826
+  },
+  {
+   "text": "lamang",
+   "start": 12.566,
+   "end": 13.267,
+   "score": 0.7468
+  },
+  {
+   "text": "I'll",
+   "start": 13.707,
+   "end": 13.827,
+   "score": 0.001
+  },
+  {
+   "text": "wrap",
+   "start": 13.827,
+   "end": 14.127,
+   "score": 0.6321
+  },
+  {
+   "text": "my",
+   "start": 14.247,
+   "end": 14.327,
+   "score": 0.4836
+  },
+  {
+   "text": "arms",
+   "start": 14.607,
+   "end": 14.887,
+   "score": 0.4726
+  },
+  {
+   "text": "on",
+   "start": 14.927,
+   "end": 15.028,
+   "score": 0.7654
+  },
+  {
+   "text": "your",
+   "start": 15.188,
+   "end": 15.428,
+   "score": 0.4432
+  },
+  {
+   "text": "hips",
+   "start": 15.528,
+   "end": 16.828,
+   "score": 0.1954
+  },
+  {
+   "text": "Baby",
+   "start": 17.749,
+   "end": 18.209,
+   "score": 0.5317
+  },
+  {
+   "text": "yeah",
+   "start": 18.849,
+   "end": 20.97,
+   "score": 0.0488
+  },
+  {
+   "text": "'Pag",
+   "start": 21.271,
+   "end": 21.411,
+   "score": 0.616
+  },
+  {
+   "text": "'di",
+   "start": 21.451,
+   "end": 21.531,
+   "score": 0.8581
+  },
+  {
+   "text": "mo",
+   "start": 21.631,
+   "end": 21.711,
+   "score": 0.876
+  },
+  {
+   "text": "inaasahan",
+   "start": 22.031,
+   "end": 23.532,
+   "score": 0.6486
+  },
+  {
+   "text": "I'll",
+   "start": 23.572,
+   "end": 24.112,
+   "score": 0.0015
+  },
+  {
+   "text": "kiss",
+   "start": 24.192,
+   "end": 24.492,
+   "score": 0.465
+  },
+  {
+   "text": "you",
+   "start": 24.572,
+   "end": 24.692,
+   "score": 0.3372
+  },
+  {
+   "text": "right",
+   "start": 24.852,
+   "end": 25.253,
+   "score": 0.1817
+  },
+  {
+   "text": "on",
+   "start": 25.253,
+   "end": 25.373,
+   "score": 0.6313
+  },
+  {
+   "text": "the",
+   "start": 25.433,
+   "end": 25.573,
+   "score": 0.2122
+  },
+  {
+   "text": "lips",
+   "start": 25.813,
+   "end": 27.254,
+   "score": 0.3712
+  },
+  {
+   "text": "baby",
+   "start": 28.094,
+   "end": 28.374,
+   "score": 0.2962
+  },
+  {
+   "text": "yeah",
+   "start": 28.394,
+   "end": 29.355,
+   "score": 0.1147
+  },
+  {
+   "text": "Write",
+   "start": 30.335,
+   "end": 30.775,
+   "score": 0.2546
+  },
+  {
+   "text": "little",
+   "start": 30.975,
+   "end": 31.256,
+   "score": 0.0199
+  },
+  {
+   "text": "love",
+   "start": 31.276,
+   "end": 31.916,
+   "score": 0.2638
+  },
+  {
+   "text": "notes",
+   "start": 31.916,
+   "end": 32.216,
+   "score": 0.5122
+  },
+  {
+   "text": "on",
+   "start": 32.276,
+   "end": 32.376,
+   "score": 0.9433
+  },
+  {
+   "text": "a",
+   "start": 32.416,
+   "end": 32.436,
+   "score": 0.9784
+  },
+  {
+   "text": "post-it",
+   "start": 32.556,
+   "end": 33.017,
+   "score": 0.4627
+  },
+  {
+   "text": "Then",
+   "start": 33.217,
+   "end": 33.377,
+   "score": 0.241
+  },
+  {
+   "text": "I",
+   "start": 33.417,
+   "end": 33.437,
+   "score": 0.0012
+  },
+  {
+   "text": "post",
+   "start": 33.517,
+   "end": 33.917,
+   "score": 0.6953
+  },
+  {
+   "text": "it",
+   "start": 33.977,
+   "end": 34.197,
+   "score": 0.0103
+  },
+  {
+   "text": "on",
+   "start": 34.257,
+   "end": 34.337,
+   "score": 0.7924
+  },
+  {
+   "text": "your",
+   "start": 34.377,
+   "end": 34.477,
+   "score": 0.2288
+  },
+  {
+   "text": "front",
+   "start": 34.477,
+   "end": 34.837,
+   "score": 0.9011
+  },
+  {
+   "text": "door",
+   "start": 34.837,
+   "end": 35.158,
+   "score": 0.1399
+  },
+  {
+   "text": "Show",
+   "start": 35.438,
+   "end": 35.778,
+   "score": 0.6765
+  },
+  {
+   "text": "up",
+   "start": 35.838,
+   "end": 36.078,
+   "score": 0.3332
+  },
+  {
+   "text": "in",
+   "start": 36.138,
+   "end": 36.238,
+   "score": 0.5765
+  },
+  {
+   "text": "suit",
+   "start": 36.398,
+   "end": 36.658,
+   "score": 0.3296
+  },
+  {
+   "text": "and",
+   "start": 36.818,
+   "end": 37.039,
+   "score": 0.3085
+  },
+  {
+   "text": "tie",
+   "start": 37.039,
+   "end": 37.339,
+   "score": 0.0642
+  },
+  {
+   "text": "with",
+   "start": 37.399,
+   "end": 37.539,
+   "score": 0.543
+  },
+  {
+   "text": "a",
+   "start": 37.599,
+   "end": 37.619,
+   "score": 0.7405
+  },
+  {
+   "text": "brooch",
+   "start": 37.699,
+   "end": 38.079,
+   "score": 0.4716
+  },
+  {
+   "text": "And",
+   "start": 38.139,
+   "end": 38.339,
+   "score": 0.2048
+  },
+  {
+   "text": "with",
+   "start": 38.359,
+   "end": 38.519,
+   "score": 0.5642
+  },
+  {
+   "text": "the",
+   "start": 38.519,
+   "end": 38.579,
+   "score": 0.1441
+  },
+  {
+   "text": "roses",
+   "start": 38.739,
+   "end": 39.32,
+   "score": 0.5652
+  },
+  {
+   "text": "on",
+   "start": 39.38,
+   "end": 39.46,
+   "score": 0.8394
+  },
+  {
+   "text": "your",
+   "start": 39.5,
+   "end": 39.6,
+   "score": 0.2224
+  },
+  {
+   "text": "front",
+   "start": 39.62,
+   "end": 39.96,
+   "score": 0.8984
+  },
+  {
+   "text": "yard",
+   "start": 39.98,
+   "end": 40.46,
+   "score": 0.2062
+  },
+  {
+   "text": "oh-whoa",
+   "start": 40.52,
+   "end": 40.86,
+   "score": 0.0884
+  },
+  {
+   "text": "Doo-doo-doo-doo-doo",
+   "start": 40.94,
+   "end": 43.822,
+   "score": 0.0823
+  },
+  {
+   "text": "doo",
+   "start": 43.822,
+   "end": 44.382,
+   "score": 0.0721
+  },
+  {
+   "text": "yeah",
+   "start": 45.083,
+   "end": 46.163,
+   "score": 0.0402
+  },
+  {
+   "text": "Ang",
+   "start": 46.163,
+   "end": 46.343,
+   "score": 0.5892
+  },
+  {
+   "text": "daming",
+   "start": 46.423,
+   "end": 47.324,
+   "score": 0.7212
+  },
+  {
+   "text": "paraan",
+   "start": 47.404,
+   "end": 48.064,
+   "score": 0.8728
+  },
+  {
+   "text": "ikaw",
+   "start": 48.444,
+   "end": 49.045,
+   "score": 0.7139
+  },
+  {
+   "text": "ang",
+   "start": 49.085,
+   "end": 49.205,
+   "score": 0.6279
+  },
+  {
+   "text": "tanging",
+   "start": 49.325,
+   "end": 49.905,
+   "score": 0.6248
+  },
+  {
+   "text": "dahilan",
+   "start": 49.985,
+   "end": 50.785,
+   "score": 0.7393
+  },
+  {
+   "text": "oh",
+   "start": 51.046,
+   "end": 51.286,
+   "score": 0.2789
+  },
+  {
+   "text": "babe",
+   "start": 51.606,
+   "end": 52.006,
+   "score": 0.2514
+  },
+  {
+   "text": "Haharanahin",
+   "start": 52.226,
+   "end": 53.667,
+   "score": 0.5553
+  },
+  {
+   "text": "kita",
+   "start": 53.807,
+   "end": 54.267,
+   "score": 0.4944
+  },
+  {
+   "text": "sa'n",
+   "start": 54.787,
+   "end": 54.967,
+   "score": 0.3265
+  },
+  {
+   "text": "man",
+   "start": 55.108,
+   "end": 55.328,
+   "score": 0.477
+  },
+  {
+   "text": "tayo",
+   "start": 55.428,
+   "end": 55.848,
+   "score": 0.3191
+  },
+  {
+   "text": "magpunta",
+   "start": 56.048,
+   "end": 56.828,
+   "score": 0.3163
+  },
+  {
+   "text": "'Yong",
+   "start": 57.369,
+   "end": 57.569,
+   "score": 0.2267
+  },
+  {
+   "text": "tipong",
+   "start": 57.689,
+   "end": 58.249,
+   "score": 0.313
+  },
+  {
+   "text": "kahit",
+   "start": 58.349,
+   "end": 59.01,
+   "score": 0.2054
+  },
+  {
+   "text": "wala",
+   "start": 59.01,
+   "end": 59.45,
+   "score": 0.2886
+  },
+  {
+   "text": "lang",
+   "start": 59.93,
+   "end": 61.531,
+   "score": 0.3145
+  },
+  {
+   "text": "O",
+   "start": 61.951,
+   "end": 61.971,
+   "score": 0.3859
+  },
+  {
+   "text": "kaya",
+   "start": 62.051,
+   "end": 62.331,
+   "score": 0.4092
+  },
+  {
+   "text": "biglang",
+   "start": 62.531,
+   "end": 63.132,
+   "score": 0.3165
+  },
+  {
+   "text": "may",
+   "start": 63.172,
+   "end": 63.372,
+   "score": 0.3006
+  },
+  {
+   "text": "breakfast",
+   "start": 63.492,
+   "end": 64.152,
+   "score": 0.1861
+  },
+  {
+   "text": "in",
+   "start": 64.212,
+   "end": 64.472,
+   "score": 0.1331
+  },
+  {
+   "text": "bed",
+   "start": 65.013,
+   "end": 65.113,
+   "score": 0.0093
+  },
+  {
+   "text": "Just",
+   "start": 65.113,
+   "end": 65.373,
+   "score": 0.319
+  },
+  {
+   "text": "to",
+   "start": 65.453,
+   "end": 65.573,
+   "score": 0.2327
+  },
+  {
+   "text": "keep",
+   "start": 65.753,
+   "end": 66.013,
+   "score": 0.1766
+  },
+  {
+   "text": "you",
+   "start": 66.093,
+   "end": 66.413,
+   "score": 0.184
+  },
+  {
+   "text": "interested",
+   "start": 66.493,
+   "end": 67.454,
+   "score": 0.3124
+  },
+  {
+   "text": "Lahat",
+   "start": 67.734,
+   "end": 68.354,
+   "score": 0.4498
+  },
+  {
+   "text": "ay",
+   "start": 68.414,
+   "end": 68.534,
+   "score": 0.4166
+  },
+  {
+   "text": "dahil",
+   "start": 68.654,
+   "end": 69.635,
+   "score": 0.2712
+  },
+  {
+   "text": "wala",
+   "start": 69.655,
+   "end": 70.375,
+   "score": 0.2744
+  },
+  {
+   "text": "lang",
+   "start": 71.536,
+   "end": 72.416,
+   "score": 0.3451
+  },
+  {
+   "text": "I",
+   "start": 72.416,
+   "end": 72.436,
+   "score": 0.0068
+  },
+  {
+   "text": "just",
+   "start": 72.536,
+   "end": 72.776,
+   "score": 0.3362
+  },
+  {
+   "text": "wanna",
+   "start": 72.876,
+   "end": 73.297,
+   "score": 0.1597
+  },
+  {
+   "text": "do",
+   "start": 73.497,
+   "end": 73.637,
+   "score": 0.1485
+  },
+  {
+   "text": "simple",
+   "start": 74.117,
+   "end": 74.597,
+   "score": 0.192
+  },
+  {
+   "text": "random",
+   "start": 74.817,
+   "end": 75.738,
+   "score": 0.1958
+  },
+  {
+   "text": "things",
+   "start": 76.058,
+   "end": 76.418,
+   "score": 0.1371
+  },
+  {
+   "text": "to",
+   "start": 76.698,
+   "end": 76.858,
+   "score": 0.1345
+  },
+  {
+   "text": "say",
+   "start": 77.359,
+   "end": 78.419,
+   "score": 0.0944
+  },
+  {
+   "text": "I",
+   "start": 78.419,
+   "end": 78.439,
+   "score": 0.0315
+  },
+  {
+   "text": "love",
+   "start": 78.879,
+   "end": 78.979,
+   "score": 0.0025
+  },
+  {
+   "text": "you",
+   "start": 78.979,
+   "end": 79.04,
+   "score": 0.0025
+  },
+  {
+   "text": "Kahit",
+   "start": 79.06,
+   "end": 79.2,
+   "score": 0.0037
+  },
+  {
+   "text": "wala",
+   "start": 79.2,
+   "end": 79.76,
+   "score": 0.3573
+  },
+  {
+   "text": "na",
+   "start": 79.9,
+   "end": 80.0,
+   "score": 0.0037
+  },
+  {
+   "text": "Kahit",
+   "start": 80.0,
+   "end": 80.12,
+   "score": 0.0104
+  },
+  {
+   "text": "kahit",
+   "start": 80.12,
+   "end": 83.322,
+   "score": 0.0072
+  },
+  {
+   "text": "wala",
+   "start": 83.322,
+   "end": 83.682,
+   "score": 0.141
+  },
+  {
+   "text": "na",
+   "start": 83.682,
+   "end": 84.182,
+   "score": 0.0059
+  },
+  {
+   "text": "Kahit",
+   "start": 84.262,
+   "end": 84.642,
+   "score": 0.0603
+  },
+  {
+   "text": "kahit",
+   "start": 84.802,
+   "end": 86.763,
+   "score": 0.1242
+  },
+  {
+   "text": "wala",
+   "start": 86.763,
+   "end": 87.104,
+   "score": 0.0089
+  },
+  {
+   "text": "na",
+   "start": 87.224,
+   "end": 89.725,
+   "score": 0.0053
+  },
+  {
+   "text": "Kahit",
+   "start": 90.145,
+   "end": 90.405,
+   "score": 0.003
+  },
+  {
+   "text": "kahit",
+   "start": 90.445,
+   "end": 90.565,
+   "score": 0.0032
+  },
+  {
+   "text": "wala",
+   "start": 90.585,
+   "end": 90.705,
+   "score": 0.0051
+  },
+  {
+   "text": "na",
+   "start": 90.785,
+   "end": 90.845,
+   "score": 0.0042
+  },
+  {
+   "text": "Pilit",
+   "start": 90.945,
+   "end": 91.226,
+   "score": 0.4986
+  },
+  {
+   "text": "kang",
+   "start": 91.286,
+   "end": 91.506,
+   "score": 0.7049
+  },
+  {
+   "text": "patatawanin",
+   "start": 91.586,
+   "end": 93.047,
+   "score": 0.6374
+  },
+  {
+   "text": "Kahit",
+   "start": 93.527,
+   "end": 94.067,
+   "score": 0.4872
+  },
+  {
+   "text": "na",
+   "start": 94.187,
+   "end": 94.267,
+   "score": 0.8608
+  },
+  {
+   "text": "ang",
+   "start": 94.527,
+   "end": 94.687,
+   "score": 0.3566
+  },
+  {
+   "text": "sungit",
+   "start": 94.807,
+   "end": 95.368,
+   "score": 0.6328
+  },
+  {
+   "text": "mo",
+   "start": 95.508,
+   "end": 95.628,
+   "score": 0.674
+  },
+  {
+   "text": "oh",
+   "start": 97.849,
+   "end": 98.069,
+   "score": 0.1298
+  },
+  {
+   "text": "yeah",
+   "start": 98.069,
+   "end": 99.63,
+   "score": 0.1397
+  },
+  {
+   "text": "Kahit",
+   "start": 101.271,
+   "end": 101.531,
+   "score": 0.421
+  },
+  {
+   "text": "'di",
+   "start": 101.611,
+   "end": 101.731,
+   "score": 0.7247
+  },
+  {
+   "text": "gano'ng",
+   "start": 101.931,
+   "end": 102.511,
+   "score": 0.7072
+  },
+  {
+   "text": "kawangis",
+   "start": 102.591,
+   "end": 103.552,
+   "score": 0.5061
+  },
+  {
+   "text": "Ika'y",
+   "start": 103.992,
+   "end": 104.552,
+   "score": 0.4234
+  },
+  {
+   "text": "iguguhit",
+   "start": 104.612,
+   "end": 105.733,
+   "score": 0.4058
+  },
+  {
+   "text": "ko",
+   "start": 105.813,
+   "end": 105.933,
+   "score": 0.4022
+  },
+  {
+   "text": "whoa-oh",
+   "start": 107.974,
+   "end": 108.734,
+   "score": 0.2048
+  },
+  {
+   "text": "oh",
+   "start": 108.774,
+   "end": 109.395,
+   "score": 0.094
+  },
+  {
+   "text": "oh",
+   "start": 109.455,
+   "end": 109.995,
+   "score": 0.0416
+  },
+  {
+   "text": "I'll",
+   "start": 110.055,
+   "end": 110.315,
+   "score": 0.0043
+  },
+  {
+   "text": "probably",
+   "start": 110.575,
+   "end": 111.296,
+   "score": 0.0752
+  },
+  {
+   "text": "take",
+   "start": 111.336,
+   "end": 111.896,
+   "score": 0.0194
+  },
+  {
+   "text": "you",
+   "start": 111.916,
+   "end": 112.016,
+   "score": 0.1285
+  },
+  {
+   "text": "to",
+   "start": 112.216,
+   "end": 112.316,
+   "score": 0.0125
+  },
+  {
+   "text": "a",
+   "start": 112.396,
+   "end": 112.416,
+   "score": 0.3341
+  },
+  {
+   "text": "private",
+   "start": 112.536,
+   "end": 113.277,
+   "score": 0.0831
+  },
+  {
+   "text": "little",
+   "start": 113.337,
+   "end": 113.777,
+   "score": 0.0293
+  },
+  {
+   "text": "island",
+   "start": 113.817,
+   "end": 114.017,
+   "score": 0.0182
+  },
+  {
+   "text": "Baby",
+   "start": 114.157,
+   "end": 114.417,
+   "score": 0.0532
+  },
+  {
+   "text": "that's",
+   "start": 114.477,
+   "end": 114.757,
+   "score": 0.0982
+  },
+  {
+   "text": "right",
+   "start": 114.837,
+   "end": 115.498,
+   "score": 0.0307
+  },
+  {
+   "text": "And",
+   "start": 115.518,
+   "end": 115.638,
+   "score": 0.0118
+  },
+  {
+   "text": "maybe",
+   "start": 115.758,
+   "end": 116.198,
+   "score": 0.1298
+  },
+  {
+   "text": "share",
+   "start": 116.378,
+   "end": 116.818,
+   "score": 0.1481
+  },
+  {
+   "text": "a",
+   "start": 116.818,
+   "end": 116.838,
+   "score": 0.0211
+  },
+  {
+   "text": "snack",
+   "start": 116.998,
+   "end": 117.319,
+   "score": 0.1427
+  },
+  {
+   "text": "that",
+   "start": 117.399,
+   "end": 117.559,
+   "score": 0.0943
+  },
+  {
+   "text": "I",
+   "start": 117.599,
+   "end": 117.619,
+   "score": 0.0016
+  },
+  {
+   "text": "like",
+   "start": 117.739,
+   "end": 118.139,
+   "score": 0.1146
+  },
+  {
+   "text": "And",
+   "start": 118.199,
+   "end": 118.279,
+   "score": 0.0041
+  },
+  {
+   "text": "baby",
+   "start": 118.359,
+   "end": 118.599,
+   "score": 0.0226
+  },
+  {
+   "text": "I'll",
+   "start": 118.599,
+   "end": 118.959,
+   "score": 0.0223
+  },
+  {
+   "text": "give",
+   "start": 119.02,
+   "end": 119.34,
+   "score": 0.018
+  },
+  {
+   "text": "you",
+   "start": 119.34,
+   "end": 119.42,
+   "score": 0.0421
+  },
+  {
+   "text": "the",
+   "start": 119.46,
+   "end": 119.56,
+   "score": 0.0208
+  },
+  {
+   "text": "last",
+   "start": 119.64,
+   "end": 119.98,
+   "score": 0.0469
+  },
+  {
+   "text": "bite",
+   "start": 119.98,
+   "end": 120.54,
+   "score": 0.0165
+  },
+  {
+   "text": "oh-oh",
+   "start": 120.68,
+   "end": 121.281,
+   "score": 0.0434
+  },
+  {
+   "text": "Doo-doo-doo-doo-doo",
+   "start": 121.561,
+   "end": 123.702,
+   "score": 0.0939
+  },
+  {
+   "text": "doo",
+   "start": 123.802,
+   "end": 125.503,
+   "score": 0.0571
+  },
+  {
+   "text": "Oh",
+   "start": 125.823,
+   "end": 126.123,
+   "score": 0.3966
+  },
+  {
+   "text": "ang",
+   "start": 126.163,
+   "end": 126.363,
+   "score": 0.7445
+  },
+  {
+   "text": "daming",
+   "start": 126.423,
+   "end": 127.364,
+   "score": 0.6569
+  },
+  {
+   "text": "paraan",
+   "start": 127.424,
+   "end": 128.064,
+   "score": 0.6828
+  },
+  {
+   "text": "ikaw",
+   "start": 128.464,
+   "end": 129.045,
+   "score": 0.6734
+  },
+  {
+   "text": "ang",
+   "start": 129.085,
+   "end": 129.205,
+   "score": 0.6701
+  },
+  {
+   "text": "tanging",
+   "start": 129.325,
+   "end": 129.905,
+   "score": 0.508
+  },
+  {
+   "text": "dahilan",
+   "start": 129.985,
+   "end": 130.785,
+   "score": 0.4245
+  },
+  {
+   "text": "oh",
+   "start": 131.026,
+   "end": 131.266,
+   "score": 0.0531
+  },
+  {
+   "text": "babe",
+   "start": 131.546,
+   "end": 132.166,
+   "score": 0.0219
+  },
+  {
+   "text": "Haharanahin",
+   "start": 132.226,
+   "end": 133.667,
+   "score": 0.6705
+  },
+  {
+   "text": "kita",
+   "start": 133.807,
+   "end": 134.267,
+   "score": 0.5802
+  },
+  {
+   "text": "sa'n",
+   "start": 134.787,
+   "end": 134.967,
+   "score": 0.5288
+  },
+  {
+   "text": "man",
+   "start": 135.108,
+   "end": 135.328,
+   "score": 0.8362
+  },
+  {
+   "text": "tayo",
+   "start": 135.428,
+   "end": 135.848,
+   "score": 0.7303
+  },
+  {
+   "text": "magpunta",
+   "start": 136.028,
+   "end": 136.828,
+   "score": 0.5994
+  },
+  {
+   "text": "'Yong",
+   "start": 137.369,
+   "end": 137.569,
+   "score": 0.1931
+  },
+  {
+   "text": "tipong",
+   "start": 137.689,
+   "end": 138.229,
+   "score": 0.4185
+  },
+  {
+   "text": "kahit",
+   "start": 138.349,
+   "end": 138.889,
+   "score": 0.4085
+  },
+  {
+   "text": "wala",
+   "start": 138.989,
+   "end": 139.45,
+   "score": 0.6284
+  },
+  {
+   "text": "lang",
+   "start": 139.93,
+   "end": 140.33,
+   "score": 0.5706
+  },
+  {
+   "text": "O",
+   "start": 141.931,
+   "end": 141.951,
+   "score": 0.6256
+  },
+  {
+   "text": "kaya",
+   "start": 142.051,
+   "end": 142.311,
+   "score": 0.6929
+  },
+  {
+   "text": "may",
+   "start": 142.531,
+   "end": 142.691,
+   "score": 0.6624
+  },
+  {
+   "text": "on-the-spot",
+   "start": 142.971,
+   "end": 143.752,
+   "score": 0.2572
+  },
+  {
+   "text": "dinner",
+   "start": 143.812,
+   "end": 144.432,
+   "score": 0.3064
+  },
+  {
+   "text": "date",
+   "start": 144.472,
+   "end": 144.992,
+   "score": 0.1002
+  },
+  {
+   "text": "And",
+   "start": 145.193,
+   "end": 145.353,
+   "score": 0.3035
+  },
+  {
+   "text": "this",
+   "start": 145.433,
+   "end": 145.733,
+   "score": 0.4545
+  },
+  {
+   "text": "time",
+   "start": 145.733,
+   "end": 146.213,
+   "score": 0.0471
+  },
+  {
+   "text": "I",
+   "start": 146.373,
+   "end": 146.393,
+   "score": 0.0013
+  },
+  {
+   "text": "won't",
+   "start": 146.393,
+   "end": 146.593,
+   "score": 0.1648
+  },
+  {
+   "text": "be",
+   "start": 146.713,
+   "end": 146.853,
+   "score": 0.2874
+  },
+  {
+   "text": "late",
+   "start": 147.034,
+   "end": 147.254,
+   "score": 0.2721
+  },
+  {
+   "text": "Lahat",
+   "start": 147.714,
+   "end": 148.354,
+   "score": 0.8632
+  },
+  {
+   "text": "ay",
+   "start": 148.414,
+   "end": 148.534,
+   "score": 0.6661
+  },
+  {
+   "text": "dahil",
+   "start": 148.654,
+   "end": 149.155,
+   "score": 0.2718
+  },
+  {
+   "text": "wala",
+   "start": 149.295,
+   "end": 149.735,
+   "score": 0.7599
+  },
+  {
+   "text": "lang",
+   "start": 150.235,
+   "end": 150.635,
+   "score": 0.5855
+  },
+  {
+   "text": "I",
+   "start": 151.036,
+   "end": 151.056,
+   "score": 0.0023
+  },
+  {
+   "text": "just",
+   "start": 152.536,
+   "end": 152.776,
+   "score": 0.406
+  },
+  {
+   "text": "wanna",
+   "start": 152.876,
+   "end": 153.297,
+   "score": 0.185
+  },
+  {
+   "text": "do",
+   "start": 153.477,
+   "end": 153.617,
+   "score": 0.2951
+  },
+  {
+   "text": "simple",
+   "start": 154.117,
+   "end": 154.597,
+   "score": 0.2588
+  },
+  {
+   "text": "random",
+   "start": 154.817,
+   "end": 155.738,
+   "score": 0.148
+  },
+  {
+   "text": "things",
+   "start": 156.058,
+   "end": 156.498,
+   "score": 0.014
+  },
+  {
+   "text": "to",
+   "start": 156.698,
+   "end": 156.858,
+   "score": 0.0139
+  },
+  {
+   "text": "say",
+   "start": 157.379,
+   "end": 158.399,
+   "score": 0.0332
+  },
+  {
+   "text": "I",
+   "start": 158.459,
+   "end": 158.479,
+   "score": 0.0043
+  },
+  {
+   "text": "love",
+   "start": 159.66,
+   "end": 160.06,
+   "score": 0.0626
+  },
+  {
+   "text": "you",
+   "start": 160.06,
+   "end": 160.18,
+   "score": 0.0097
+  },
+  {
+   "text": "Randomantic",
+   "start": 160.34,
+   "end": 161.481,
+   "score": 0.0167
+  },
+  {
+   "text": "so",
+   "start": 161.581,
+   "end": 161.701,
+   "score": 0.2522
+  },
+  {
+   "text": "romantic",
+   "start": 161.901,
+   "end": 162.381,
+   "score": 0.221
+  },
+  {
+   "text": "Baby",
+   "start": 162.541,
+   "end": 162.761,
+   "score": 0.3719
+  },
+  {
+   "text": "I'ma",
+   "start": 162.761,
+   "end": 163.082,
+   "score": 0.8004
+  },
+  {
+   "text": "let",
+   "start": 163.122,
+   "end": 163.382,
+   "score": 0.0867
+  },
+  {
+   "text": "you",
+   "start": 163.382,
+   "end": 163.462,
+   "score": 0.0252
+  },
+  {
+   "text": "have",
+   "start": 163.562,
+   "end": 163.962,
+   "score": 0.3103
+  },
+  {
+   "text": "it",
+   "start": 164.582,
+   "end": 166.083,
+   "score": 0.1726
+  },
+  {
+   "text": "uh",
+   "start": 166.163,
+   "end": 166.723,
+   "score": 0.0977
+  },
+  {
+   "text": "Doo",
+   "start": 166.723,
+   "end": 167.784,
+   "score": 0.0173
+  },
+  {
+   "text": "ooh",
+   "start": 169.045,
+   "end": 169.405,
+   "score": 0.0056
+  },
+  {
+   "text": "Oh",
+   "start": 169.765,
+   "end": 170.025,
+   "score": 0.3678
+  },
+  {
+   "text": "ang",
+   "start": 170.085,
+   "end": 170.245,
+   "score": 0.4032
+  },
+  {
+   "text": "daming",
+   "start": 170.305,
+   "end": 171.206,
+   "score": 0.5162
+  },
+  {
+   "text": "paraan",
+   "start": 171.266,
+   "end": 171.946,
+   "score": 0.8868
+  },
+  {
+   "text": "ikaw",
+   "start": 172.326,
+   "end": 172.906,
+   "score": 0.834
+  },
+  {
+   "text": "ang",
+   "start": 172.946,
+   "end": 173.087,
+   "score": 0.6581
+  },
+  {
+   "text": "tanging",
+   "start": 173.187,
+   "end": 173.807,
+   "score": 0.5376
+  },
+  {
+   "text": "dahilan",
+   "start": 173.867,
+   "end": 174.827,
+   "score": 0.7548
+  },
+  {
+   "text": "oh",
+   "start": 174.927,
+   "end": 175.168,
+   "score": 0.3112
+  },
+  {
+   "text": "babe",
+   "start": 175.228,
+   "end": 175.568,
+   "score": 0.1843
+  },
+  {
+   "text": "Haharanahin",
+   "start": 176.088,
+   "end": 177.549,
+   "score": 0.5534
+  },
+  {
+   "text": "kita",
+   "start": 177.629,
+   "end": 178.089,
+   "score": 0.4213
+  },
+  {
+   "text": "sa'n",
+   "start": 178.609,
+   "end": 178.969,
+   "score": 0.3088
+  },
+  {
+   "text": "man",
+   "start": 178.989,
+   "end": 179.05,
+   "score": 0.0106
+  },
+  {
+   "text": "tayo",
+   "start": 179.31,
+   "end": 179.71,
+   "score": 0.3266
+  },
+  {
+   "text": "magpunta",
+   "start": 179.91,
+   "end": 180.69,
+   "score": 0.3827
+  },
+  {
+   "text": "'Yong",
+   "start": 181.251,
+   "end": 181.471,
+   "score": 0.1767
+  },
+  {
+   "text": "tipong",
+   "start": 181.551,
+   "end": 182.091,
+   "score": 0.3661
+  },
+  {
+   "text": "kahit",
+   "start": 182.191,
+   "end": 182.831,
+   "score": 0.395
+  },
+  {
+   "text": "wala",
+   "start": 182.871,
+   "end": 183.912,
+   "score": 0.4755
+  },
+  {
+   "text": "lang",
+   "start": 185.093,
+   "end": 185.393,
+   "score": 0.3643
+  },
+  {
+   "text": "O",
+   "start": 185.813,
+   "end": 185.833,
+   "score": 0.6173
+  },
+  {
+   "text": "kaya",
+   "start": 185.913,
+   "end": 186.193,
+   "score": 0.8658
+  },
+  {
+   "text": "'lilibre",
+   "start": 186.413,
+   "end": 187.194,
+   "score": 0.8864
+  },
+  {
+   "text": "ka",
+   "start": 187.354,
+   "end": 187.474,
+   "score": 0.7807
+  },
+  {
+   "text": "ng",
+   "start": 187.694,
+   "end": 187.894,
+   "score": 0.5222
+  },
+  {
+   "text": "sine",
+   "start": 188.014,
+   "end": 188.474,
+   "score": 0.4467
+  },
+  {
+   "text": "Kahit",
+   "start": 189.015,
+   "end": 189.235,
+   "score": 0.3513
+  },
+  {
+   "text": "'di",
+   "start": 189.315,
+   "end": 189.435,
+   "score": 0.5312
+  },
+  {
+   "text": "ko",
+   "start": 189.635,
+   "end": 189.735,
+   "score": 0.4131
+  },
+  {
+   "text": "trip",
+   "start": 189.935,
+   "end": 190.295,
+   "score": 0.4691
+  },
+  {
+   "text": "ay",
+   "start": 190.335,
+   "end": 190.455,
+   "score": 0.5077
+  },
+  {
+   "text": "sige",
+   "start": 190.555,
+   "end": 191.036,
+   "score": 0.5796
+  },
+  {
+   "text": "Lahat",
+   "start": 191.616,
+   "end": 192.156,
+   "score": 0.3294
+  },
+  {
+   "text": "ay",
+   "start": 192.296,
+   "end": 192.416,
+   "score": 0.3006
+  },
+  {
+   "text": "dahil",
+   "start": 192.536,
+   "end": 193.057,
+   "score": 0.479
+  },
+  {
+   "text": "wala",
+   "start": 193.177,
+   "end": 193.617,
+   "score": 0.4546
+  },
+  {
+   "text": "lang",
+   "start": 194.137,
+   "end": 195.718,
+   "score": 0.2758
+  },
+  {
+   "text": "I",
+   "start": 196.158,
+   "end": 196.178,
+   "score": 0.0029
+  },
+  {
+   "text": "just",
+   "start": 196.378,
+   "end": 196.658,
+   "score": 0.3139
+  },
+  {
+   "text": "wanna",
+   "start": 196.738,
+   "end": 197.159,
+   "score": 0.1931
+  },
+  {
+   "text": "do",
+   "start": 197.359,
+   "end": 197.479,
+   "score": 0.1113
+  },
+  {
+   "text": "simple",
+   "start": 197.979,
+   "end": 198.439,
+   "score": 0.205
+  },
+  {
+   "text": "random",
+   "start": 198.679,
+   "end": 199.6,
+   "score": 0.2667
+  },
+  {
+   "text": "things",
+   "start": 199.94,
+   "end": 200.32,
+   "score": 0.0876
+  },
+  {
+   "text": "to",
+   "start": 200.54,
+   "end": 200.68,
+   "score": 0.0066
+  },
+  {
+   "text": "say",
+   "start": 201.201,
+   "end": 201.721,
+   "score": 0.0122
+  },
+  {
+   "text": "Haharanahin",
+   "start": 201.921,
+   "end": 203.342,
+   "score": 0.6688
+  },
+  {
+   "text": "kita",
+   "start": 203.482,
+   "end": 203.902,
+   "score": 0.8726
+  },
+  {
+   "text": "sa'n",
+   "start": 204.442,
+   "end": 204.622,
+   "score": 0.6245
+  },
+  {
+   "text": "man",
+   "start": 204.742,
+   "end": 204.962,
+   "score": 0.8127
+  },
+  {
+   "text": "tayo",
+   "start": 205.103,
+   "end": 205.523,
+   "score": 0.8111
+  },
+  {
+   "text": "magpunta",
+   "start": 205.723,
+   "end": 206.503,
+   "score": 0.6925
+  },
+  {
+   "text": "'Yong",
+   "start": 207.044,
+   "end": 207.264,
+   "score": 0.6431
+  },
+  {
+   "text": "tipong",
+   "start": 207.364,
+   "end": 207.884,
+   "score": 0.6132
+  },
+  {
+   "text": "kahit",
+   "start": 208.004,
+   "end": 208.564,
+   "score": 0.5272
+  },
+  {
+   "text": "wala",
+   "start": 208.664,
+   "end": 209.725,
+   "score": 0.5268
+  },
+  {
+   "text": "lang",
+   "start": 210.885,
+   "end": 211.206,
+   "score": 0.5658
+  },
+  {
+   "text": "O",
+   "start": 211.606,
+   "end": 211.626,
+   "score": 0.335
+  },
+  {
+   "text": "kaya",
+   "start": 211.726,
+   "end": 211.986,
+   "score": 0.7269
+  },
+  {
+   "text": "iaalay",
+   "start": 212.286,
+   "end": 213.207,
+   "score": 0.6646
+  },
+  {
+   "text": "ang",
+   "start": 213.267,
+   "end": 213.427,
+   "score": 0.5253
+  },
+  {
+   "text": "kantang",
+   "start": 213.487,
+   "end": 214.087,
+   "score": 0.6665
+  },
+  {
+   "text": "'to",
+   "start": 214.147,
+   "end": 214.267,
+   "score": 0.3672
+  },
+  {
+   "text": "Na",
+   "start": 214.787,
+   "end": 214.867,
+   "score": 0.2375
+  },
+  {
+   "text": "sinulat",
+   "start": 214.927,
+   "end": 215.648,
+   "score": 0.7703
+  },
+  {
+   "text": "para",
+   "start": 215.748,
+   "end": 216.188,
+   "score": 0.9223
+  },
+  {
+   "text": "sa",
+   "start": 216.368,
+   "end": 216.488,
+   "score": 0.7626
+  },
+  {
+   "text": "'yo",
+   "start": 216.688,
+   "end": 216.808,
+   "score": 0.6915
+  },
+  {
+   "text": "Lahat",
+   "start": 217.429,
+   "end": 217.969,
+   "score": 0.7344
+  },
+  {
+   "text": "ay",
+   "start": 218.089,
+   "end": 218.209,
+   "score": 0.7348
+  },
+  {
+   "text": "dahil",
+   "start": 218.329,
+   "end": 218.869,
+   "score": 0.7345
+  },
+  {
+   "text": "wala",
+   "start": 218.969,
+   "end": 219.41,
+   "score": 0.609
+  },
+  {
+   "text": "lang",
+   "start": 219.93,
+   "end": 220.25,
+   "score": 0.5733
+  },
+  {
+   "text": "I",
+   "start": 221.311,
+   "end": 221.331,
+   "score": 0.001
+  },
+  {
+   "text": "just",
+   "start": 222.171,
+   "end": 222.451,
+   "score": 0.3817
+  },
+  {
+   "text": "wanna",
+   "start": 222.511,
+   "end": 222.951,
+   "score": 0.2529
+  },
+  {
+   "text": "do",
+   "start": 223.032,
+   "end": 223.292,
+   "score": 0.1577
+  },
+  {
+   "text": "simple",
+   "start": 223.792,
+   "end": 224.252,
+   "score": 0.3274
+  },
+  {
+   "text": "random",
+   "start": 224.492,
+   "end": 225.393,
+   "score": 0.2044
+  },
+  {
+   "text": "things",
+   "start": 225.733,
+   "end": 226.133,
+   "score": 0.0779
+  },
+  {
+   "text": "to",
+   "start": 226.373,
+   "end": 226.513,
+   "score": 0.0453
+  },
+  {
+   "text": "say",
+   "start": 227.014,
+   "end": 228.054,
+   "score": 0.0449
+  },
+  {
+   "text": "I",
+   "start": 229.055,
+   "end": 229.075,
+   "score": 0.0032
+  },
+  {
+   "text": "love",
+   "start": 229.315,
+   "end": 229.675,
+   "score": 0.1691
+  },
+  {
+   "text": "you",
+   "start": 229.695,
+   "end": 230.735,
+   "score": 0.0565
+  },
+  {
+   "text": "Kahit",
+   "start": 231.776,
+   "end": 232.356,
+   "score": 0.0145
+  },
+  {
+   "text": "wala",
+   "start": 232.356,
+   "end": 233.217,
+   "score": 0.0111
+  },
+  {
+   "text": "na",
+   "start": 233.337,
+   "end": 233.437,
+   "score": 0.0187
+  },
+  {
+   "text": "Kahit",
+   "start": 233.517,
+   "end": 235.458,
+   "score": 0.0087
+  },
+  {
+   "text": "kahit",
+   "start": 235.758,
+   "end": 237.959,
+   "score": 0.0034
+  },
+  {
+   "text": "wala",
+   "start": 238.079,
+   "end": 240.04,
+   "score": 0.0069
+  },
+  {
+   "text": "na",
+   "start": 240.04,
+   "end": 240.08,
+   "score": 0.0045
+  },
+  {
+   "text": "Kahit",
+   "start": 240.08,
+   "end": 240.181,
+   "score": 0.0019
+  },
+  {
+   "text": "kahit",
+   "start": 240.181,
+   "end": 240.341,
+   "score": 0.0018
+  },
+  {
+   "text": "wala",
+   "start": 240.341,
+   "end": 240.422,
+   "score": 0.0022
+  },
+  {
+   "text": "na",
+   "start": 240.422,
+   "end": 240.462,
+   "score": 0.0053
+  },
+  {
+   "text": "Kahit",
+   "start": 240.462,
+   "end": 240.562,
+   "score": 0.0014
+  },
+  {
+   "text": "kahit",
+   "start": 240.562,
+   "end": 240.723,
+   "score": 0.0014
+  },
+  {
+   "text": "wala",
+   "start": 240.763,
+   "end": 240.883,
+   "score": 0.0017
+  },
+  {
+   "text": "na",
+   "start": 240.923,
+   "end": 242.63,
+   "score": 0.0039
+  }
+ ]
+}

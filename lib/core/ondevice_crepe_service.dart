@@ -24,9 +24,32 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'note_utils.dart';
 import 'pitch_detection_service.dart';
 
+/// A time range of a recording worth running the pitch model over, in
+/// milliseconds relative to the start of that recording.
+///
+/// Exists so a caller that already knows which parts of a take anything
+/// will read — karaoke knows its ground-truth syllable windows, freestyle
+/// knows its recognized word windows — can say so, instead of paying for
+/// model time on audio whose frames get filtered out immediately after.
+class AnalysisWindow {
+  final int startMs;
+  final int endMs;
+  const AnalysisWindow(this.startMs, this.endMs);
+
+  /// Widened by [ms] on both sides, floored at zero. Used to cover the
+  /// nearest-frame tolerance the segment builders fall back on, so
+  /// windowing can't take away a frame they would have used.
+  AnalysisWindow padded(int ms) =>
+      AnalysisWindow(startMs - ms < 0 ? 0 : startMs - ms, endMs + ms);
+
+  @override
+  String toString() => 'AnalysisWindow($startMs..$endMs)';
+}
+
 class OnDeviceCrepeService implements PitchDetectionService {
   static const _modelAsset = 'assets/models/huni_crepe.tflite';
   static const _frameSize = 1024; // CREPE's fixed input width
+  static const _activationBins = 360; // CREPE's pitch-bin output width
   static const _sampleRate = 16000;
   // How often to run inference — full CREPE is heavy for a phone CPU, so
   // this trades detection cadence for staying smooth. Real latency varies
@@ -61,6 +84,10 @@ class OnDeviceCrepeService implements PitchDetectionService {
   final _recorder = AudioRecorder();
   StreamSubscription<Uint8List>? _audioSub;
   Interpreter? _interpreter;
+
+  /// Batch size the input tensor is currently sized for, so [_setBatchSize]
+  /// can skip a resize it doesn't need.
+  int _currentBatch = 1;
 
   StreamController<NoteResult?>? _resultController;
   @override
@@ -194,46 +221,103 @@ class OnDeviceCrepeService implements PitchDetectionService {
   /// normalization (exactly CREPE's expected input, nothing more), VAD
   /// gate, interpreter inference, and sub-bin peak decode.
   _FrameResult _computeFrame(List<int> intFrame) {
-    // int16 -> float32 [-1, 1], DC removal, then z-score normalization.
-    final floats = Float64List(_frameSize);
+    final buffer = Float32List(_frameSize);
+    if (!_preprocessInto(intFrame, 0, buffer, 0)) {
+      return const _FrameResult(frequency: 0, confidence: 0);
+    }
+
+    final Float32List activations;
+    try {
+      activations = _infer(buffer, 1);
+    } catch (e) {
+      debugPrint('CREPE inference error: $e');
+      return const _FrameResult(frequency: 0, confidence: 0);
+    }
+    return _decodeActivation(activations, 0);
+  }
+
+  /// CREPE's expected preprocessing for one frame: int16 -> float in
+  /// [-1, 1], DC removal, z-score normalization. Writes
+  /// [_frameSize] floats into [dest] at [destOffset].
+  ///
+  /// Returns false when the frame is below the VAD floor, in which case
+  /// nothing is written and the caller must skip inference for it — which
+  /// is the point: a silent frame costs no model time at all.
+  ///
+  /// Takes a source offset rather than a pre-sliced frame so the batch
+  /// path can read straight out of the recording's PCM without allocating
+  /// a 1024-element list per hop.
+  bool _preprocessInto(
+    List<int> pcm,
+    int start,
+    Float32List dest,
+    int destOffset,
+  ) {
     double mean = 0;
     for (var i = 0; i < _frameSize; i++) {
-      final sample = intFrame[i] / 32768.0;
-      floats[i] = sample;
+      final sample = pcm[start + i] / 32768.0;
+      dest[destOffset + i] = sample;
       mean += sample;
     }
     mean /= _frameSize;
 
     double sumSquares = 0;
     for (var i = 0; i < _frameSize; i++) {
-      final centered = floats[i] - mean;
-      floats[i] = centered;
+      final centered = dest[destOffset + i] - mean;
+      dest[destOffset + i] = centered;
       sumSquares += centered * centered;
     }
     final rms = math.sqrt(sumSquares / _frameSize);
 
     // VAD gate: skip inference on near-silent/noise-floor frames entirely.
-    if (rms < _vadRmsFloor) {
-      return const _FrameResult(frequency: 0, confidence: 0);
-    }
+    if (rms < _vadRmsFloor) return false;
 
     final std = rms.clamp(1e-8, double.infinity);
-    final input = [List<double>.generate(_frameSize, (i) => floats[i] / std)];
-    final output = [List<double>.filled(360, 0.0)];
-
-    try {
-      _interpreter!.run(input, output);
-    } catch (e) {
-      debugPrint('CREPE inference error: $e');
-      return const _FrameResult(frequency: 0, confidence: 0);
+    for (var i = 0; i < _frameSize; i++) {
+      dest[destOffset + i] = dest[destOffset + i] / std;
     }
+    return true;
+  }
 
-    final activation = output[0];
+  /// Runs [batch] frames packed back-to-back in [input] through the model
+  /// and returns the raw activations, [batch] * 360 of them.
+  ///
+  /// The model's input shape signature is [-1, 1024], so the batch
+  /// dimension is resizable. Batching is purely a throughput change:
+  /// measured against one-frame-per-invoke, the activations come back
+  /// bit-identical (max absolute difference 0.0 over 128 frames at every
+  /// batch size tried), so no detected pitch can shift.
+  ///
+  /// Uses the tensors directly instead of `run()` with nested Dart lists,
+  /// which converts element by element on every call.
+  Float32List _infer(Float32List input, int batch) {
+    _setBatchSize(batch);
+    _interpreter!.getInputTensor(0).setTo(input);
+    _interpreter!.invoke();
+    final bytes = _interpreter!.getOutputTensor(0).data;
+    return Float32List.view(
+        bytes.buffer, bytes.offsetInBytes, batch * _activationBins);
+  }
+
+  /// Resizes the input tensor only when the batch size actually changes —
+  /// resize plus allocateTensors is not free, and the batch loop would
+  /// otherwise pay it on every chunk.
+  void _setBatchSize(int batch) {
+    if (_currentBatch == batch) return;
+    _interpreter!.resizeInputTensor(0, [batch, _frameSize]);
+    _interpreter!.allocateTensors();
+    _currentBatch = batch;
+  }
+
+  /// Standard CREPE decode of one frame's 360 activations, starting at
+  /// `frameIndex * 360` in [activations].
+  _FrameResult _decodeActivation(Float32List activations, int frameIndex) {
+    final base = frameIndex * _activationBins;
     var peakBin = 0;
-    var peakVal = activation[0];
-    for (var i = 1; i < activation.length; i++) {
-      if (activation[i] > peakVal) {
-        peakVal = activation[i];
+    var peakVal = activations[base];
+    for (var i = 1; i < _activationBins; i++) {
+      if (activations[base + i] > peakVal) {
+        peakVal = activations[base + i];
         peakBin = i;
       }
     }
@@ -251,11 +335,11 @@ class OnDeviceCrepeService implements PitchDetectionService {
     // precision (standard CREPE decoding).
     const window = 4;
     final lo = math.max(0, peakBin - window);
-    final hi = math.min(activation.length - 1, peakBin + window);
+    final hi = math.min(_activationBins - 1, peakBin + window);
     double weightedBin = 0, weightSum = 0;
     for (var i = lo; i <= hi; i++) {
-      weightedBin += i * activation[i];
-      weightSum += activation[i];
+      weightedBin += i * activations[base + i];
+      weightSum += activations[base + i];
     }
     final bin = weightSum > 0 ? weightedBin / weightSum : peakBin.toDouble();
 
@@ -286,40 +370,184 @@ class OnDeviceCrepeService implements PitchDetectionService {
   /// rather than real-time feedback. Loads its own interpreter on first call
   /// if [preload] wasn't already called; call [dispose] afterwards to
   /// release it.
+  /// [windows] restricts analysis to the given time ranges (milliseconds,
+  /// relative to the start of [pcm16Samples]). Null analyses everything.
+  ///
+  /// Restricting is not an approximation. Both consumers of these frames
+  /// ([buildSingingSegments], [buildWordNotes]) only ever read frames that
+  /// fall inside a syllable's own window, so frames outside every window
+  /// were computed and then discarded. Passing the windows in produces the
+  /// identical frames where anything reads them, and skips the model
+  /// entirely where nothing does.
+  ///
+  /// [batchSize] frames go through the model per invoke. Measured against
+  /// one frame per invoke the activations are bit-identical, so this only
+  /// changes throughput.
   Future<List<PitchFrame>> analyzeOffline(
     List<int> pcm16Samples, {
     int hopMs = 100,
+    List<AnalysisWindow>? windows,
+    int batchSize = 16,
   }) async {
     await preload();
 
     final hopSamples = math.max(1, (_sampleRate * hopMs / 1000).round());
+    final starts = _framePositions(
+      pcm16Samples.length,
+      hopSamples,
+      windows,
+    );
+
+    final sw = Stopwatch()..start();
     final frames = <PitchFrame>[];
+    final batch = Float32List(batchSize * _frameSize);
+    // Starts whose frame cleared the VAD gate and so still needs the model.
+    final pending = <int>[];
+    var gated = 0;
+    var inferences = 0;
 
-    for (
-      var start = 0;
-      start + _frameSize <= pcm16Samples.length;
-      start += hopSamples
-    ) {
-      final frame = pcm16Samples.sublist(start, start + _frameSize);
-      final result = _computeFrame(frame);
-      frames.add(PitchFrame(
-        timeMs: (start / _sampleRate * 1000).round(),
-        frequency: result.frequency,
-        confidence: result.confidence,
-      ));
+    void flushInto(Float32List activations, int count) {
+      for (var i = 0; i < count; i++) {
+        final r = _decodeActivation(activations, i);
+        frames.add(PitchFrame(
+          timeMs: (pending[i] / _sampleRate * 1000).round(),
+          frequency: r.frequency,
+          confidence: r.confidence,
+        ));
+      }
+    }
 
-      // Each interpreter.run() call above is a synchronous blocking FFI
-      // call with no natural await point — back-to-back over hundreds of
-      // hops that would freeze the UI isolate for the whole batch (no
-      // frame rendering, no spinner animation) and starve any concurrently
-      // running Future (e.g. Whisper transcription) of event-loop turns.
-      // Yielding after every hop keeps the app responsive and lets other
-      // work actually interleave, at negligible cost next to inference time.
+    Future<void> runPending() async {
+      if (pending.isEmpty) return;
+      final count = pending.length;
+      try {
+        final activations = _infer(
+          count == batchSize
+              ? batch
+              : Float32List.view(batch.buffer, 0, count * _frameSize),
+          count,
+        );
+        flushInto(activations, count);
+        inferences += count;
+      } catch (e) {
+        debugPrint('CREPE batch inference error: $e');
+        for (final start in pending) {
+          frames.add(PitchFrame(
+            timeMs: (start / _sampleRate * 1000).round(),
+            frequency: 0,
+            confidence: 0,
+          ));
+        }
+      }
+      pending.clear();
+      // invoke() is a blocking FFI call with no await point inside it.
+      // Yielding once per batch — rather than once per frame as before —
+      // keeps the UI and any concurrent work (Whisper) alive without
+      // paying for a timer round trip on every single hop.
       await Future<void>.delayed(Duration.zero);
     }
 
+    for (final start in starts) {
+      final ok = _preprocessInto(
+        pcm16Samples,
+        start,
+        batch,
+        pending.length * _frameSize,
+      );
+      if (!ok) {
+        // Silence never reaches the model, so it costs nothing.
+        gated++;
+        frames.add(PitchFrame(
+          timeMs: (start / _sampleRate * 1000).round(),
+          frequency: 0,
+          confidence: 0,
+        ));
+        continue;
+      }
+      pending.add(start);
+      if (pending.length == batchSize) await runPending();
+    }
+    await runPending();
+
+    // Frames are appended in VAD/batch order, not time order; downstream
+    // window filters don't care but the gap detection in
+    // buildPitchOnlyNotes does, and so does anything reading this as a
+    // timeline.
+    frames.sort((a, b) => a.timeMs.compareTo(b.timeMs));
+
+    debugPrint('[CREPE offline] ${sw.elapsedMilliseconds}ms for '
+        '${starts.length} hops '
+        '($inferences inferred, $gated silent-skipped, batch=$batchSize'
+        '${windows == null ? '' : ', ${windows.length} windows'})'
+        '${inferences == 0 ? '' : ' — '
+            '${(sw.elapsedMilliseconds / inferences).toStringAsFixed(1)}'
+            'ms per inference'}');
     _logOfflineDiagnostics(frames);
     return frames;
+  }
+
+  /// Which frame offsets a run would analyse. Exposed because the whole
+  /// claim of windowing — that it produces the same frames a full sweep
+  /// would, just without the ones nothing reads — lives in this function.
+  @visibleForTesting
+  static List<int> framePositionsForTest(
+    int sampleCount,
+    int hopSamples,
+    List<AnalysisWindow>? windows,
+  ) =>
+      _framePositions(sampleCount, hopSamples, windows);
+
+  /// Frame start offsets (in samples) to analyse: every hop across the
+  /// whole buffer, or only the hops inside [windows].
+  ///
+  /// Overlapping windows are merged first, so a frame is never analysed
+  /// twice and the result has no duplicate timestamps.
+  static List<int> _framePositions(
+    int sampleCount,
+    int hopSamples,
+    List<AnalysisWindow>? windows,
+  ) {
+    final last = sampleCount - _frameSize;
+    if (last < 0) return const [];
+
+    if (windows == null || windows.isEmpty) {
+      return [for (var s = 0; s <= last; s += hopSamples) s];
+    }
+
+    final ranges = windows
+        .map((w) => AnalysisWindow(
+              math.max(0, w.startMs),
+              math.max(0, w.endMs),
+            ))
+        .where((w) => w.endMs >= w.startMs)
+        .toList()
+      ..sort((a, b) => a.startMs.compareTo(b.startMs));
+
+    final merged = <AnalysisWindow>[];
+    for (final w in ranges) {
+      final last = merged.isEmpty ? null : merged.last;
+      if (last != null && w.startMs <= last.endMs) {
+        merged[merged.length - 1] =
+            AnalysisWindow(last.startMs, math.max(last.endMs, w.endMs));
+      } else {
+        merged.add(w);
+      }
+    }
+
+    final starts = <int>[];
+    for (final w in merged) {
+      // Snap to the hop grid so the positions are the same ones a full
+      // sweep would have produced — otherwise windowed and full runs would
+      // disagree on timestamps for no reason.
+      final firstSample = (w.startMs * _sampleRate / 1000).floor();
+      final lastSample = (w.endMs * _sampleRate / 1000).ceil();
+      var s = (firstSample ~/ hopSamples) * hopSamples;
+      if (s < 0) s = 0;
+      for (; s <= math.min(lastSample, last); s += hopSamples) {
+        if (starts.isEmpty || starts.last != s) starts.add(s);
+      }
+    }
+    return starts;
   }
 
   /// Temporary diagnostic: when every syllable in a real recording comes

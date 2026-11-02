@@ -1,12 +1,16 @@
-/// On-device lyric alignment using Whisper-Tiny (whisper_ggml / whisper.cpp).
+/// On-device speech recognition using Whisper-Tiny (whisper_ggml /
+/// whisper.cpp).
 ///
-/// Transcribes the just-recorded mic audio with word-level timestamps, then
-/// aligns each recognized word against the reference lyric text using a
-/// greedy, time-anchored fuzzy match (recognized words are naturally
-/// time-ordered like the reference lyrics, so this avoids full sequence
-/// alignment while still handling repeated words/choruses correctly, since
-/// a match is only accepted within a few seconds of where that lyric word
-/// was expected).
+/// Transcribes the just-recorded mic audio into words with timestamps, and
+/// nothing more. The recognized words are shown to the singer as what the
+/// app heard; they are never matched or scored against the song's lyrics.
+///
+/// Scoring is pitch only — see [buildSingingSegments], which compares each
+/// detected note against the ground-truth melody. The ground truth's
+/// syllable TEXT is retained for developer inspection (the detail sheet
+/// surfaces it in debug builds) and to bias the decoder toward the
+/// vocabulary that is actually coming, but it is not a target the singer
+/// is measured against.
 library;
 
 import 'dart:io';
@@ -15,88 +19,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:whisper_ggml/whisper_ggml.dart';
-import '../services/lyrics_service.dart' show LrcLine;
 
 const _bundledWhisperModelAsset = 'assets/models/huni_whisper.bin';
-
-class AlignedWord {
-  final String expectedWord;
-  final Duration expectedTime;
-  final String? recognizedWord;
-  final Duration? recognizedTime;
-
-  const AlignedWord({
-    required this.expectedWord,
-    required this.expectedTime,
-    this.recognizedWord,
-    this.recognizedTime,
-  });
-
-  bool get matched => recognizedWord != null;
-
-  /// Positive = sung late, negative = sung early.
-  int? get timingOffsetMs =>
-      matched ? recognizedTime!.inMilliseconds - expectedTime.inMilliseconds : null;
-
-  Map<String, dynamic> toJson() => {
-        'expectedWord': expectedWord,
-        'expectedTimeMs': expectedTime.inMilliseconds,
-        'recognizedWord': recognizedWord,
-        'recognizedTimeMs': recognizedTime?.inMilliseconds,
-      };
-
-  factory AlignedWord.fromJson(Map<String, dynamic> j) {
-    final recognizedMs = j['recognizedTimeMs'] as int?;
-    return AlignedWord(
-      expectedWord: j['expectedWord'] as String? ?? '',
-      expectedTime: Duration(milliseconds: j['expectedTimeMs'] as int? ?? 0),
-      recognizedWord: j['recognizedWord'] as String?,
-      recognizedTime:
-          recognizedMs == null ? null : Duration(milliseconds: recognizedMs),
-    );
-  }
-}
-
-class LyricAlignmentResult {
-  final List<AlignedWord> words;
-  const LyricAlignmentResult(this.words);
-
-  int get matchedCount => words.where((w) => w.matched).length;
-  int get totalCount => words.length;
-  double get matchRatePercent => totalCount == 0 ? 0 : matchedCount / totalCount * 100;
-
-  double get avgAbsTimingOffsetMs {
-    final offsets = words.where((w) => w.matched).map((w) => w.timingOffsetMs!.abs());
-    if (offsets.isEmpty) return 0;
-    return offsets.reduce((a, b) => a + b) / offsets.length;
-  }
-
-  Map<String, dynamic> toJson() => {
-        'words': words.map((w) => w.toJson()).toList(),
-      };
-
-  factory LyricAlignmentResult.fromJson(Map<String, dynamic> j) =>
-      LyricAlignmentResult(
-        (j['words'] as List<dynamic>?)
-                ?.map((e) => AlignedWord.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            const [],
-      );
-}
-
-class _ExpectedWord {
-  final String norm;
-  final String raw;
-  final Duration time;
-  const _ExpectedWord(this.norm, this.raw, this.time);
-}
-
-class _RecognizedWord {
-  final String norm;
-  final String raw;
-  final Duration time;
-  const _RecognizedWord(this.norm, this.raw, this.time);
-}
 
 /// One word recognized by Whisper, with its start/end time in the recording —
 /// used when there's no reference lyric to align against (see
@@ -212,11 +136,43 @@ String? _promptFrom(String? expectedText) {
   return clean.substring(0, cut > 0 ? cut : maxChars);
 }
 
+/// Everything one Whisper pass produced, before any of this app's
+/// filtering.
+///
+/// [rawText] is the decoder's own full transcription string — the same
+/// value the log line reports as `rawText=`. It is kept alongside
+/// [segments] because measurement needs the unfiltered output: scoring
+/// the word list instead would score this app's `_looksLikeRealWord`
+/// filter as much as the model, and a change that only moved the filter
+/// would look like a change in accuracy.
+class WhisperPass {
+  /// The decoder's full output, untrimmed and unfiltered.
+  final String rawText;
+
+  /// Word-level segments, as whisper.cpp emitted them.
+  final List<WhisperTranscribeSegment> segments;
+
+  /// Wall-clock time the native decode took, for reporting throughput.
+  final int elapsedMs;
+
+  const WhisperPass({
+    required this.rawText,
+    required this.segments,
+    required this.elapsedMs,
+  });
+}
+
 /// Runs Whisper over [recordedWavBytes] and returns raw word-level segments,
 /// with no alignment against any expected/reference text. Shared by
-/// [alignLyrics] (karaoke mode) and [transcribeWords] (reference-free mode).
+/// [transcribeWords] and [transcribeForEvaluation].
+///
+/// [expectedText] becomes Whisper's `initialPrompt`, and only
+/// [transcribeForEvaluation] passes it — the app's own callers cannot,
+/// because [transcribeWords] does not take it. See the note at the call
+/// site for why that matters.
+///
 /// Returns null if transcription fails or produces nothing usable.
-Future<List<WhisperTranscribeSegment>?> _transcribeSegments(
+Future<WhisperPass?> _transcribePass(
   Uint8List recordedWavBytes, {
   String lang = 'tl',
   String? expectedText,
@@ -253,11 +209,12 @@ Future<List<WhisperTranscribeSegment>?> _transcribeSegments(
       lang: lang,
       withSegments: true,
       splitOnWord: true,
-      // Biases decoding toward the words we already know are coming. In
-      // karaoke the reference lyrics are known in advance, and tiny
-      // multilingual is weak enough on sung Tagalog that it was turning
-      // "kita" into "kata" — naming the vocabulary up front is the
-      // cheapest correction available.
+      // Null on every production path: [transcribeWords] takes no
+      // expected text, so only [transcribeForEvaluation] can set this,
+      // where the prompt is a deliberate experimental variable. Biasing
+      // the decode toward the lyrics would make a displayed transcript
+      // partly an echo of them, and a clip's reference must never reach
+      // this — it would flatter the measurement with the answer.
       initialPrompt: _promptFrom(expectedText),
       // Stops the decoder carrying one segment's output into the next.
       // Singing is slow and repetitive, which is exactly the condition
@@ -282,7 +239,11 @@ Future<List<WhisperTranscribeSegment>?> _transcribeSegments(
     }
     debugPrint('Whisper segments (${segments.length}): '
         '${segments.map((s) => '"${s.text}"').join(', ')}');
-    return segments;
+    return WhisperPass(
+      rawText: result?.transcription.text ?? '',
+      segments: segments,
+      elapsedMs: sw.elapsedMilliseconds,
+    );
   } catch (e, st) {
     debugPrint('Whisper transcription failed: $e\n$st');
     return null;
@@ -338,7 +299,7 @@ Future<void> _ensureBundledWhisperModel() async {
 /// Ensures the Whisper-tiny model is staged ahead of time — copying the
 /// bundled asset into place is a cheap no-op once done once, but calling
 /// it eagerly (e.g. as soon as a recording screen opens) means that's
-/// already done by the time [transcribeWords]/[alignLyrics] actually need
+/// already done by the time [transcribeWords] actually needs
 /// it after the user stops recording. Safe to call and ignore errors from;
 /// the real transcribe call will surface any genuine failure.
 Future<void> warmUpWhisperModel() async {
@@ -349,73 +310,32 @@ Future<void> warmUpWhisperModel() async {
   }
 }
 
-/// Returns null if transcription fails or produces no usable segments —
-/// caller should treat this as "alignment unavailable" and not block on it.
-/// Runs its own Whisper transcription pass; if the caller already has
-/// [TranscribedWord]s from a separate [transcribeWords] call (e.g. karaoke
-/// mode also needs them for pitch-segment word matching), call
-/// [alignTranscribedWords] directly instead to avoid transcribing the same
-/// audio twice.
-Future<LyricAlignmentResult?> alignLyrics({
-  required List<LrcLine> lyrics,
-  required Uint8List recordedWavBytes,
-  required Duration recordStartOffset,
-  String lang = 'tl',
-}) async {
-  final recognized = await transcribeWords(recordedWavBytes, lang: lang);
-  if (recognized.isEmpty) return null;
-  return alignTranscribedWords(
-    lyrics: lyrics,
-    recognizedWords: recognized,
-    recordStartOffset: recordStartOffset,
-  );
-}
-
-/// Aligns already-transcribed [recognizedWords] (see [transcribeWords])
-/// against the reference [lyrics] — the pure alignment half of
-/// [alignLyrics], split out so a caller that already transcribed the
-/// recording for another purpose doesn't have to do it again.
-LyricAlignmentResult? alignTranscribedWords({
-  required List<LrcLine> lyrics,
-  required List<TranscribedWord> recognizedWords,
-  required Duration recordStartOffset,
-}) {
-  if (lyrics.isEmpty || recognizedWords.isEmpty) return null;
-
-  final expected = _buildExpectedWords(lyrics);
-  final recognized = recognizedWords
-      .map((w) => _RecognizedWord(
-            _normalize(w.text),
-            w.text,
-            recordStartOffset + w.startTime,
-          ))
-      .toList();
-
-  return LyricAlignmentResult(_align(expected, recognized));
-}
-
-/// Transcribes [recordedWavBytes] with word-level timestamps and no
-/// alignment against any reference lyrics — for reference-free ("without
-/// karaoke") recordings where there's nothing to align against.
+/// Transcribes [recordedWavBytes] with word-level timestamps, for every
+/// mode: the result is shown to the singer as the words we heard them
+/// sing, and is never compared or scored against anything.
+///
+/// Deliberately takes no expected/reference text. It used to accept the
+/// song's lyrics and hand them to Whisper as `initialPrompt` to bias
+/// decoding, which made sense while the words were being aligned against
+/// a reference. Now that they are only displayed, biasing toward the
+/// lyrics defeats the one thing the display is for: it would show the
+/// expected words to a singer who mumbled or sang the wrong line, and
+/// there would be no way to tell that from a correct reading. A rough
+/// transcript of what was actually sung is worth more than a polished one
+/// that might be echoing the lyrics back.
+///
+/// Scoring is unaffected either way — it comes from pitch alone.
+///
 /// Returns an empty list if transcription fails or nothing was recognized.
-/// [expectedText] is the words the singer is expected to produce — the
-/// song's lyrics, where they're known. Whisper uses it only to bias
-/// decoding toward that vocabulary; it does not constrain the output, so a
-/// singer who sings something else is still transcribed as what they sang.
 Future<List<TranscribedWord>> transcribeWords(
   Uint8List recordedWavBytes, {
   String lang = 'tl',
-  String? expectedText,
 }) async {
-  final segments = await _transcribeSegments(
-    recordedWavBytes,
-    lang: lang,
-    expectedText: expectedText,
-  );
-  if (segments == null) return [];
+  final pass = await _transcribePass(recordedWavBytes, lang: lang);
+  if (pass == null) return [];
 
   final words = <TranscribedWord>[];
-  for (final segment in segments) {
+  for (final segment in pass.segments) {
     final text = segment.text.trim();
     if (!_looksLikeRealWord(text)) continue;
     words.add(TranscribedWord(
@@ -427,63 +347,27 @@ Future<List<TranscribedWord>> transcribeWords(
   return words;
 }
 
-List<_ExpectedWord> _buildExpectedWords(List<LrcLine> lyrics) {
-  final expected = <_ExpectedWord>[];
-  for (var i = 0; i < lyrics.length; i++) {
-    final line = lyrics[i];
-    final words = line.text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-    if (words.isEmpty) continue;
-
-    final lineStart = line.timestamp;
-    final lineEnd = i + 1 < lyrics.length ? lyrics[i + 1].timestamp : lineStart + const Duration(seconds: 5);
-    final lineDurMs = (lineEnd - lineStart).inMilliseconds.clamp(500, 20000);
-
-    for (var w = 0; w < words.length; w++) {
-      final wordTimeMs = lineStart.inMilliseconds + (lineDurMs * w / words.length).round();
-      expected.add(_ExpectedWord(_normalize(words[w]), words[w], Duration(milliseconds: wordTimeMs)));
-    }
-  }
-  return expected;
-}
-
-List<AlignedWord> _align(List<_ExpectedWord> expected, List<_RecognizedWord> recognized) {
-  const searchWindow = Duration(seconds: 3);
-  var rStart = 0;
-  final aligned = <AlignedWord>[];
-
-  for (final exp in expected) {
-    var bestJ = -1;
-    var bestDist = 1 << 30;
-
-    for (var j = rStart; j < recognized.length; j++) {
-      final rec = recognized[j];
-      final dt = rec.time - exp.time;
-      if (dt > searchWindow) break; // recognized words are time-ordered
-      if (dt < -searchWindow) continue;
-
-      final dist = _levenshtein(exp.norm, rec.norm);
-      final maxAllowed = exp.norm.length <= 3 ? 1 : 2;
-      if (dist <= maxAllowed && dist < bestDist) {
-        bestDist = dist;
-        bestJ = j;
-      }
-    }
-
-    if (bestJ >= 0) {
-      aligned.add(AlignedWord(
-        expectedWord: exp.raw,
-        expectedTime: exp.time,
-        recognizedWord: recognized[bestJ].raw,
-        recognizedTime: recognized[bestJ].time,
-      ));
-      rStart = bestJ + 1;
-    } else {
-      aligned.add(AlignedWord(expectedWord: exp.raw, expectedTime: exp.time));
-    }
-  }
-
-  return aligned;
-}
+/// Transcribes [wavBytes] and hands back the decoder's unfiltered output,
+/// for measuring transcription accuracy.
+///
+/// This exists so a WER figure describes the system that actually ships.
+/// It goes through the very same [_transcribePass] as karaoke and
+/// freestyle do — same bundled ggml model, same decode flags, same gain
+/// normalization, same device — so the only difference between a measured
+/// clip and a sung take is where the audio came from. Running a separate
+/// Whisper build on a desktop would be easier and would measure something
+/// else.
+///
+/// Returns null when the decode fails or produces nothing, which the
+/// caller should record as an empty hypothesis rather than skip: a clip
+/// the model returned nothing for is a total word loss, and dropping it
+/// would quietly flatter the score.
+Future<WhisperPass?> transcribeForEvaluation(
+  Uint8List wavBytes, {
+  String lang = 'tl',
+  String? expectedText,
+}) =>
+    _transcribePass(wavBytes, lang: lang, expectedText: expectedText);
 
 /// Whisper occasionally emits a token with no real letters or digits at
 /// all — a stray symbol, or (on quiet/ambiguous audio, a known whisper.cpp
@@ -497,36 +381,3 @@ List<AlignedWord> _align(List<_ExpectedWord> expected, List<_RecognizedWord> rec
 /// that isn't actually text.
 bool _looksLikeRealWord(String text) =>
     RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(text);
-
-String _normalize(String s) {
-  return s
-      .toLowerCase()
-      .replaceAll(RegExp(r"[^\w\s']"), '')
-      .replaceAll("'", '')
-      .trim();
-}
-
-int _levenshtein(String a, String b) {
-  if (a == b) return 0;
-  if (a.isEmpty) return b.length;
-  if (b.isEmpty) return a.length;
-
-  var prev = List<int>.generate(b.length + 1, (i) => i);
-  var curr = List<int>.filled(b.length + 1, 0);
-
-  for (var i = 1; i <= a.length; i++) {
-    curr[0] = i;
-    for (var j = 1; j <= b.length; j++) {
-      final cost = a[i - 1] == b[j - 1] ? 0 : 1;
-      curr[j] = [
-        curr[j - 1] + 1,
-        prev[j] + 1,
-        prev[j - 1] + cost,
-      ].reduce((x, y) => x < y ? x : y);
-    }
-    final tmp = prev;
-    prev = curr;
-    curr = tmp;
-  }
-  return prev[b.length];
-}

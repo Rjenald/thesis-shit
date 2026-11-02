@@ -10,15 +10,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  /// Held so it can be cancelled.
+  ///
+  /// It used to be fired and forgotten, which left two ways to break: a
+  /// timer still pending after the tree was disposed (which is what the
+  /// launch smoke test was failing on), and `Navigator.pushReplacement`
+  /// called with a dead `context` if this screen went away inside the
+  /// three seconds — backing out of the splash, or a hot restart.
+  Timer? _advance;
+
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+    _advance = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const StartPage()),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _advance?.cancel();
+    super.dispose();
   }
 
   @override

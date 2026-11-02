@@ -1,0 +1,1692 @@
+{
+ "stem": "Nasa Iyo Na Ang Lahat - Daniel Padilla",
+ "source": "MMS_FA forced alignment of the vocal stem",
+ "words": [
+  {
+   "text": "Nasa",
+   "start": 15.821,
+   "end": 16.141,
+   "score": 0.7998
+  },
+  {
+   "text": "'yo",
+   "start": 16.221,
+   "end": 16.341,
+   "score": 0.797
+  },
+  {
+   "text": "na",
+   "start": 16.601,
+   "end": 16.721,
+   "score": 0.8913
+  },
+  {
+   "text": "ang",
+   "start": 17.002,
+   "end": 17.202,
+   "score": 0.7496
+  },
+  {
+   "text": "lahat",
+   "start": 17.342,
+   "end": 18.442,
+   "score": 0.8724
+  },
+  {
+   "text": "Minamahal",
+   "start": 18.722,
+   "end": 19.443,
+   "score": 0.9033
+  },
+  {
+   "text": "kita",
+   "start": 19.583,
+   "end": 19.923,
+   "score": 0.8874
+  },
+  {
+   "text": "'pagkat",
+   "start": 20.323,
+   "end": 21.444,
+   "score": 0.5219
+  },
+  {
+   "text": "Nasa",
+   "start": 21.844,
+   "end": 22.144,
+   "score": 0.2997
+  },
+  {
+   "text": "'yo",
+   "start": 22.224,
+   "end": 22.344,
+   "score": 0.2562
+  },
+  {
+   "text": "na",
+   "start": 22.584,
+   "end": 22.704,
+   "score": 0.2479
+  },
+  {
+   "text": "ang",
+   "start": 23.025,
+   "end": 23.245,
+   "score": 0.0905
+  },
+  {
+   "text": "lahat",
+   "start": 23.385,
+   "end": 24.065,
+   "score": 0.111
+  },
+  {
+   "text": "Pati",
+   "start": 24.325,
+   "end": 24.605,
+   "score": 0.1826
+  },
+  {
+   "text": "ang",
+   "start": 24.906,
+   "end": 25.026,
+   "score": 0.0235
+  },
+  {
+   "text": "puso",
+   "start": 25.086,
+   "end": 25.546,
+   "score": 0.1743
+  },
+  {
+   "text": "ko",
+   "start": 25.786,
+   "end": 25.926,
+   "score": 0.1651
+  },
+  {
+   "text": "Nasa",
+   "start": 27.827,
+   "end": 28.127,
+   "score": 0.3975
+  },
+  {
+   "text": "'yo",
+   "start": 28.207,
+   "end": 28.347,
+   "score": 0.2946
+  },
+  {
+   "text": "na",
+   "start": 28.607,
+   "end": 28.727,
+   "score": 0.3658
+  },
+  {
+   "text": "ang",
+   "start": 29.048,
+   "end": 29.288,
+   "score": 0.2376
+  },
+  {
+   "text": "lahat",
+   "start": 29.388,
+   "end": 30.448,
+   "score": 0.3494
+  },
+  {
+   "text": "Minamahal",
+   "start": 30.688,
+   "end": 31.469,
+   "score": 0.8495
+  },
+  {
+   "text": "kitang",
+   "start": 31.589,
+   "end": 32.169,
+   "score": 0.8559
+  },
+  {
+   "text": "tapat",
+   "start": 32.329,
+   "end": 33.41,
+   "score": 0.7542
+  },
+  {
+   "text": "Nasa",
+   "start": 33.83,
+   "end": 34.15,
+   "score": 0.6959
+  },
+  {
+   "text": "'yo",
+   "start": 34.23,
+   "end": 34.35,
+   "score": 0.6795
+  },
+  {
+   "text": "na",
+   "start": 34.57,
+   "end": 34.69,
+   "score": 0.7275
+  },
+  {
+   "text": "ang",
+   "start": 35.031,
+   "end": 35.251,
+   "score": 0.6265
+  },
+  {
+   "text": "lahat",
+   "start": 35.371,
+   "end": 36.171,
+   "score": 0.5771
+  },
+  {
+   "text": "Pati",
+   "start": 36.371,
+   "end": 36.631,
+   "score": 0.4292
+  },
+  {
+   "text": "ang",
+   "start": 36.912,
+   "end": 37.032,
+   "score": 0.0631
+  },
+  {
+   "text": "puso",
+   "start": 37.092,
+   "end": 37.552,
+   "score": 0.5247
+  },
+  {
+   "text": "ko",
+   "start": 37.812,
+   "end": 37.952,
+   "score": 0.3648
+  },
+  {
+   "text": "Oh",
+   "start": 39.733,
+   "end": 39.913,
+   "score": 0.0024
+  },
+  {
+   "text": "Oh",
+   "start": 39.953,
+   "end": 40.253,
+   "score": 0.1142
+  },
+  {
+   "text": "Oh",
+   "start": 40.313,
+   "end": 40.633,
+   "score": 0.1027
+  },
+  {
+   "text": "Ohh",
+   "start": 40.693,
+   "end": 41.014,
+   "score": 0.0558
+  },
+  {
+   "text": "Ohhh",
+   "start": 41.074,
+   "end": 42.854,
+   "score": 0.0357
+  },
+  {
+   "text": "Na-nasa",
+   "start": 42.874,
+   "end": 43.695,
+   "score": 0.3099
+  },
+  {
+   "text": "'yo",
+   "start": 43.935,
+   "end": 44.075,
+   "score": 0.1413
+  },
+  {
+   "text": "na",
+   "start": 44.335,
+   "end": 44.455,
+   "score": 0.2202
+  },
+  {
+   "text": "ang",
+   "start": 44.795,
+   "end": 45.016,
+   "score": 0.178
+  },
+  {
+   "text": "lahat",
+   "start": 45.136,
+   "end": 45.716,
+   "score": 0.2167
+  },
+  {
+   "text": "Oh",
+   "start": 45.936,
+   "end": 46.236,
+   "score": 0.1057
+  },
+  {
+   "text": "Oh",
+   "start": 46.296,
+   "end": 46.556,
+   "score": 0.1006
+  },
+  {
+   "text": "Oh",
+   "start": 46.556,
+   "end": 46.596,
+   "score": 0.0122
+  },
+  {
+   "text": "Ohh",
+   "start": 46.656,
+   "end": 46.997,
+   "score": 0.0594
+  },
+  {
+   "text": "Ohhh",
+   "start": 47.057,
+   "end": 48.837,
+   "score": 0.0355
+  },
+  {
+   "text": "Na-nasa",
+   "start": 48.857,
+   "end": 49.698,
+   "score": 0.3323
+  },
+  {
+   "text": "'yo",
+   "start": 49.918,
+   "end": 50.078,
+   "score": 0.1622
+  },
+  {
+   "text": "na",
+   "start": 50.318,
+   "end": 50.438,
+   "score": 0.2125
+  },
+  {
+   "text": "ang",
+   "start": 50.798,
+   "end": 51.019,
+   "score": 0.1473
+  },
+  {
+   "text": "lahat",
+   "start": 51.139,
+   "end": 51.719,
+   "score": 0.2461
+  },
+  {
+   "text": "Lahat",
+   "start": 51.899,
+   "end": 52.479,
+   "score": 0.3185
+  },
+  {
+   "text": "na",
+   "start": 52.619,
+   "end": 52.719,
+   "score": 0.3878
+  },
+  {
+   "text": "mismo",
+   "start": 52.96,
+   "end": 53.46,
+   "score": 0.4419
+  },
+  {
+   "text": "nasa",
+   "start": 53.7,
+   "end": 54.18,
+   "score": 0.4489
+  },
+  {
+   "text": "'yo",
+   "start": 54.28,
+   "end": 54.38,
+   "score": 0.5948
+  },
+  {
+   "text": "Ang",
+   "start": 54.88,
+   "end": 54.981,
+   "score": 0.9203
+  },
+  {
+   "text": "ganda",
+   "start": 55.041,
+   "end": 55.321,
+   "score": 0.8522
+  },
+  {
+   "text": "ang",
+   "start": 55.641,
+   "end": 55.741,
+   "score": 0.9498
+  },
+  {
+   "text": "bait",
+   "start": 55.781,
+   "end": 56.221,
+   "score": 0.996
+  },
+  {
+   "text": "ang",
+   "start": 56.361,
+   "end": 56.481,
+   "score": 0.9444
+  },
+  {
+   "text": "talino",
+   "start": 56.561,
+   "end": 57.062,
+   "score": 0.9855
+  },
+  {
+   "text": "Inggit",
+   "start": 57.902,
+   "end": 58.442,
+   "score": 0.9475
+  },
+  {
+   "text": "lahat",
+   "start": 58.582,
+   "end": 59.183,
+   "score": 0.9962
+  },
+  {
+   "text": "sila",
+   "start": 59.303,
+   "end": 59.803,
+   "score": 0.9944
+  },
+  {
+   "text": "sa",
+   "start": 60.043,
+   "end": 60.183,
+   "score": 0.6126
+  },
+  {
+   "text": "'yo",
+   "start": 60.263,
+   "end": 60.383,
+   "score": 0.6079
+  },
+  {
+   "text": "Kahit",
+   "start": 60.843,
+   "end": 61.144,
+   "score": 0.9855
+  },
+  {
+   "text": "pa",
+   "start": 61.204,
+   "end": 61.304,
+   "score": 0.9918
+  },
+  {
+   "text": "tapat",
+   "start": 61.764,
+   "end": 62.184,
+   "score": 0.9967
+  },
+  {
+   "text": "man",
+   "start": 62.324,
+   "end": 62.484,
+   "score": 0.8834
+  },
+  {
+   "text": "kanino",
+   "start": 62.544,
+   "end": 63.065,
+   "score": 0.9892
+  },
+  {
+   "text": "Kaya",
+   "start": 63.285,
+   "end": 63.585,
+   "score": 0.9125
+  },
+  {
+   "text": "nung",
+   "start": 63.985,
+   "end": 64.225,
+   "score": 0.7047
+  },
+  {
+   "text": "lumapit",
+   "start": 64.605,
+   "end": 65.726,
+   "score": 0.9936
+  },
+  {
+   "text": "ka",
+   "start": 66.046,
+   "end": 66.166,
+   "score": 0.7593
+  },
+  {
+   "text": "sa",
+   "start": 66.406,
+   "end": 66.566,
+   "score": 0.9956
+  },
+  {
+   "text": "'kin",
+   "start": 66.806,
+   "end": 67.067,
+   "score": 0.9919
+  },
+  {
+   "text": "Ay",
+   "start": 67.127,
+   "end": 67.307,
+   "score": 0.9274
+  },
+  {
+   "text": "bigla",
+   "start": 67.467,
+   "end": 67.947,
+   "score": 0.994
+  },
+  {
+   "text": "akong",
+   "start": 68.207,
+   "end": 68.507,
+   "score": 0.9839
+  },
+  {
+   "text": "nahilo",
+   "start": 68.547,
+   "end": 69.168,
+   "score": 0.9926
+  },
+  {
+   "text": "Di",
+   "start": 69.488,
+   "end": 69.608,
+   "score": 0.9815
+  },
+  {
+   "text": "akalaing",
+   "start": 70.108,
+   "end": 71.849,
+   "score": 0.8886
+  },
+  {
+   "text": "sabihin",
+   "start": 72.069,
+   "end": 72.99,
+   "score": 0.992
+  },
+  {
+   "text": "mong",
+   "start": 73.07,
+   "end": 73.45,
+   "score": 0.8652
+  },
+  {
+   "text": "ako",
+   "start": 73.51,
+   "end": 73.89,
+   "score": 0.96
+  },
+  {
+   "text": "na",
+   "start": 74.13,
+   "end": 74.23,
+   "score": 0.9353
+  },
+  {
+   "text": "'yon",
+   "start": 74.31,
+   "end": 74.67,
+   "score": 0.959
+  },
+  {
+   "text": "Ang",
+   "start": 75.171,
+   "end": 75.351,
+   "score": 0.9427
+  },
+  {
+   "text": "hinahanap",
+   "start": 75.431,
+   "end": 76.871,
+   "score": 0.9902
+  },
+  {
+   "text": "mo",
+   "start": 76.992,
+   "end": 77.112,
+   "score": 0.9841
+  },
+  {
+   "text": "Nasa",
+   "start": 78.852,
+   "end": 79.153,
+   "score": 0.9279
+  },
+  {
+   "text": "'yo",
+   "start": 79.213,
+   "end": 79.353,
+   "score": 0.9465
+  },
+  {
+   "text": "na",
+   "start": 79.593,
+   "end": 79.693,
+   "score": 0.9824
+  },
+  {
+   "text": "ang",
+   "start": 80.053,
+   "end": 80.233,
+   "score": 0.8646
+  },
+  {
+   "text": "lahat",
+   "start": 80.393,
+   "end": 81.454,
+   "score": 0.9443
+  },
+  {
+   "text": "Minamahal",
+   "start": 81.694,
+   "end": 82.434,
+   "score": 0.9842
+  },
+  {
+   "text": "kita",
+   "start": 82.574,
+   "end": 82.955,
+   "score": 0.9793
+  },
+  {
+   "text": "'pagkat",
+   "start": 83.335,
+   "end": 84.355,
+   "score": 0.9222
+  },
+  {
+   "text": "Nasa",
+   "start": 84.855,
+   "end": 85.156,
+   "score": 0.9361
+  },
+  {
+   "text": "'yo",
+   "start": 85.236,
+   "end": 85.356,
+   "score": 0.9417
+  },
+  {
+   "text": "na",
+   "start": 85.596,
+   "end": 85.716,
+   "score": 0.9543
+  },
+  {
+   "text": "ang",
+   "start": 86.056,
+   "end": 86.276,
+   "score": 0.9717
+  },
+  {
+   "text": "lahat",
+   "start": 86.376,
+   "end": 87.177,
+   "score": 0.957
+  },
+  {
+   "text": "Pati",
+   "start": 87.297,
+   "end": 87.617,
+   "score": 0.9785
+  },
+  {
+   "text": "ang",
+   "start": 87.897,
+   "end": 88.017,
+   "score": 0.025
+  },
+  {
+   "text": "puso",
+   "start": 88.097,
+   "end": 88.597,
+   "score": 0.8636
+  },
+  {
+   "text": "ko",
+   "start": 88.857,
+   "end": 88.978,
+   "score": 0.9802
+  },
+  {
+   "text": "Nasa",
+   "start": 90.858,
+   "end": 91.159,
+   "score": 0.9457
+  },
+  {
+   "text": "'yo",
+   "start": 91.239,
+   "end": 91.359,
+   "score": 0.9375
+  },
+  {
+   "text": "na",
+   "start": 91.579,
+   "end": 91.699,
+   "score": 0.9368
+  },
+  {
+   "text": "ang",
+   "start": 92.059,
+   "end": 92.279,
+   "score": 0.9774
+  },
+  {
+   "text": "lahat",
+   "start": 92.379,
+   "end": 93.44,
+   "score": 0.9696
+  },
+  {
+   "text": "Minamahal",
+   "start": 93.68,
+   "end": 94.44,
+   "score": 0.9938
+  },
+  {
+   "text": "kitang",
+   "start": 94.58,
+   "end": 95.161,
+   "score": 0.9825
+  },
+  {
+   "text": "tapat",
+   "start": 95.321,
+   "end": 96.401,
+   "score": 0.9428
+  },
+  {
+   "text": "Nasa",
+   "start": 96.821,
+   "end": 97.122,
+   "score": 0.9777
+  },
+  {
+   "text": "'yo",
+   "start": 97.222,
+   "end": 97.382,
+   "score": 0.9102
+  },
+  {
+   "text": "na",
+   "start": 97.602,
+   "end": 97.722,
+   "score": 0.9755
+  },
+  {
+   "text": "ang",
+   "start": 98.042,
+   "end": 98.242,
+   "score": 0.9243
+  },
+  {
+   "text": "lahat",
+   "start": 98.362,
+   "end": 99.163,
+   "score": 0.9767
+  },
+  {
+   "text": "Pati",
+   "start": 99.303,
+   "end": 99.603,
+   "score": 0.9724
+  },
+  {
+   "text": "ang",
+   "start": 99.883,
+   "end": 100.003,
+   "score": 0.0642
+  },
+  {
+   "text": "puso",
+   "start": 100.103,
+   "end": 100.583,
+   "score": 0.9791
+  },
+  {
+   "text": "ko",
+   "start": 100.823,
+   "end": 100.964,
+   "score": 0.9775
+  },
+  {
+   "text": "Oh",
+   "start": 102.925,
+   "end": 103.225,
+   "score": 0.4215
+  },
+  {
+   "text": "Oh",
+   "start": 103.305,
+   "end": 103.585,
+   "score": 0.3896
+  },
+  {
+   "text": "Oh",
+   "start": 103.665,
+   "end": 103.965,
+   "score": 0.3863
+  },
+  {
+   "text": "Ohh",
+   "start": 104.045,
+   "end": 104.565,
+   "score": 0.164
+  },
+  {
+   "text": "Ohhh",
+   "start": 104.625,
+   "end": 105.246,
+   "score": 0.0308
+  },
+  {
+   "text": "Na-nasa",
+   "start": 105.866,
+   "end": 106.686,
+   "score": 0.973
+  },
+  {
+   "text": "'yo",
+   "start": 106.927,
+   "end": 107.067,
+   "score": 0.9502
+  },
+  {
+   "text": "na",
+   "start": 107.327,
+   "end": 107.447,
+   "score": 0.9728
+  },
+  {
+   "text": "ang",
+   "start": 107.787,
+   "end": 108.007,
+   "score": 0.9603
+  },
+  {
+   "text": "lahat",
+   "start": 108.107,
+   "end": 108.727,
+   "score": 0.9684
+  },
+  {
+   "text": "Oh",
+   "start": 108.948,
+   "end": 109.248,
+   "score": 0.433
+  },
+  {
+   "text": "Oh",
+   "start": 109.328,
+   "end": 109.608,
+   "score": 0.3988
+  },
+  {
+   "text": "Oh",
+   "start": 109.668,
+   "end": 109.968,
+   "score": 0.3815
+  },
+  {
+   "text": "Ohh",
+   "start": 110.068,
+   "end": 110.588,
+   "score": 0.1871
+  },
+  {
+   "text": "Ohhh",
+   "start": 110.668,
+   "end": 111.269,
+   "score": 0.0577
+  },
+  {
+   "text": "Na-nasa",
+   "start": 111.849,
+   "end": 112.669,
+   "score": 0.9725
+  },
+  {
+   "text": "'yo",
+   "start": 112.889,
+   "end": 113.05,
+   "score": 0.8447
+  },
+  {
+   "text": "na",
+   "start": 113.31,
+   "end": 113.41,
+   "score": 0.9822
+  },
+  {
+   "text": "ang",
+   "start": 113.77,
+   "end": 114.01,
+   "score": 0.9724
+  },
+  {
+   "text": "lahat",
+   "start": 114.11,
+   "end": 114.73,
+   "score": 0.9943
+  },
+  {
+   "text": "Kinikilig",
+   "start": 114.87,
+   "end": 116.211,
+   "score": 0.9858
+  },
+  {
+   "text": "pa",
+   "start": 116.371,
+   "end": 116.471,
+   "score": 0.919
+  },
+  {
+   "text": "rin",
+   "start": 116.751,
+   "end": 117.112,
+   "score": 0.8957
+  },
+  {
+   "text": "ako",
+   "start": 117.172,
+   "end": 117.392,
+   "score": 0.9938
+  },
+  {
+   "text": "Ang",
+   "start": 117.872,
+   "end": 117.992,
+   "score": 0.8798
+  },
+  {
+   "text": "sarap",
+   "start": 118.052,
+   "end": 118.472,
+   "score": 0.9977
+  },
+  {
+   "text": "magmahal",
+   "start": 118.612,
+   "end": 119.193,
+   "score": 0.9977
+  },
+  {
+   "text": "'pag",
+   "start": 119.333,
+   "end": 119.493,
+   "score": 0.997
+  },
+  {
+   "text": "panalo",
+   "start": 119.573,
+   "end": 120.093,
+   "score": 0.9965
+  },
+  {
+   "text": "Nag-iisa",
+   "start": 120.853,
+   "end": 122.074,
+   "score": 0.9892
+  },
+  {
+   "text": "sa",
+   "start": 122.294,
+   "end": 122.414,
+   "score": 0.9491
+  },
+  {
+   "text": "puso",
+   "start": 122.554,
+   "end": 123.035,
+   "score": 0.9766
+  },
+  {
+   "text": "ko",
+   "start": 123.275,
+   "end": 123.375,
+   "score": 0.9905
+  },
+  {
+   "text": "Ito'y",
+   "start": 123.815,
+   "end": 124.015,
+   "score": 0.0006
+  },
+  {
+   "text": "kaya",
+   "start": 124.035,
+   "end": 124.335,
+   "score": 0.9911
+  },
+  {
+   "text": "'di",
+   "start": 124.615,
+   "end": 124.715,
+   "score": 0.991
+  },
+  {
+   "text": "na",
+   "start": 124.815,
+   "end": 124.895,
+   "score": 0.9925
+  },
+  {
+   "text": "ba",
+   "start": 124.956,
+   "end": 125.076,
+   "score": 0.9923
+  },
+  {
+   "text": "magbabago",
+   "start": 125.356,
+   "end": 126.076,
+   "score": 0.9862
+  },
+  {
+   "text": "Ako",
+   "start": 126.376,
+   "end": 126.596,
+   "score": 0.9928
+  },
+  {
+   "text": "ang",
+   "start": 127.157,
+   "end": 127.357,
+   "score": 0.9356
+  },
+  {
+   "text": "pinili",
+   "start": 127.617,
+   "end": 128.657,
+   "score": 0.8632
+  },
+  {
+   "text": "sa",
+   "start": 129.058,
+   "end": 129.198,
+   "score": 0.9949
+  },
+  {
+   "text": "dami",
+   "start": 129.458,
+   "end": 129.938,
+   "score": 0.9975
+  },
+  {
+   "text": "Ng",
+   "start": 130.038,
+   "end": 130.298,
+   "score": 0.8441
+  },
+  {
+   "text": "ibang",
+   "start": 130.598,
+   "end": 131.259,
+   "score": 0.9948
+  },
+  {
+   "text": "nirereto",
+   "start": 131.359,
+   "end": 132.199,
+   "score": 0.9098
+  },
+  {
+   "text": "Hindi",
+   "start": 132.299,
+   "end": 132.619,
+   "score": 0.7876
+  },
+  {
+   "text": "akalaing",
+   "start": 133.16,
+   "end": 134.86,
+   "score": 0.7945
+  },
+  {
+   "text": "Sabihin",
+   "start": 135.061,
+   "end": 136.001,
+   "score": 0.9925
+  },
+  {
+   "text": "mong",
+   "start": 136.061,
+   "end": 136.461,
+   "score": 0.93
+  },
+  {
+   "text": "ako",
+   "start": 136.541,
+   "end": 136.902,
+   "score": 0.9942
+  },
+  {
+   "text": "na",
+   "start": 137.142,
+   "end": 137.242,
+   "score": 0.5085
+  },
+  {
+   "text": "lang",
+   "start": 137.362,
+   "end": 137.662,
+   "score": 0.9651
+  },
+  {
+   "text": "Ang",
+   "start": 138.122,
+   "end": 138.282,
+   "score": 0.9505
+  },
+  {
+   "text": "kulang",
+   "start": 138.402,
+   "end": 139.063,
+   "score": 0.7712
+  },
+  {
+   "text": "sa",
+   "start": 139.163,
+   "end": 139.303,
+   "score": 0.9878
+  },
+  {
+   "text": "iyo",
+   "start": 139.703,
+   "end": 140.063,
+   "score": 0.8261
+  },
+  {
+   "text": "Ohh",
+   "start": 140.803,
+   "end": 141.424,
+   "score": 0.1761
+  },
+  {
+   "text": "Nasa",
+   "start": 141.844,
+   "end": 142.164,
+   "score": 0.7707
+  },
+  {
+   "text": "'yo",
+   "start": 142.264,
+   "end": 142.364,
+   "score": 0.8737
+  },
+  {
+   "text": "na",
+   "start": 142.604,
+   "end": 142.724,
+   "score": 0.9332
+  },
+  {
+   "text": "ang",
+   "start": 143.065,
+   "end": 143.305,
+   "score": 0.8414
+  },
+  {
+   "text": "lahat",
+   "start": 143.405,
+   "end": 144.485,
+   "score": 0.8383
+  },
+  {
+   "text": "Minamahal",
+   "start": 144.725,
+   "end": 145.446,
+   "score": 0.9887
+  },
+  {
+   "text": "kita",
+   "start": 145.566,
+   "end": 145.886,
+   "score": 0.9858
+  },
+  {
+   "text": "'pagkat",
+   "start": 146.366,
+   "end": 147.367,
+   "score": 0.5862
+  },
+  {
+   "text": "Nasa",
+   "start": 147.887,
+   "end": 148.147,
+   "score": 0.8222
+  },
+  {
+   "text": "'yo",
+   "start": 148.227,
+   "end": 148.347,
+   "score": 0.9622
+  },
+  {
+   "text": "na",
+   "start": 148.587,
+   "end": 148.707,
+   "score": 0.9631
+  },
+  {
+   "text": "ang",
+   "start": 149.028,
+   "end": 149.248,
+   "score": 0.9221
+  },
+  {
+   "text": "lahat",
+   "start": 149.348,
+   "end": 150.028,
+   "score": 0.8087
+  },
+  {
+   "text": "Pati",
+   "start": 150.288,
+   "end": 150.608,
+   "score": 0.7886
+  },
+  {
+   "text": "ang",
+   "start": 150.909,
+   "end": 151.029,
+   "score": 0.0089
+  },
+  {
+   "text": "puso",
+   "start": 151.089,
+   "end": 151.549,
+   "score": 0.8872
+  },
+  {
+   "text": "kohhh",
+   "start": 151.809,
+   "end": 153.31,
+   "score": 0.3938
+  },
+  {
+   "text": "Nasa",
+   "start": 153.85,
+   "end": 154.15,
+   "score": 0.8741
+  },
+  {
+   "text": "'yo",
+   "start": 154.25,
+   "end": 154.37,
+   "score": 0.9725
+  },
+  {
+   "text": "na",
+   "start": 154.59,
+   "end": 154.71,
+   "score": 0.8954
+  },
+  {
+   "text": "ang",
+   "start": 155.071,
+   "end": 155.311,
+   "score": 0.9122
+  },
+  {
+   "text": "lahat",
+   "start": 155.411,
+   "end": 156.351,
+   "score": 0.8406
+  },
+  {
+   "text": "Minamahal",
+   "start": 156.711,
+   "end": 157.452,
+   "score": 0.9959
+  },
+  {
+   "text": "kitang",
+   "start": 157.552,
+   "end": 158.152,
+   "score": 0.9373
+  },
+  {
+   "text": "tapat",
+   "start": 158.312,
+   "end": 159.333,
+   "score": 0.7155
+  },
+  {
+   "text": "Nasa",
+   "start": 159.893,
+   "end": 160.153,
+   "score": 0.8408
+  },
+  {
+   "text": "'yo",
+   "start": 160.253,
+   "end": 160.353,
+   "score": 0.9629
+  },
+  {
+   "text": "na",
+   "start": 160.593,
+   "end": 160.733,
+   "score": 0.8926
+  },
+  {
+   "text": "ang",
+   "start": 161.054,
+   "end": 161.254,
+   "score": 0.9797
+  },
+  {
+   "text": "lahat",
+   "start": 161.354,
+   "end": 162.054,
+   "score": 0.8214
+  },
+  {
+   "text": "Pati",
+   "start": 162.314,
+   "end": 162.614,
+   "score": 0.649
+  },
+  {
+   "text": "ang",
+   "start": 162.935,
+   "end": 163.035,
+   "score": 0.0124
+  },
+  {
+   "text": "puso",
+   "start": 163.095,
+   "end": 163.555,
+   "score": 0.7594
+  },
+  {
+   "text": "kohhh",
+   "start": 163.775,
+   "end": 165.776,
+   "score": 0.3448
+  },
+  {
+   "text": "Nasa",
+   "start": 165.876,
+   "end": 166.136,
+   "score": 0.0345
+  },
+  {
+   "text": "'yo",
+   "start": 166.236,
+   "end": 166.356,
+   "score": 0.0587
+  },
+  {
+   "text": "na",
+   "start": 166.576,
+   "end": 166.696,
+   "score": 0.2998
+  },
+  {
+   "text": "ang",
+   "start": 167.037,
+   "end": 167.257,
+   "score": 0.4133
+  },
+  {
+   "text": "lahat",
+   "start": 167.337,
+   "end": 168.457,
+   "score": 0.4766
+  },
+  {
+   "text": "Minamahal",
+   "start": 168.677,
+   "end": 169.458,
+   "score": 0.9206
+  },
+  {
+   "text": "kita",
+   "start": 169.578,
+   "end": 169.898,
+   "score": 0.9478
+  },
+  {
+   "text": "'pagkat",
+   "start": 170.338,
+   "end": 171.359,
+   "score": 0.5638
+  },
+  {
+   "text": "Nasa",
+   "start": 171.359,
+   "end": 172.139,
+   "score": 0.0572
+  },
+  {
+   "text": "'yo",
+   "start": 172.239,
+   "end": 172.339,
+   "score": 0.017
+  },
+  {
+   "text": "na",
+   "start": 172.559,
+   "end": 172.679,
+   "score": 0.1109
+  },
+  {
+   "text": "ang",
+   "start": 173.04,
+   "end": 173.26,
+   "score": 0.0088
+  },
+  {
+   "text": "lahat",
+   "start": 173.36,
+   "end": 174.14,
+   "score": 0.0055
+  },
+  {
+   "text": "Pati",
+   "start": 174.3,
+   "end": 174.56,
+   "score": 0.0219
+  },
+  {
+   "text": "ang",
+   "start": 174.861,
+   "end": 174.981,
+   "score": 0.0018
+  },
+  {
+   "text": "puso",
+   "start": 175.041,
+   "end": 175.561,
+   "score": 0.037
+  },
+  {
+   "text": "kohhh",
+   "start": 175.841,
+   "end": 177.022,
+   "score": 0.0115
+  },
+  {
+   "text": "Nasa",
+   "start": 177.862,
+   "end": 178.142,
+   "score": 0.0484
+  },
+  {
+   "text": "'yo",
+   "start": 178.222,
+   "end": 178.323,
+   "score": 0.04
+  },
+  {
+   "text": "na",
+   "start": 178.583,
+   "end": 178.683,
+   "score": 0.0341
+  },
+  {
+   "text": "ang",
+   "start": 179.023,
+   "end": 179.223,
+   "score": 0.0236
+  },
+  {
+   "text": "lahat",
+   "start": 179.363,
+   "end": 180.364,
+   "score": 0.1896
+  },
+  {
+   "text": "Minamahal",
+   "start": 180.684,
+   "end": 181.464,
+   "score": 0.9676
+  },
+  {
+   "text": "kitang",
+   "start": 181.604,
+   "end": 182.165,
+   "score": 0.898
+  },
+  {
+   "text": "tapat",
+   "start": 182.345,
+   "end": 183.445,
+   "score": 0.8154
+  },
+  {
+   "text": "Nasa",
+   "start": 183.826,
+   "end": 184.106,
+   "score": 0.8079
+  },
+  {
+   "text": "'yo",
+   "start": 184.206,
+   "end": 184.326,
+   "score": 0.8973
+  },
+  {
+   "text": "na",
+   "start": 184.546,
+   "end": 184.666,
+   "score": 0.8238
+  },
+  {
+   "text": "ang",
+   "start": 185.026,
+   "end": 185.226,
+   "score": 0.0575
+  },
+  {
+   "text": "lahat",
+   "start": 185.347,
+   "end": 186.027,
+   "score": 0.0423
+  },
+  {
+   "text": "Pati",
+   "start": 186.287,
+   "end": 186.607,
+   "score": 0.0719
+  },
+  {
+   "text": "ang",
+   "start": 186.927,
+   "end": 187.007,
+   "score": 0.0069
+  },
+  {
+   "text": "puso",
+   "start": 187.068,
+   "end": 187.528,
+   "score": 0.1028
+  },
+  {
+   "text": "kohhh",
+   "start": 187.808,
+   "end": 189.909,
+   "score": 0.025
+  },
+  {
+   "text": "Oh",
+   "start": 189.929,
+   "end": 190.229,
+   "score": 0.046
+  },
+  {
+   "text": "Oh",
+   "start": 190.289,
+   "end": 190.489,
+   "score": 0.0419
+  },
+  {
+   "text": "Oh",
+   "start": 190.569,
+   "end": 190.61,
+   "score": 0.0039
+  },
+  {
+   "text": "Ohh",
+   "start": 190.65,
+   "end": 190.99,
+   "score": 0.0256
+  },
+  {
+   "text": "Ohhh",
+   "start": 191.03,
+   "end": 192.471,
+   "score": 0.0144
+  },
+  {
+   "text": "Na-nasa",
+   "start": 192.891,
+   "end": 193.711,
+   "score": 0.2028
+  },
+  {
+   "text": "'yo",
+   "start": 193.951,
+   "end": 194.092,
+   "score": 0.0629
+  },
+  {
+   "text": "na",
+   "start": 194.332,
+   "end": 194.452,
+   "score": 0.1209
+  },
+  {
+   "text": "ang",
+   "start": 194.792,
+   "end": 195.012,
+   "score": 0.0433
+  },
+  {
+   "text": "lahat",
+   "start": 195.112,
+   "end": 195.652,
+   "score": 0.0392
+  },
+  {
+   "text": "Oh",
+   "start": 195.933,
+   "end": 196.233,
+   "score": 0.0231
+  },
+  {
+   "text": "Oh",
+   "start": 196.293,
+   "end": 196.573,
+   "score": 0.0161
+  },
+  {
+   "text": "Oh",
+   "start": 196.573,
+   "end": 196.613,
+   "score": 0.0013
+  },
+  {
+   "text": "Ohh",
+   "start": 196.653,
+   "end": 196.993,
+   "score": 0.0127
+  },
+  {
+   "text": "Ohhh",
+   "start": 197.053,
+   "end": 198.214,
+   "score": 0.0086
+  },
+  {
+   "text": "Na-nasa",
+   "start": 198.874,
+   "end": 199.675,
+   "score": 0.1026
+  },
+  {
+   "text": "'yo",
+   "start": 199.955,
+   "end": 200.075,
+   "score": 0.0576
+  },
+  {
+   "text": "na",
+   "start": 200.335,
+   "end": 200.455,
+   "score": 0.1032
+  },
+  {
+   "text": "ang",
+   "start": 200.795,
+   "end": 201.035,
+   "score": 0.0578
+  },
+  {
+   "text": "lahat",
+   "start": 201.116,
+   "end": 201.696,
+   "score": 0.1022
+  },
+  {
+   "text": "Nasa",
+   "start": 201.856,
+   "end": 202.156,
+   "score": 0.128
+  },
+  {
+   "text": "'yo",
+   "start": 202.236,
+   "end": 202.356,
+   "score": 0.1033
+  },
+  {
+   "text": "na",
+   "start": 202.576,
+   "end": 202.696,
+   "score": 0.1216
+  },
+  {
+   "text": "ang",
+   "start": 203.037,
+   "end": 203.257,
+   "score": 0.0943
+  },
+  {
+   "text": "lahat",
+   "start": 203.377,
+   "end": 204.537,
+   "score": 0.124
+  }
+ ]
+}

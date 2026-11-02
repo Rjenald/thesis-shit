@@ -11,6 +11,8 @@ import '../../core/word_note_builder.dart';
 import '../../models/freestyle_summary.dart';
 import '../../models/word_note_entry.dart';
 import '../../services/freestyle_storage_service.dart';
+import '../../widgets/result_share_sheet.dart';
+import '../../widgets/shareable_result_card.dart';
 
 /// Shows the word-by-word note summary of a completed "without karaoke"
 /// recording as a lyric-style synchronized timeline — no reference song, so
@@ -35,11 +37,17 @@ class FreestyleResultsPage extends StatefulWidget {
   final Uint8List? pendingWavBytes;
   final List<int>? pendingPcmSamples;
 
-  /// The song's words in Analysis Karaoke, null in Freestyle. Passed to
+  /// The song's words in Search & Sing, null in Freestyle. Passed to
   /// Whisper purely as decoding bias — it never constrains the output, so
   /// a singer who departs from the lyrics is still transcribed as what
   /// they actually sang.
   final String? expectedLyrics;
+
+  /// The song picked in Search & Sing, null in Freestyle. Carried here so
+  /// it can be persisted on the summary — without it a saved Search & Sing
+  /// take is indistinguishable from a Freestyle one in the library.
+  final String? songTitle;
+  final String? songArtist;
 
   const FreestyleResultsPage({super.key, required FreestyleSummary summary})
       : summary = summary,
@@ -48,7 +56,9 @@ class FreestyleResultsPage extends StatefulWidget {
         pendingDurationSeconds = null,
         pendingWavBytes = null,
         pendingPcmSamples = null,
-        expectedLyrics = null;
+        expectedLyrics = null,
+        songTitle = null,
+        songArtist = null;
 
   const FreestyleResultsPage.processing({
     super.key,
@@ -58,6 +68,8 @@ class FreestyleResultsPage extends StatefulWidget {
     required Uint8List wavBytes,
     required List<int> pcmSamples,
     this.expectedLyrics,
+    this.songTitle,
+    this.songArtist,
   })  : summary = null,
         recordingId = recordingId,
         pendingCreatedAt = createdAt,
@@ -125,12 +137,11 @@ class _FreestyleResultsPageState
       final results = await Future.wait([
         crepe.analyzeOffline(widget.pendingPcmSamples!, hopMs: 50),
         transcribeWords(widget.pendingWavBytes!,
-            // Analysis Karaoke songs come from an online search and can be
+            // Search & Sing songs come from an online search and can be
             // in any language, so detection beats assuming Tagalog.
             // Freestyle keeps the Tagalog default: with no lyrics there is
             // no prior, and this is a Filipino-focused app.
-            lang: widget.expectedLyrics == null ? 'tl' : 'auto',
-            expectedText: widget.expectedLyrics),
+            lang: widget.expectedLyrics == null ? 'tl' : 'auto'),
       ]).timeout(const Duration(minutes: 2));
       final pitchFrames = results[0] as List<PitchFrame>;
       final words = results[1] as List<TranscribedWord>;
@@ -153,6 +164,8 @@ class _FreestyleResultsPageState
         durationSeconds: _durationSeconds,
         audioRef: _audioRef,
         words: wordNotes,
+        songTitle: widget.songTitle,
+        songArtist: widget.songArtist,
       );
       await FreestyleStorageService.saveSummary(summary);
 
@@ -313,11 +326,12 @@ class _FreestyleResultsPageState
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Freestyle Summary',
+              // Search & Sing has a song to name; Freestyle doesn't.
+              _songTitle ?? 'Freestyle Summary',
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.white,
@@ -325,9 +339,97 @@ class _FreestyleResultsPageState
               ),
             ),
           ),
+          IconButton(
+            tooltip: 'Share result',
+            // Nothing to share until analysis has produced something; a
+            // card showing zero words would misrepresent the take.
+            onPressed: _canShare ? _share : null,
+            icon: Icon(
+              Icons.share_outlined,
+              size: 24,
+              color: _canShare
+                  ? AppColors.white
+                  : AppColors.grey.withValues(alpha: 0.4),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  /// The song in Search & Sing, null in Freestyle. Read from whichever
+  /// source this screen has — the saved summary when opened from the
+  /// library, the widget when opened straight after recording.
+  String? get _songTitle {
+    final fromSummary = _summary?.songTitle;
+    if (fromSummary != null && fromSummary.trim().isNotEmpty) {
+      return fromSummary.trim();
+    }
+    final fromWidget = widget.songTitle;
+    if (fromWidget != null && fromWidget.trim().isNotEmpty) {
+      return fromWidget.trim();
+    }
+    return null;
+  }
+
+  String get _songArtist =>
+      (_summary?.songArtist ?? widget.songArtist ?? '').trim();
+
+  bool get _canShare =>
+      !_analyzing && (_summary?.words.isNotEmpty ?? false);
+
+  /// Shares a card for a take with no reference melody.
+  ///
+  /// Passes no score, because there is no target to score against — the
+  /// card's unscored layout leads with what was detected instead. Putting
+  /// a number here would be inventing one.
+  void _share() {
+    final summary = _summary;
+    if (summary == null) return;
+    final words = summary.words;
+    final recognized = _recognizedWordCount(words);
+    final notes = words
+        .expand((w) => w.syllableNotes)
+        .whereType<String>()
+        .toSet()
+        .length;
+
+    final title = _songTitle ?? 'Freestyle';
+    ResultShareSheet.show(
+      context,
+      baseName: title,
+      shareText: _songTitle == null
+          ? 'I just recorded a freestyle take on Huni — '
+              '$recognized words, $notes distinct notes'
+          : 'I just sang "$title" on Huni',
+      card: ShareableResultCard(
+        songTitle: title,
+        songArtist: _songArtist,
+        completedAt: _createdAt,
+        excerpt: _excerptFrom(words),
+        stats: [
+          ShareStat('Words', '$recognized'),
+          ShareStat('Notes', '$notes'),
+          ShareStat('Duration', _formatDuration(_durationSeconds)),
+        ],
+      ),
+    );
+  }
+
+  /// The opening words of what was actually transcribed, for the card.
+  ///
+  /// Deliberately the recognized words rather than the song's lyrics: this
+  /// mode's whole point is showing what the singer produced, and quoting
+  /// the lyrics instead would put words on the card that may never have
+  /// been sung.
+  String? _excerptFrom(List<WordNoteEntry> words) {
+    final spoken = words
+        .map((w) => w.word.trim())
+        .where((w) => w.isNotEmpty)
+        .toList();
+    if (spoken.isEmpty) return null;
+    final text = spoken.take(12).join(' ');
+    return spoken.length > 12 ? '$text…' : text;
   }
 
   Widget _buildSummaryBar(List<WordNoteEntry> words) {

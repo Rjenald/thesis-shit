@@ -112,13 +112,21 @@ class _PracticeDrillPageState extends State<PracticeDrillPage> {
                   children: [
                     Icon(Icons.circle, color: Color(0xFF4CAF50), size: 7),
                     SizedBox(width: 5),
-                    Text(
-                      'CREPE AI  •  Real-time Pitch Detection',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.primaryCyan,
-                        fontFamily: 'Roboto',
-                        letterSpacing: 0.4,
+                    // Flexible: a 38-character label in an unflexed Row
+                    // has no give and overflowed by 153px. Letter spacing
+                    // and the system text scale both push it wider, so
+                    // this cannot rely on the string happening to fit.
+                    Flexible(
+                      child: Text(
+                        'CREPE AI  •  Real-time Pitch Detection',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.primaryCyan,
+                          fontFamily: 'Roboto',
+                          letterSpacing: 0.4,
+                        ),
                       ),
                     ),
                   ],

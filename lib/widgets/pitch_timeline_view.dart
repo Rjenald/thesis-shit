@@ -71,10 +71,21 @@ class PitchTimelineView extends StatelessWidget {
   /// readable, just not aligned to the song's actual lines.
   final List<LrcLine> lyrics;
 
+  /// Shown in place of the timeline when [segments] is empty.
+  ///
+  /// Without it this widget collapsed to nothing, so a take with no
+  /// note-by-note comparison looked identical to one where the section had
+  /// simply been scrolled past — no heading, no explanation, nothing to
+  /// tell the singer that the score they are reading was produced a
+  /// different way. Null keeps the old silent behaviour, for callers that
+  /// genuinely have nothing to say.
+  final String? emptyReason;
+
   const PitchTimelineView({
     super.key,
     required this.segments,
     this.lyrics = const [],
+    this.emptyReason,
   });
 
   /// One section per lyric line when lyrics are available, otherwise one
@@ -89,7 +100,53 @@ class PitchTimelineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (segments.isEmpty) return const SizedBox.shrink();
+    if (segments.isEmpty) {
+      final reason = emptyReason;
+      if (reason == null) return const SizedBox.shrink();
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.graphic_eq,
+                    color: Colors.white.withValues(alpha: 0.45), size: 16),
+                const SizedBox(width: 6),
+                const Flexible(
+                  child: Text(
+                    'Pitch Timeline',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              reason,
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 12,
+                height: 1.45,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     final sections = _sections;
 
     return Column(

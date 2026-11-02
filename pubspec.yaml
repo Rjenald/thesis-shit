@@ -19,6 +19,11 @@ dependencies:
   shared_preferences: ^2.3.0
   web_socket_channel: ^3.0.1
   share_plus: ^10.0.0
+  # Saves a rendered result card to the device gallery. Handles its own
+  # runtime permission, and needs nothing added to the manifest here: the
+  # legacy WRITE_EXTERNAL_STORAGE (maxSdkVersion 28) already declared
+  # there is exactly what it wants on Android 9 and below.
+  gal: ^2.3.3
   video_player: ^2.9.2
   provider: ^6.0.0
   youtube_player_flutter: ^9.1.3
@@ -69,3 +74,4 @@ flutter:
     - assets/audio/
     - assets/models/
     - assets/ground_truth/
+    - assets/covers/

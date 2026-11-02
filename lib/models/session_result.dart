@@ -3,7 +3,6 @@
 /// SessionResult aggregates all lines into scores, health alerts, and recommendations.
 library;
 
-import '../core/lyric_alignment_service.dart' show LyricAlignmentResult;
 import 'singing_segment.dart';
 
 enum LineStatus { correct, flat, sharp, noSignal }
@@ -101,14 +100,6 @@ class SessionResult {
   /// GroundTruthService); empty for every other song, same as before.
   final List<SingingSegment> singingSegments;
 
-  /// Expected-vs-heard word alignment from the on-device transcription.
-  /// Stored with the session so reopening it from the Library shows the
-  /// same alignment as right after recording — re-running Whisper on a
-  /// saved take just to redraw this card would cost a ~40s transcription
-  /// for something already computed once. Null for sessions saved before
-  /// this was persisted, and for takes where transcription found nothing.
-  final LyricAlignmentResult? lyricAlignment;
-
   const SessionResult({
     required this.songTitle,
     required this.songArtist,
@@ -117,7 +108,6 @@ class SessionResult {
     required this.lyricResults,
     required this.durationSeconds,
     this.singingSegments = const [],
-    this.lyricAlignment,
   });
 
   /// Only lines that have actual lyric text.
@@ -264,7 +254,6 @@ class SessionResult {
         'durationSeconds': durationSeconds,
         'lyricResults': lyricResults.map((l) => l.toJson()).toList(),
         'singingSegments': singingSegments.map((s) => s.toJson()).toList(),
-        'lyricAlignment': lyricAlignment?.toJson(),
       };
 
   factory SessionResult.fromJson(Map<String, dynamic> j) => SessionResult(
@@ -287,9 +276,7 @@ class SessionResult {
                     SingingSegment.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
-        lyricAlignment: j['lyricAlignment'] == null
-            ? null
-            : LyricAlignmentResult.fromJson(
-                j['lyricAlignment'] as Map<String, dynamic>),
       );
+  // A 'lyricAlignment' key in an older saved session is ignored: words are
+  // no longer compared against the lyrics, so there is nothing to restore.
 }

@@ -2,7 +2,7 @@ import 'package:final_thesis_ui/screens/normal_user/freestyle_recording_page.dar
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import 'analysis_song_search_page.dart';
+import 'search_and_sing_page.dart';
 import 'karaoke_song_catalog_page.dart';
 
 class RecordSelectionPage extends StatelessWidget {
@@ -76,17 +76,17 @@ class RecordSelectionPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      // Analysis — any song found online; no reference melody
+                      // Search & Sing — any song found online; no reference melody
                       // exists for it, so the result analyses what was sung
                       // instead of scoring it against a target.
                       _ModeButton(
                         icon: Icons.search,
-                        title: 'Analysis Karaoke',
-                        subtitle: 'Search any song online and analyse your take',
+                        title: 'Search & Sing',
+                        subtitle: 'Find any song online and sing along',
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AnalysisSongSearchPage(),
+                            builder: (_) => const SearchAndSingPage(),
                           ),
                         ),
                       ),

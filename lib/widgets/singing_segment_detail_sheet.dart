@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../core/note_utils.dart' show PitchFeedback, centsFromTarget;
@@ -111,10 +112,19 @@ class SingingSegmentDetailSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _detailRow(
-              'Expected',
-              segment.syllable.isEmpty ? '--' : segment.syllable,
-            ),
+            // The ground truth's syllable TEXT, shown only in debug builds.
+            //
+            // Words are not scored or compared against the lyrics — only
+            // notes are. Putting the expected syllable next to what was
+            // heard invites reading it as a word-accuracy judgement, which
+            // the app deliberately does not make. It stays available to
+            // developers because it is how you check that a ground-truth
+            // file is actually lined up with the audio.
+            if (kDebugMode)
+              _detailRow(
+                'Expected syllable (debug)',
+                segment.syllable.isEmpty ? '--' : segment.syllable,
+              ),
             _detailRow(
               'Target',
               '${segment.targetNote}  ·  '

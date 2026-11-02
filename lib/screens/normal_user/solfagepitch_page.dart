@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/playable_piano.dart';
 import '../../core/audio_service.dart';
 import '../../core/note_utils.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -235,8 +236,26 @@ class _SolfegePitchPageState extends State<SolfegePitchPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgDark,
+      // Scrollable, because this column mixes fixed-height pieces with
+      // Spacers, and a Spacer cannot shrink past zero: on a short screen
+      // the fixed content simply overflows, which is what the striped
+      // banner was.
+      //
+      // SliverFillRemaining rather than the usual LayoutBuilder +
+      // ConstrainedBox + IntrinsicHeight recipe. That recipe runs its
+      // builder during LAYOUT, so everything inside registers its
+      // inherited dependencies then — and this page is full of gesture
+      // detectors, which read MediaQuery. A dependency registered during
+      // layout can outlive the element holding it, which is the
+      // `'_dependents.isEmpty': is not true` assert. The sliver gets the
+      // same "fill the viewport, scroll when taller" behaviour with no
+      // layout-time builder at all.
       body: SafeArea(
-        child: Column(
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
           children: [
             // ── Header ───────────────────────────────────────────────────────
             Padding(
@@ -539,15 +558,13 @@ class _SolfegePitchPageState extends State<SolfegePitchPage>
                           ),
                         ),
                         padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                        child: CustomPaint(
-                          painter: _PianoPainter(
+                        child: PlayablePiano(
                             detectedMidi: _detectedMidi,
                             highlightColor: _statusColor,
                             isListening: _isListening,
                             glowIntensity: _glowAnimation.value,
+                            height: double.infinity,
                           ),
-                          size: Size.infinite,
-                        ),
                       );
                     },
                   ),
@@ -657,6 +674,9 @@ class _SolfegePitchPageState extends State<SolfegePitchPage>
                 if (index != 3) Navigator.pop(context);
               },
             ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -747,154 +767,4 @@ class _SolfegePitchPageState extends State<SolfegePitchPage>
       ),
     );
   }
-}
-
-// ── Piano Keyboard Painter ──────────────────────────────────────────────────
-class _PianoPainter extends CustomPainter {
-  final int? detectedMidi;
-  final Color highlightColor;
-  final bool isListening;
-  final double glowIntensity;
-
-  const _PianoPainter({
-    required this.detectedMidi,
-    required this.highlightColor,
-    required this.isListening,
-    this.glowIntensity = 1.0,
-  });
-
-  static const List<int> _whiteKeys = [60, 62, 64, 65, 67, 69, 71, 72];
-  static const List<String> _solfegeLabels = [
-    'Do',
-    'Re',
-    'Mi',
-    'Fa',
-    'Sol',
-    'La',
-    'Ti',
-    'Do',
-  ];
-  static const Map<int, double> _blackKeyCenters = {
-    61: 1.0,
-    63: 2.0,
-    66: 4.0,
-    68: 5.0,
-    70: 6.0,
-  };
-
-  int? _normalise(int? midi) {
-    if (midi == null) return null;
-    final pitchClass = midi % 12;
-    return 60 + pitchClass;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final highlighted = _normalise(detectedMidi);
-    final numWhite = _whiteKeys.length;
-    final whiteW = size.width / numWhite;
-    final whiteH = size.height;
-    final blackW = whiteW * 0.56;
-    final blackH = whiteH * 0.60;
-
-    for (int i = 0; i < _whiteKeys.length; i++) {
-      final midi = _whiteKeys[i];
-      final isHit = isListening && midi == highlighted;
-
-      final rect = Rect.fromLTWH(i * whiteW + 1, 0, whiteW - 2, whiteH - 1);
-      final rRect = RRect.fromRectAndCorners(
-        rect,
-        bottomLeft: const Radius.circular(5),
-        bottomRight: const Radius.circular(5),
-      );
-
-      if (isHit) {
-        canvas.drawRRect(
-          rRect.inflate(2),
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = highlightColor.withValues(alpha: 0.3 * glowIntensity)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-        );
-      }
-
-      canvas.drawRRect(
-        rRect,
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = isHit
-              ? highlightColor.withValues(alpha: 0.88)
-              : Colors.white,
-      );
-
-      canvas.drawRRect(
-        rRect,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..color = isHit ? highlightColor : Colors.black38
-          ..strokeWidth = isHit ? 2 : 1,
-      );
-
-      final textSpan = TextSpan(
-        text: _solfegeLabels[i],
-        style: TextStyle(
-          color: isHit ? Colors.black : Colors.black45,
-          fontSize: whiteW * 0.26,
-          fontWeight: isHit ? FontWeight.bold : FontWeight.normal,
-          fontFamily: 'Roboto',
-        ),
-      );
-      final tp = TextPainter(text: textSpan, textDirection: TextDirection.ltr);
-      tp.layout(maxWidth: whiteW);
-      tp.paint(
-        canvas,
-        Offset(i * whiteW + (whiteW - tp.width) / 2, whiteH - tp.height - 4),
-      );
-    }
-
-    _blackKeyCenters.forEach((midi, centerFrac) {
-      final isHit = isListening && midi == highlighted;
-      final x = centerFrac * whiteW - blackW / 2;
-      final rect = Rect.fromLTWH(x, 0, blackW, blackH);
-      final rRect = RRect.fromRectAndCorners(
-        rect,
-        bottomLeft: const Radius.circular(4),
-        bottomRight: const Radius.circular(4),
-      );
-
-      if (isHit) {
-        canvas.drawRRect(
-          rRect.inflate(2),
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = highlightColor.withValues(alpha: 0.4 * glowIntensity)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
-        );
-      }
-
-      canvas.drawRRect(
-        rRect,
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = isHit ? highlightColor : Colors.black,
-      );
-
-      if (isHit) {
-        canvas.drawRRect(
-          rRect,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..color = highlightColor.withValues(alpha: 0.6)
-            ..strokeWidth = 1.5,
-        );
-      }
-    });
-  }
-
-  @override
-  bool shouldRepaint(_PianoPainter old) =>
-      old.detectedMidi != detectedMidi ||
-      old.highlightColor != highlightColor ||
-      old.isListening != isListening ||
-      old.glowIntensity != glowIntensity;
 }

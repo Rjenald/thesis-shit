@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 import 'admin_media_service.dart';
 import 'song_catalog_service.dart';
 
@@ -37,6 +38,28 @@ class SongAudioService {
     if (bundled != null) return AudioRef(path: bundled, isAsset: true);
 
     return null;
+  }
+
+  /// Whether the bundled MP3 is actually there.
+  ///
+  /// [getAudioUrl] only builds a path from the catalog entry, so it says
+  /// nothing about whether the file was ever added. The admin screen
+  /// showed "Built-in" on that basis and so could never report a missing
+  /// backing track for a catalogued song — the one thing that screen
+  /// exists to tell you.
+  ///
+  /// Asked of the asset manifest, not by loading the file: these MP3s are
+  /// 6-11MB each and the admin screen checks all ten, so loading them to
+  /// answer a yes/no question would pull ~80MB into memory for nothing.
+  static Future<bool> bundledAudioExists(String songTitle) async {
+    final path = getAudioUrl(songTitle);
+    if (path == null) return false;
+    try {
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      return manifest.listAssets().contains(path);
+    } catch (_) {
+      return false;
+    }
   }
 
   static bool hasAudio(String songTitle) =>

@@ -19,13 +19,13 @@ import 'freestyle_results_page.dart';
 /// Records a take and sends it for note/word/timestamp analysis.
 ///
 /// Used by two modes. With no song passed in it's Freestyle Karaoke: just
-/// sing. With a song and lyrics from the online search it's Analysis
-/// Karaoke — the same recording and the same analysis, with the lyrics
-/// shown to sing along to. Deliberately one page: the two modes differ only
-/// in whether there are words on screen, and there's no reference melody in
+/// sing. With a song and lyrics from the online search it's Search & Sing
+/// — the same recording and the same analysis, with the lyrics shown to
+/// sing along to. Deliberately one page: the two modes differ only in
+/// whether there are words on screen, and there's no reference melody in
 /// either case, so nothing about the capture or analysis changes.
 class FreestyleRecordingPage extends StatefulWidget {
-  /// Null in Freestyle mode; the chosen song in Analysis mode.
+  /// Null in Freestyle mode; the chosen song in Search & Sing.
   final String? songTitle;
   final String? songArtist;
 
@@ -45,7 +45,7 @@ class FreestyleRecordingPage extends StatefulWidget {
     this.backingTrackVideoId,
   });
 
-  bool get isAnalysisMode => songTitle != null;
+  bool get isSearchAndSing => songTitle != null;
 
   @override
   State<FreestyleRecordingPage> createState() =>
@@ -333,10 +333,12 @@ class _FreestyleRecordingPageState
               durationSeconds: durationSecs,
               wavBytes: wavBytes,
               pcmSamples: _pcmBytesToInt16(pcmBytes),
-              // Analysis Karaoke knows the song's words; Freestyle doesn't.
+              // Search & Sing knows the song's words; Freestyle doesn't.
               expectedLyrics: widget.lyrics.isEmpty
                   ? null
                   : widget.lyrics.map((l) => l.text).join(' '),
+              songTitle: widget.songTitle,
+              songArtist: widget.songArtist,
             ),
           ),
         );
@@ -533,7 +535,7 @@ class _FreestyleRecordingPageState
     );
   }
 
-  // ── Backing track (Analysis Karaoke) ───────────────────────────────────────
+  // ── Backing track (Search & Sing) ───────────────────────────────────────
 
   /// The chosen minus-one, streamed through YouTube's embedded player.
   ///
@@ -576,7 +578,7 @@ class _FreestyleRecordingPageState
     );
   }
 
-  // ── Lyrics (Analysis Karaoke) ──────────────────────────────────────────────
+  // ── Lyrics (Search & Sing) ──────────────────────────────────────────────
 
   /// The chosen song's words, to sing along to.
   ///
@@ -702,13 +704,13 @@ class _FreestyleRecordingPageState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: widget.isAnalysisMode ? 18 : 24,
+                    fontSize: widget.isSearchAndSing ? 18 : 24,
                     fontWeight: FontWeight.bold,
                     color: AppColors.white,
                     fontFamily: 'Roboto',
                   ),
                 ),
-                if (widget.isAnalysisMode &&
+                if (widget.isSearchAndSing &&
                     (widget.songArtist ?? '').isNotEmpty)
                   Text(
                     widget.songArtist!,

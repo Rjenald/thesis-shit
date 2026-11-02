@@ -233,9 +233,9 @@ class SessionStorageService {
     accounts.add({
       'username': username,
       'password': password,
-      if (firstName != null) 'firstName': firstName,
-      if (lastName != null) 'lastName': lastName,
-      if (email != null) 'email': email,
+      'firstName': ?firstName,
+      'lastName': ?lastName,
+      'email': ?email,
     });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(

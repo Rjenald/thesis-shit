@@ -1,4 +1,4 @@
-/// Configuration for YouTube Data API search, used by Analysis Karaoke to
+/// Configuration for YouTube Data API search, used by Search & Sing to
 /// find a "minus one" backing track for the song the singer picked.
 ///
 /// The key is read from a --dart-define first and falls back to the
@@ -13,8 +13,8 @@
 /// repo gets scraped and your daily quota burned by strangers. The
 /// restrictions below limit the damage but don't prevent it.
 ///
-/// The whole feature is optional — with no key configured, Analysis
-/// Karaoke still works, just a cappella, with no backing track.
+/// The whole feature is optional — with no key configured, Search & Sing
+/// still works, just a cappella, with no backing track.
 library;
 
 import 'dart:io' show Platform;

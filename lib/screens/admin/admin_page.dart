@@ -11,6 +11,7 @@ import '../../services/song_audio_service.dart';
 import '../../services/song_catalog_service.dart';
 import '../../services/song_search_stats_service.dart';
 import '../shared/start_page.dart';
+import 'transcription_eval_page.dart';
 
 /// Admin-only screen for managing each song's backing track and ground-truth
 /// melody. Reached only by logging in with admin credentials — there's no
@@ -30,10 +31,41 @@ class _AdminPageState extends State<AdminPage> {
   bool _usingDefaultPassword = false;
   String? _busyTitle;
 
+  /// Which songs really have their shipped files, by title.
+  ///
+  /// Resolved once rather than per build: an asset's presence can only be
+  /// learned by loading it, and doing that inside build() for every song
+  /// on every frame would load the whole catalog repeatedly. Absent from
+  /// the map means "not checked yet", which the card shows as "Checking…"
+  /// instead of guessing.
+  final Map<String, bool> _bundledAudio = {};
+  final Map<String, bool> _bundledGroundTruth = {};
+
   @override
   void initState() {
     super.initState();
     _checkPassword();
+    _checkBundledMedia();
+  }
+
+  /// Asks the bundle what is actually there.
+  ///
+  /// This is the whole point of the screen — an admin needs to know which
+  /// songs are missing a backing track or a reference melody — and it was
+  /// answered from the catalog instead of the bundle, so every catalogued
+  /// song reported "Built-in" whether or not a file existed.
+  Future<void> _checkBundledMedia() async {
+    for (final song in SongCatalogService.allSongs) {
+      final title = song['title'] ?? '';
+      if (title.isEmpty) continue;
+      final audio = await SongAudioService.bundledAudioExists(title);
+      final gt = await GroundTruthService.bundledGroundTruthExists(title);
+      if (!mounted) return;
+      setState(() {
+        _bundledAudio[title] = audio;
+        _bundledGroundTruth[title] = gt;
+      });
+    }
   }
 
   Future<void> _checkPassword() async {
@@ -335,6 +367,15 @@ class _AdminPageState extends State<AdminPage> {
                 fontFamily: 'Roboto')),
         actions: [
           IconButton(
+            tooltip: 'Transcription accuracy',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const TranscriptionEvalPage()),
+            ),
+            icon: const Icon(Icons.science_outlined, color: AppColors.white),
+          ),
+          IconButton(
             tooltip: 'Change password',
             onPressed: _changePassword,
             icon: const Icon(Icons.lock_outline, color: AppColors.white),
@@ -375,6 +416,8 @@ class _AdminPageState extends State<AdminPage> {
               title: song['title'] ?? '',
               artist: song['artist'] ?? '',
               busy: _busyTitle == song['title'],
+              bundledAudio: _bundledAudio[song['title'] ?? ''],
+              bundledGroundTruth: _bundledGroundTruth[song['title'] ?? ''],
               onUploadAudio: () => _uploadAudio(song['title'] ?? ''),
               onUploadGroundTruth: () =>
                   _uploadGroundTruth(song['title'] ?? ''),
@@ -391,8 +434,8 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  /// What people actually searched for and chose to sing in Analysis
-  /// Karaoke. This is the queue for authoring work: the songs at the top
+  /// What people actually searched for and chose to sing in Search &
+  /// Sing. This is the queue for authoring work: the songs at the top
   /// are the ones worth hand-authoring a ground truth for, so Scored
   /// Karaoke grows toward real demand instead of guesswork.
   Widget _buildSearchDemand() {
@@ -454,7 +497,7 @@ class _AdminPageState extends State<AdminPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Searched and sung in Analysis Karaoke',
+                'Searched and sung in Search & Sing',
                 style: TextStyle(
                   color: AppColors.grey.withValues(alpha: 0.65),
                   fontSize: 10.5,
@@ -584,6 +627,16 @@ class _SongAdminCard extends StatelessWidget {
   final String title;
   final String artist;
   final bool busy;
+
+  /// Whether the shipped files are really present.
+  ///
+  /// Resolved by the parent, because an asset's presence can only be
+  /// learned by trying to load it, and build() cannot await. Null while
+  /// that is still in flight, which the row shows as "Checking…" rather
+  /// than guessing.
+  final bool? bundledAudio;
+  final bool? bundledGroundTruth;
+
   final VoidCallback onUploadAudio;
   final VoidCallback onUploadGroundTruth;
   final void Function(bool hasBundledFallback) onDeleteAudio;
@@ -594,6 +647,8 @@ class _SongAdminCard extends StatelessWidget {
     required this.title,
     required this.artist,
     required this.busy,
+    required this.bundledAudio,
+    required this.bundledGroundTruth,
     required this.onUploadAudio,
     required this.onUploadGroundTruth,
     required this.onDeleteAudio,
@@ -604,10 +659,8 @@ class _SongAdminCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uploadedAudio = AdminMediaService.audioPathFor(title) != null;
-    final bundledAudio = SongAudioService.getAudioUrl(title) != null;
     final uploadedGroundTruth =
         AdminMediaService.groundTruthPathFor(title) != null;
-    final bundledGroundTruth = GroundTruthService.hasBundledGroundTruth(title);
     final isCustom = AdminMediaService.isCustomSong(title);
 
     return Container(
@@ -672,7 +725,7 @@ class _SongAdminCard extends StatelessWidget {
             uploaded: uploadedAudio,
             bundled: bundledAudio,
             onUpload: busy ? null : onUploadAudio,
-            onDelete: busy ? null : () => onDeleteAudio(bundledAudio),
+            onDelete: busy ? null : () => onDeleteAudio(bundledAudio == true),
           ),
           const SizedBox(height: 8),
           _mediaRow(
@@ -681,7 +734,9 @@ class _SongAdminCard extends StatelessWidget {
             uploaded: uploadedGroundTruth,
             bundled: bundledGroundTruth,
             onUpload: busy ? null : onUploadGroundTruth,
-            onDelete: busy ? null : () => onDeleteGroundTruth(bundledGroundTruth),
+            onDelete: busy
+                ? null
+                : () => onDeleteGroundTruth(bundledGroundTruth == true),
           ),
         ],
       ),
@@ -692,17 +747,22 @@ class _SongAdminCard extends StatelessWidget {
     required IconData icon,
     required String label,
     required bool uploaded,
-    required bool bundled,
+    required bool? bundled,
     required VoidCallback? onUpload,
     required VoidCallback? onDelete,
   }) {
-    // Three honest states: an admin upload in use, the shipped file in use,
-    // or nothing at all.
+    // Four states. "Built-in" used to be claimed for any catalogued song
+    // whether or not the file existed, so "Missing" was unreachable and
+    // this row said a melody was shipped for all ten songs while nine had
+    // none. `bundled` is now the result of actually loading the asset,
+    // and null while that is still resolving.
     final (String status, Color color) = uploaded
         ? ('Uploaded', AppColors.primaryCyan)
-        : bundled
-            ? ('Built-in', const Color(0xFF4CAF50))
-            : ('Missing', AppColors.grey);
+        : bundled == null
+            ? ('Checking…', AppColors.grey)
+            : bundled
+                ? ('Built-in', const Color(0xFF4CAF50))
+                : ('Missing', AppColors.errorRed);
 
     return Row(
       children: [

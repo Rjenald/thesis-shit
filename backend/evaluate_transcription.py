@@ -22,6 +22,15 @@ USAGE
     python evaluate_transcription.py clips.json            # score
     python evaluate_transcription.py before.json after.json  # compare runs
 
+For a whole dataset, transcribing by hand is not possible. Instead:
+
+    python fetch_eval_datasets.py --out clips            # build the folder
+    adb push clips/. /storage/emulated/0/Android/data/\
+        com.example.final_thesis_ui/files/eval_clips/
+    # in the app: Admin -> Transcription accuracy -> Transcribe all clips
+    adb pull .../files/eval_clips/hypotheses.json
+    python evaluate_transcription.py clips/clips.json --merge hypotheses.json
+
 NORMALIZATION POLICY (fixed before any measurement, per Phase 6)
 ----------------------------------------------------------------
 Applied identically to reference and hypothesis:
@@ -168,6 +177,46 @@ def report(result: dict, label: str) -> None:
             print(f"     hyp: {r['hyp'][:88]}")
 
 
+def merge_hypotheses(clips: list[dict], hyp_path: Path) -> list[dict]:
+    """Fills each clip's `hypothesis` from the app's hypotheses.json.
+
+    The app (Admin -> Transcription accuracy) writes one row per clip,
+    keyed by the WAV's filename stem. Matching is by that id and nothing
+    else, so a renamed or missing clip surfaces as a warning rather than
+    silently scoring a reference against the wrong audio.
+    """
+    payload = json.loads(hyp_path.read_text(encoding="utf-8"))
+    rows = payload.get("results", payload) if isinstance(payload, dict) else payload
+    by_id = {r["id"]: r for r in rows if isinstance(r, dict) and "id" in r}
+
+    prompted = sorted(r["id"] for r in by_id.values() if r.get("prompted"))
+    filled, missing = 0, []
+    for c in clips:
+        row = by_id.pop(c.get("id"), None)
+        if row is None:
+            missing.append(c.get("id"))
+            continue
+        c["hypothesis"] = row.get("hypothesis", "")
+        filled += 1
+
+    print(f"Merged {filled} hypotheses from {hyp_path.name}")
+    if missing:
+        print(f"  !! {len(missing)} clip(s) have no transcription yet: "
+              f"{', '.join(str(m) for m in missing[:8])}"
+              f"{' …' if len(missing) > 8 else ''}")
+    if by_id:
+        print(f"  !! {len(by_id)} transcription(s) match no clip in the "
+              f"reference file: {', '.join(sorted(by_id)[:8])}"
+              f"{' …' if len(by_id) > 8 else ''}")
+    if prompted:
+        # initialPrompt biases the decoder toward the words it is given, so
+        # these are not comparable to an unprompted run and must not be
+        # pooled with one.
+        print(f"  !! {len(prompted)} clip(s) were decoded WITH a prompt. "
+              f"Report them as a separate condition, never as a plain WER.")
+    return clips
+
+
 def make_template(path: Path) -> None:
     clips = []
     for cat in CATEGORIES:
@@ -197,6 +246,9 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("files", nargs="*", type=Path)
     ap.add_argument("--init", type=Path, help="write a blank template and exit")
+    ap.add_argument("--merge", type=Path,
+                    help="hypotheses.json exported from the app; fills in "
+                         "each clip's hypothesis by matching on clip id")
     args = ap.parse_args()
 
     if args.init:
@@ -205,6 +257,12 @@ def main() -> int:
     if not args.files:
         ap.print_help()
         return 1
+    if args.merge and len(args.files) != 1:
+        print("--merge takes exactly one reference file")
+        return 1
+    if args.merge and not args.merge.exists():
+        print(f"missing: {args.merge}")
+        return 1
 
     results = []
     for f in args.files:
@@ -212,6 +270,8 @@ def main() -> int:
             print(f"missing: {f}")
             return 1
         clips = json.loads(f.read_text(encoding="utf-8"))
+        if args.merge:
+            clips = merge_hypotheses(clips, args.merge)
         r = score(clips)
         report(r, f.stem)
         results.append((f.stem, r))

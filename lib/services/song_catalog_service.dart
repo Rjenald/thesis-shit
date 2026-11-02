@@ -14,10 +14,12 @@ class CatalogSong {
   /// at least one entry is not.
   final String language;
 
-  /// Cover art URL, empty when none is known. Every place that renders this
-  /// has an errorBuilder falling back to a placeholder, so an empty or
-  /// unreachable URL degrades to an icon rather than a broken image — which
-  /// also covers running offline, since these are remote.
+  /// Cover art, overriding the bundled asset. Normally empty.
+  ///
+  /// The catalog used to carry remote URLs here and most were unknown, so
+  /// songs showed a placeholder icon — and the ones that did have a URL
+  /// showed nothing offline, in an app whose whole point is working
+  /// offline. The art now ships with the song; see [imagePath].
   final String image;
 
   const CatalogSong({
@@ -32,10 +34,15 @@ class CatalogSong {
   /// `assets/ground_truth/<Title - Artist>.json`.
   String get assetName => '$title - $artist';
 
+  /// Where this song's cover art lives: `assets/covers/<Title - Artist>.jpg`,
+  /// unless [image] overrides it.
+  String get imagePath =>
+      image.isNotEmpty ? image : 'assets/covers/$assetName.jpg';
+
   Map<String, String> toMap() => {
         'title': title,
         'artist': artist,
-        'image': image,
+        'image': imagePath,
         'hasAudio': 'true',
       };
 }
@@ -52,44 +59,33 @@ class CatalogSong {
 /// and add a line here. pubspec bundles both folders wholesale, so there is
 /// nothing else to register.
 class SongCatalogService {
+  /// Exactly the ten tracks in assets/audio/, in filename order.
+  ///
+  /// This list and that folder have to agree: a song listed here with no
+  /// `<Title> - <Artist>.mp3` beside it is offered in the app and then
+  /// dead-ends. `backend/check_ground_truth.py` reports any drift, and
+  /// test/all_songs_ground_truth_test.dart fails on it.
   static const List<CatalogSong> bundled = [
+    // No `image` on any of these. Cover art now ships with the song as
+    // `assets/covers/<Title - Artist>.jpg` (see CatalogSong.imagePath),
+    // so there is no URL to go stale and nothing to fetch — which is
+    // what this app being offline-first requires. The remote URLs that
+    // used to sit here worked only while online, and only three of the
+    // ten had one at all.
     CatalogSong(title: 'Araw-Araw', artist: 'Ben&Ben'),
-    CatalogSong(title: 'Binibini', artist: 'Zack Tabudlo'),
-    CatalogSong(
-      title: 'Dadalhin',
-      artist: 'Alcasid',
-      image: 'https://media.philstar.com/photos/2022/04/19/'
-          'regine-1_2022-04-19_17-19-51.jpg',
-    ),
-    CatalogSong(title: 'Ere', artist: 'Juan Karlos'),
-    CatalogSong(
-      title: 'Fallen',
-      artist: 'Lola Amour',
-      // Sung entirely in English; its bundled lyrics contain no Tagalog.
-      language: 'en',
-      image: 'https://images.genius.com/'
-          'b62c08396330faf55dae7e6a73b26324.1000x1000x1.png',
-    ),
-    CatalogSong(title: 'Mula Sa Puso', artist: 'Regine Velasquez'),
-    CatalogSong(
-      title: 'Nasa Iyo Na Ang Lahat',
-      artist: 'Daniel Padilla',
-      image: 'https://images.genius.com/'
-          'e817d67292e5c1ac1e72b0c8573161e5.900x900x1.jpg',
-    ),
-    CatalogSong(
-      title: 'Paalam Muna Sandali',
-      artist: 'Darren',
-      image: 'https://tse4.mm.bing.net/th/id/'
-          'OIP.X4OeqoB_8615vepJpu2zdQHaE7?rs=1&pid=ImgDetMain&o=7&rm=3',
-    ),
-    CatalogSong(title: 'Tahanan', artist: 'Adie'),
-    CatalogSong(
-      title: 'Ulap',
-      artist: 'Rob Daniel',
-      image: 'https://tse3.mm.bing.net/th/id/'
-          'OIP.4AnzA3S0-AUEBFjst492KwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3',
-    ),
+    CatalogSong(title: 'Buwan', artist: 'Juan Karlos'),
+    // Regine Velasquez's recording, not Ogie Alcasid's — the earlier
+    // catalog credited Alcasid against a different backing track, and the
+    // bundled lyric timings belong to that older recording.
+    CatalogSong(title: 'Dadalhin', artist: 'Regine Velasquez'),
+    // Sung entirely in English; its bundled lyrics contain no Tagalog.
+    CatalogSong(title: 'Fallen', artist: 'Lola Amour', language: 'en'),
+    CatalogSong(title: 'Ikaw Lang', artist: 'NOBITA'),
+    CatalogSong(title: 'Kumpas', artist: 'Moira Dela Torre'),
+    CatalogSong(title: 'Mundo', artist: 'IV Of Spades'),
+    CatalogSong(title: 'Nasa Iyo Na Ang Lahat', artist: 'Daniel Padilla'),
+    CatalogSong(title: 'Pano', artist: 'Zack Tabudlo'),
+    CatalogSong(title: 'Randomantic', artist: 'James Reid'),
   ];
 
   /// The bundled songs, ignoring anything an admin added.

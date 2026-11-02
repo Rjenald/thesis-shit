@@ -50,6 +50,15 @@ import 'note_utils.dart';
 ///    ground-truth syllable is often much shorter than a Whisper word.
 ///  - Target vs actual is compared in cents via [analyzeFrequency]
 ///    (1200 * log2(actual/target)), classified against [toleranceCents].
+/// How far outside a syllable's own window the builder will reach for the
+/// nearest confident frame when nothing landed inside it.
+///
+/// Shared rather than a bare default, because the pitch analysis uses it to
+/// decide how wide a window to actually run the model over: if the two
+/// numbers drifted apart, analysis would stop producing a frame that this
+/// builder still expects to be able to fall back on.
+const int kNearestFrameToleranceMs = 80;
+
 List<SingingSegment> buildSingingSegments({
   required List<GroundTruthSyllable> groundTruth,
   required List<PitchFrame> pitchFrames,
@@ -58,7 +67,7 @@ List<SingingSegment> buildSingingSegments({
   List<TranscribedWord> recognizedWords = const [],
   double confidenceThreshold = kDefaultPitchConfidenceThreshold,
   double toleranceCents = kDefaultPitchToleranceCents,
-  int nearestFrameToleranceMs = 80,
+  int nearestFrameToleranceMs = kNearestFrameToleranceMs,
   int nearestWordToleranceMs = 400,
 }) {
   // Only the portion of the ground truth actually covered by this
