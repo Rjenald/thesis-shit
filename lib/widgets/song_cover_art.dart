@@ -26,6 +26,7 @@ class SongCoverArt extends StatelessWidget {
     this.height,
     this.borderRadius = 10,
     this.iconSize,
+    this.placeholderIcon = Icons.music_note,
   });
 
   /// Asset path, http(s) URL, absolute file path, or empty.
@@ -44,6 +45,10 @@ class SongCoverArt extends StatelessWidget {
   /// Placeholder icon size. Scales with the box when not given, so a 56px
   /// thumbnail and a 300px card both look deliberate.
   final double? iconSize;
+
+  /// What to draw when there is no image. A note suits a song; the home
+  /// page's artist row passes a person instead.
+  final IconData placeholderIcon;
 
   double get _w => width ?? size;
   double get _h => height ?? size;
@@ -104,7 +109,7 @@ class SongCoverArt extends StatelessWidget {
         height: _h,
         color: AppColors.primaryCyan.withValues(alpha: 0.12),
         child: Icon(
-          Icons.music_note,
+          placeholderIcon,
           color: AppColors.primaryCyan,
           size: iconSize ?? (_w < _h ? _w : _h) * 0.36,
         ),

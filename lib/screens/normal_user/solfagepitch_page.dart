@@ -280,16 +280,22 @@ class _SolfegePitchPageState extends State<SolfegePitchPage>
                       if (context.mounted) Navigator.pop(context);
                     },
                   ),
-                  const Text(
-                    'Solfege Pitch',
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Roboto',
+                  // Expanded, and no Spacer: the title plus the live
+                  // badge was a few pixels wider than a narrow screen,
+                  // and the badge is the part that got clipped.
+                  const Expanded(
+                    child: Text(
+                      'Solfege Pitch',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   if (_isListening)
                     AnimatedBuilder(
                       animation: _pulseController,
@@ -670,9 +676,6 @@ class _SolfegePitchPageState extends State<SolfegePitchPage>
 
             BottomNavBar(
               currentIndex: 3,
-              onTap: (index) {
-                if (index != 3) Navigator.pop(context);
-              },
             ),
                 ],
               ),

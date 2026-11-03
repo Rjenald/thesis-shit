@@ -191,7 +191,9 @@ class _TranscriptionEvalPageState extends State<TranscriptionEvalPage> {
                 const Icon(Icons.science_outlined,
                     color: AppColors.primaryCyan, size: 18),
                 const SizedBox(width: 8),
-                _label('What this measures'),
+                // Expanded so the heading wraps instead of running off a
+                // narrow screen.
+                Expanded(child: _label('What this measures')),
               ],
             ),
             const SizedBox(height: 10),
@@ -218,7 +220,7 @@ class _TranscriptionEvalPageState extends State<TranscriptionEvalPage> {
                   strokeWidth: 2, color: AppColors.primaryCyan),
             ),
             const SizedBox(width: 12),
-            _body('Reading the clips folder…'),
+            Expanded(child: _body('Reading the clips folder…')),
           ],
         ),
       );

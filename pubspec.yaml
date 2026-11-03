@@ -75,3 +75,4 @@ flutter:
     - assets/models/
     - assets/ground_truth/
     - assets/covers/
+    - assets/artists/

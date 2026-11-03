@@ -130,6 +130,17 @@ class AdminMediaService {
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Expected a JSON object at the top level.');
     }
+    // The extraction notebook writes two JSON files per song and the file
+    // picker offers both, because both end in .json. Naming the mistake
+    // beats "expected a data list": the word-timing file is a perfectly
+    // valid file, just not this one.
+    if (decoded.containsKey('words') && !decoded.containsKey('data')) {
+      throw const FormatException(
+          'That is the word-timing file (<song>.words.json). The app does '
+          'not use it — it feeds the lyric-timing script at build time. '
+          'Pick the notes file, <song>.json, instead.');
+    }
+
     final data = decoded['data'];
     if (data is! List || data.isEmpty) {
       throw const FormatException(

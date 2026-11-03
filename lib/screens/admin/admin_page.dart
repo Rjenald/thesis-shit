@@ -238,18 +238,26 @@ class _AdminPageState extends State<AdminPage> {
       ),
     );
 
-    if (added != true) return;
+    // Disposed on every path, including the cancel one: these are built
+    // per dialog, so leaving them undisposed leaks a controller each time
+    // the dialog is opened.
     try {
-      await AdminMediaService.addCustomSong(
-        title: titleCtrl.text,
-        artist: artistCtrl.text,
-        titleAlreadyInCatalog:
-            SongCatalogService.containsTitle(titleCtrl.text),
-      );
-      if (mounted) setState(() {});
-      _toast('"${titleCtrl.text.trim()}" added. Upload its MP3 next.');
-    } on StateError catch (e) {
-      _toast(e.message, isError: true);
+      if (added != true) return;
+      try {
+        await AdminMediaService.addCustomSong(
+          title: titleCtrl.text,
+          artist: artistCtrl.text,
+          titleAlreadyInCatalog:
+              SongCatalogService.containsTitle(titleCtrl.text),
+        );
+        if (mounted) setState(() {});
+        _toast('"${titleCtrl.text.trim()}" added. Upload its MP3 next.');
+      } on StateError catch (e) {
+        _toast(e.message, isError: true);
+      }
+    } finally {
+      titleCtrl.dispose();
+      artistCtrl.dispose();
     }
   }
 
@@ -326,19 +334,26 @@ class _AdminPageState extends State<AdminPage> {
       ),
     );
 
-    if (submitted != true) return;
-    if (newCtrl.text.trim().length < 4) {
-      _toast('Pick a password of at least 4 characters.', isError: true);
-      return;
+    // Same as _addSong: four early returns below, and every one of them
+    // used to leak the two controllers.
+    try {
+      if (submitted != true) return;
+      if (newCtrl.text.trim().length < 4) {
+        _toast('Pick a password of at least 4 characters.', isError: true);
+        return;
+      }
+      final changed = await SessionStorageService.changeAdminPassword(
+          currentCtrl.text, newCtrl.text.trim());
+      if (!changed) {
+        _toast('That current password is incorrect.', isError: true);
+        return;
+      }
+      await _checkPassword();
+      _toast('Admin password updated.');
+    } finally {
+      currentCtrl.dispose();
+      newCtrl.dispose();
     }
-    final changed = await SessionStorageService.changeAdminPassword(
-        currentCtrl.text, newCtrl.text.trim());
-    if (!changed) {
-      _toast('That current password is incorrect.', isError: true);
-      return;
-    }
-    await _checkPassword();
-    _toast('Admin password updated.');
   }
 
   void _logout() {
@@ -768,16 +783,23 @@ class _SongAdminCard extends StatelessWidget {
       children: [
         Icon(icon, size: 15, color: AppColors.grey.withValues(alpha: 0.8)),
         const SizedBox(width: 8),
-        SizedBox(
-          width: 94,
+        // Expanded rather than a fixed 94px: at that width the row —
+        // label, status pill and two icon buttons — was wider than the
+        // card on a narrow phone, and the delete button was cut off.
+        // Letting the label absorb the slack also right-aligns the pills
+        // across the three rows, which the Spacer used to do.
+        Expanded(
           child: Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
                 color: AppColors.grey.withValues(alpha: 0.9),
                 fontSize: 12.5,
                 fontFamily: 'Roboto'),
           ),
         ),
+        const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
@@ -794,7 +816,6 @@ class _SongAdminCard extends StatelessWidget {
                 fontFamily: 'Roboto'),
           ),
         ),
-        const Spacer(),
         IconButton(
           tooltip: 'Upload',
           onPressed: onUpload,

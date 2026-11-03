@@ -1,4 +1,3 @@
-import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/song_cover_art.dart';
@@ -9,8 +8,6 @@ import '../../services/session_storage_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/result_share_sheet.dart';
 import '../../widgets/shareable_result_card.dart';
-import 'home_page.dart';
-import 'record_selection_page.dart';
 import 'results_page.dart';
 import 'freestyle_results_page.dart';
 
@@ -69,28 +66,6 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> _deleteFreeSing(FreestyleSummary summary) async {
     await FreestyleStorageService.deleteSummary(summary.id);
     await _loadAll();
-  }
-
-  void _onItemTapped(int index) {
-    if (index == 0) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const HomePage(),
-        ),
-        (route) => false,
-      );
-    } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const RecordSelectionPage()),
-      );
-    } else if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const EducationModePage()),
-      );
-    }
   }
 
   @override
@@ -172,7 +147,7 @@ class _LibraryPageState extends State<LibraryPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 1, onTap: _onItemTapped),
+      bottomNavigationBar: BottomNavBar(currentIndex: 1),
     );
   }
 

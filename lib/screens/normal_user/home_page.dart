@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/song_cover_art.dart';
@@ -10,7 +9,6 @@ import '../../services/song_catalog_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/profile_avatar.dart';
 import 'favorites_page.dart';
-import 'library_page.dart';
 import 'song_player_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
@@ -94,22 +92,6 @@ class _HomePageState extends State<HomePage> {
 
   // ── Navigation ─────────────────────────────────────────────────────────────
 
-  void _onItemTapped(int index) {
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LibraryPage()),
-      );
-    } else if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const EducationModePage()),
-      );
-    } else {
-      setState(() {});
-    }
-  }
-
   void _openSong(Map<String, String> song) {
     final title = song['title'] ?? '';
     final artist = song['artist'] ?? '';
@@ -175,7 +157,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 0, onTap: _onItemTapped),
+      bottomNavigationBar: BottomNavBar(currentIndex: 0),
     );
   }
 
@@ -473,13 +455,20 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Roboto',
+          // Flexible so a long heading yields to the trailing label
+          // instead of pushing it off the row, which is what happened at
+          // a larger system font size.
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
             ),
           ),
           if (trailing != null)
@@ -539,8 +528,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Unique artists from the catalog, each represented by their first song's
-  // art. Tapping one runs a search for that artist.
+  // Unique artists from the catalog, each with their own photo. Tapping one
+  // runs a search for that artist.
+  //
+  // The photo used to be the artist's first song's cover, so a row headed
+  // "Artists" showed ten album sleeves — and the same sleeve twice over
+  // for anyone with two songs in the catalog.
   List<Map<String, String>> _groupedArtists() {
     final seen = <String>{};
     final result = <Map<String, String>>[];
@@ -548,7 +541,13 @@ class _HomePageState extends State<HomePage> {
       final artist = song['artist'] ?? '';
       if (artist.isEmpty || seen.contains(artist)) continue;
       seen.add(artist);
-      result.add({'artist': artist, 'image': song['image'] ?? ''});
+      result.add({
+        'artist': artist,
+        // An admin-added artist has no bundled photo, so this names a
+        // file that is not there; SongCoverArt draws the person icon
+        // rather than a broken image.
+        'image': SongCatalogService.artistImageFor(artist),
+      });
     }
     return result;
   }
@@ -753,27 +752,17 @@ class _HomePageState extends State<HomePage> {
               margin: const EdgeInsets.only(right: 14),
               child: Column(
                 children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF1E1E1E),
-                      image: image.isNotEmpty
-                          ? DecorationImage(
-                              image: NetworkImage(image),
-                              fit: BoxFit.cover,
-                              onError: (_, _) {},
-                            )
-                          : null,
-                    ),
-                    child: image.isEmpty
-                        ? const Icon(
-                            Icons.person,
-                            color: AppColors.primaryCyan,
-                            size: 28,
-                          )
-                        : null,
+                  // NetworkImage used to load this, which stopped working
+                  // the moment the art became a bundled asset: an asset
+                  // path is not a URL, the fetch failed, and `onError`
+                  // swallowed it — so the row drew ten empty circles with
+                  // nothing in the logs to say why.
+                  SongCoverArt(
+                    image: image,
+                    size: 72,
+                    borderRadius: 36,
+                    placeholderIcon: Icons.person,
+                    iconSize: 28,
                   ),
                   const SizedBox(height: 8),
                   Text(

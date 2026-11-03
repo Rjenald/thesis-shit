@@ -447,9 +447,6 @@ class _VoiceClassificationPageState extends State<VoiceClassificationPage> {
             // ── Bottom Nav ───────────────────────────────────────────────────
             BottomNavBar(
               currentIndex: 3,
-              onTap: (index) {
-                if (index != 3) Navigator.pop(context);
-              },
             ),
                 ],
               ),

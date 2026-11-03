@@ -16,6 +16,8 @@
 library;
 
 import 'dart:async';
+import 'dart:isolate';
+import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -88,6 +90,14 @@ class OnDeviceCrepeService implements PitchDetectionService {
   /// Batch size the input tensor is currently sized for, so [_setBatchSize]
   /// can skip a resize it doesn't need.
   int _currentBatch = 1;
+
+  /// The offline sweep currently running in a worker isolate, if any.
+  ///
+  /// Held so teardown can wait for it: the worker drives this instance's
+  /// interpreter through a raw native address, and closing the
+  /// interpreter underneath it would be a use-after-free in C, not a Dart
+  /// exception.
+  Future<_SweepResult>? _offlineJob;
 
   StreamController<NoteResult?>? _resultController;
   @override
@@ -247,7 +257,11 @@ class OnDeviceCrepeService implements PitchDetectionService {
   /// Takes a source offset rather than a pre-sliced frame so the batch
   /// path can read straight out of the recording's PCM without allocating
   /// a 1024-element list per hop.
-  bool _preprocessInto(
+  /// Static so the offline worker isolate runs this exact code rather
+  /// than a copy of it — the claim that moving the sweep off the UI
+  /// isolate changes nothing about the result depends on the arithmetic
+  /// being literally the same function.
+  static bool _preprocessInto(
     List<int> pcm,
     int start,
     Float32List dest,
@@ -311,7 +325,8 @@ class OnDeviceCrepeService implements PitchDetectionService {
 
   /// Standard CREPE decode of one frame's 360 activations, starting at
   /// `frameIndex * 360` in [activations].
-  _FrameResult _decodeActivation(Float32List activations, int frameIndex) {
+  static _FrameResult _decodeActivation(
+      Float32List activations, int frameIndex) {
     final base = frameIndex * _activationBins;
     var peakBin = 0;
     var peakVal = activations[base];
@@ -398,78 +413,56 @@ class OnDeviceCrepeService implements PitchDetectionService {
       windows,
     );
 
+    // Int16List rather than whatever List<int> the caller had: it is what
+    // crosses to the worker, and a plain List<int> would be copied element
+    // by element as boxed integers.
+    final samples = pcm16Samples is Int16List
+        ? pcm16Samples
+        : Int16List.fromList(pcm16Samples);
+
     final sw = Stopwatch()..start();
-    final frames = <PitchFrame>[];
-    final batch = Float32List(batchSize * _frameSize);
-    // Starts whose frame cleared the VAD gate and so still needs the model.
-    final pending = <int>[];
-    var gated = 0;
-    var inferences = 0;
 
-    void flushInto(Float32List activations, int count) {
-      for (var i = 0; i < count; i++) {
-        final r = _decodeActivation(activations, i);
-        frames.add(PitchFrame(
-          timeMs: (pending[i] / _sampleRate * 1000).round(),
-          frequency: r.frequency,
-          confidence: r.confidence,
+    // The sweep runs in a worker isolate. invoke() is a blocking FFI call
+    // with no await point inside it, so on the UI isolate every batch
+    // froze the interface for as long as the batch took — a three-minute
+    // freestyle take is ~3600 hops, which is tens of seconds of a
+    // stuttering "Analyzing…" screen. Yielding between batches did not
+    // help much: the yield is between the freezes, not during them.
+    //
+    // The interpreter is handed over by native address, not copied: the
+    // model is 44 MB and copying it per analysis would spike memory on
+    // exactly the low-end phones this is meant to help. That makes the
+    // native object shared, so nothing else may touch it while the worker
+    // runs — [dispose] waits on [_offlineJob] for that reason, and the
+    // live-mic path uses its own OnDeviceCrepeService instance.
+    final address = _interpreter!.address;
+    final job = Isolate.run(() => _sweepOffline(
+          address,
+          samples,
+          starts,
+          batchSize,
         ));
-      }
+    _offlineJob = job;
+    final _SweepResult swept;
+    try {
+      swept = await job;
+    } finally {
+      _offlineJob = null;
     }
+    // The worker resized the shared interpreter's input tensor, so the
+    // live path's idea of the current batch size is stale.
+    _currentBatch = swept.lastBatch;
 
-    Future<void> runPending() async {
-      if (pending.isEmpty) return;
-      final count = pending.length;
-      try {
-        final activations = _infer(
-          count == batchSize
-              ? batch
-              : Float32List.view(batch.buffer, 0, count * _frameSize),
-          count,
-        );
-        flushInto(activations, count);
-        inferences += count;
-      } catch (e) {
-        debugPrint('CREPE batch inference error: $e');
-        for (final start in pending) {
-          frames.add(PitchFrame(
-            timeMs: (start / _sampleRate * 1000).round(),
-            frequency: 0,
-            confidence: 0,
-          ));
-        }
-      }
-      pending.clear();
-      // invoke() is a blocking FFI call with no await point inside it.
-      // Yielding once per batch — rather than once per frame as before —
-      // keeps the UI and any concurrent work (Whisper) alive without
-      // paying for a timer round trip on every single hop.
-      await Future<void>.delayed(Duration.zero);
-    }
+    final frames = <PitchFrame>[
+      for (var i = 0; i < swept.timesMs.length; i++)
+        PitchFrame(
+          timeMs: swept.timesMs[i],
+          frequency: swept.frequencies[i],
+          confidence: swept.confidences[i],
+        ),
+    ];
 
-    for (final start in starts) {
-      final ok = _preprocessInto(
-        pcm16Samples,
-        start,
-        batch,
-        pending.length * _frameSize,
-      );
-      if (!ok) {
-        // Silence never reaches the model, so it costs nothing.
-        gated++;
-        frames.add(PitchFrame(
-          timeMs: (start / _sampleRate * 1000).round(),
-          frequency: 0,
-          confidence: 0,
-        ));
-        continue;
-      }
-      pending.add(start);
-      if (pending.length == batchSize) await runPending();
-    }
-    await runPending();
-
-    // Frames are appended in VAD/batch order, not time order; downstream
+    // Frames come back in VAD/batch order, not time order; downstream
     // window filters don't care but the gap detection in
     // buildPitchOnlyNotes does, and so does anything reading this as a
     // timeline.
@@ -477,10 +470,11 @@ class OnDeviceCrepeService implements PitchDetectionService {
 
     debugPrint('[CREPE offline] ${sw.elapsedMilliseconds}ms for '
         '${starts.length} hops '
-        '($inferences inferred, $gated silent-skipped, batch=$batchSize'
+        '(${swept.inferences} inferred, ${swept.gated} silent-skipped, '
+        'batch=$batchSize'
         '${windows == null ? '' : ', ${windows.length} windows'})'
-        '${inferences == 0 ? '' : ' — '
-            '${(sw.elapsedMilliseconds / inferences).toStringAsFixed(1)}'
+        '${swept.inferences == 0 ? '' : ' — '
+            '${(sw.elapsedMilliseconds / swept.inferences).toStringAsFixed(1)}'
             'ms per inference'}');
     _logOfflineDiagnostics(frames);
     return frames;
@@ -609,9 +603,25 @@ class OnDeviceCrepeService implements PitchDetectionService {
     await _audioSub?.cancel();
     _audioSub = null;
     await _recorder.stop();
+    await _closeInterpreter();
+    _pcmBuffer.clear();
+  }
+
+  /// Closes the interpreter, but not while a worker isolate is still
+  /// using it. The worker holds a raw native address, so freeing it
+  /// mid-sweep crashes the process rather than throwing.
+  Future<void> _closeInterpreter() async {
+    final job = _offlineJob;
+    if (job != null) {
+      try {
+        await job;
+      } catch (_) {
+        // The sweep's own failure is reported by analyzeOffline; here the
+        // only thing that matters is that the worker has finished.
+      }
+    }
     _interpreter?.close();
     _interpreter = null;
-    _pcmBuffer.clear();
   }
 
   @override
@@ -619,13 +629,141 @@ class OnDeviceCrepeService implements PitchDetectionService {
     _isRunning = false;
     _audioSub?.cancel();
     _audioSub = null;
-    _interpreter?.close();
-    _interpreter = null;
+    // Not awaited — dispose() is synchronous by contract — but the close
+    // itself still waits for any running sweep before freeing the model.
+    _closeInterpreter().ignore();
     _resultController?.close();
     _resultController = null;
     _bytesController.close();
     _recorder.stop().ignore();
   }
+}
+
+/// What one offline sweep produced, in a shape that can cross an isolate
+/// cheaply: parallel typed lists rather than a list of objects.
+class _SweepResult {
+  final Int32List timesMs;
+  final Float64List frequencies;
+  final Float64List confidences;
+
+  /// How many frames reached the model, and how many the VAD gate skipped
+  /// — reported in the timing log, which is how a regression in the gate
+  /// would be noticed.
+  final int inferences;
+  final int gated;
+
+  /// The batch size the shared interpreter's input tensor was left at, so
+  /// the owning isolate can resync rather than assume.
+  final int lastBatch;
+
+  const _SweepResult({
+    required this.timesMs,
+    required this.frequencies,
+    required this.confidences,
+    required this.inferences,
+    required this.gated,
+    required this.lastBatch,
+  });
+}
+
+/// The batch CREPE sweep, as it runs inside the worker isolate.
+///
+/// Top-level because that is what `Isolate.run` can execute, and it only
+/// touches what it is handed plus `OnDeviceCrepeService`'s static frame
+/// maths — the preprocessing and decode are the very same functions the
+/// live path calls, so moving the loop here cannot change a result.
+///
+/// [interpreterAddress] is the native handle of an interpreter owned by
+/// the calling isolate. Nothing else may use it while this runs.
+_SweepResult _sweepOffline(
+  int interpreterAddress,
+  Int16List samples,
+  List<int> starts,
+  int batchSize,
+) {
+  final interpreter = Interpreter.fromAddress(interpreterAddress);
+
+  final timesMs = <int>[];
+  final frequencies = <double>[];
+  final confidences = <double>[];
+
+  final batch = Float32List(batchSize * OnDeviceCrepeService._frameSize);
+  // Starts whose frame cleared the VAD gate and so still needs the model.
+  final pending = <int>[];
+  var gated = 0;
+  var inferences = 0;
+  var currentBatch = -1;
+
+  void record(int start, double frequency, double confidence) {
+    timesMs.add(
+        (start / OnDeviceCrepeService._sampleRate * 1000).round());
+    frequencies.add(frequency);
+    confidences.add(confidence);
+  }
+
+  void runPending() {
+    if (pending.isEmpty) return;
+    final count = pending.length;
+    try {
+      if (currentBatch != count) {
+        interpreter.resizeInputTensor(
+            0, [count, OnDeviceCrepeService._frameSize]);
+        interpreter.allocateTensors();
+        currentBatch = count;
+      }
+      interpreter.getInputTensor(0).setTo(
+            count == batchSize
+                ? batch
+                : Float32List.view(
+                    batch.buffer, 0, count * OnDeviceCrepeService._frameSize),
+          );
+      interpreter.invoke();
+      final bytes = interpreter.getOutputTensor(0).data;
+      final activations = Float32List.view(bytes.buffer, bytes.offsetInBytes,
+          count * OnDeviceCrepeService._activationBins);
+      for (var i = 0; i < count; i++) {
+        final r = OnDeviceCrepeService._decodeActivation(
+            activations, i);
+        record(pending[i], r.frequency, r.confidence);
+      }
+      inferences += count;
+    } catch (e) {
+      // A failed batch becomes silence for those hops rather than losing
+      // the whole sweep — the same behaviour as before this moved here.
+      debugPrint('CREPE batch inference error: $e');
+      for (final start in pending) {
+        record(start, 0, 0);
+      }
+    }
+    pending.clear();
+  }
+
+  for (final start in starts) {
+    final ok = OnDeviceCrepeService._preprocessInto(
+      samples,
+      start,
+      batch,
+      pending.length * OnDeviceCrepeService._frameSize,
+    );
+    if (!ok) {
+      // Silence never reaches the model, so it costs nothing.
+      gated++;
+      record(start, 0, 0);
+      continue;
+    }
+    pending.add(start);
+    if (pending.length == batchSize) runPending();
+  }
+  runPending();
+
+  return _SweepResult(
+    timesMs: Int32List.fromList(timesMs),
+    frequencies: Float64List.fromList(frequencies),
+    confidences: Float64List.fromList(confidences),
+    inferences: inferences,
+    gated: gated,
+    lastBatch: currentBatch,
+  );
 }
 
 /// Internal result of one CREPE frame inference, before it's turned into a

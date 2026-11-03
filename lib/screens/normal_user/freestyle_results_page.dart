@@ -37,10 +37,16 @@ class FreestyleResultsPage extends StatefulWidget {
   final Uint8List? pendingWavBytes;
   final List<int>? pendingPcmSamples;
 
-  /// The song's words in Search & Sing, null in Freestyle. Passed to
-  /// Whisper purely as decoding bias — it never constrains the output, so
-  /// a singer who departs from the lyrics is still transcribed as what
-  /// they actually sang.
+  /// The song's words in Search & Sing, null in Freestyle.
+  ///
+  /// Nothing reads the text itself any more — only whether it is null,
+  /// which is how this screen tells the two modes apart when choosing
+  /// Whisper's language. It used to be handed to the decoder as a bias
+  /// prompt; that was removed when the transcript became something only
+  /// displayed, because biasing toward the lyrics would show the expected
+  /// words to a singer who sang something else (see
+  /// test/transcript_is_unbiased_test.dart). The doc here still described
+  /// the old behaviour, which is worse than no comment.
   final String? expectedLyrics;
 
   /// The song picked in Search & Sing, null in Freestyle. Carried here so
@@ -142,7 +148,11 @@ class _FreestyleResultsPageState
             // Freestyle keeps the Tagalog default: with no lyrics there is
             // no prior, and this is a Filipino-focused app.
             lang: widget.expectedLyrics == null ? 'tl' : 'auto'),
-      ]).timeout(const Duration(minutes: 2));
+        // Scaled with the recording rather than a flat two minutes: a long
+        // freestyle take needs longer than that to decode, and this cap
+        // firing first cancelled the pitch analysis too.
+      ]).timeout(whisperTimeoutFor(widget.pendingWavBytes!.length) +
+          const Duration(minutes: 1));
       final pitchFrames = results[0] as List<PitchFrame>;
       final words = results[1] as List<TranscribedWord>;
 

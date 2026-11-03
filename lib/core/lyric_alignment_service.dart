@@ -117,6 +117,36 @@ Uint8List normalizeWavForSpeech(Uint8List wav) {
   return out;
 }
 
+/// Seconds of audio in a 16 kHz mono PCM16 WAV of [wavByteCount] bytes.
+///
+/// The header is a rounding error at these sizes, so it is not subtracted
+/// — this is a budget, not a measurement.
+double _wavSeconds(int wavByteCount) => wavByteCount / (16000 * 2);
+
+/// How long to allow one Whisper decode of [wavByteCount] bytes of audio.
+///
+/// This used to be a flat 90 seconds, which is roughly where a full
+/// karaoke take lands: ggml-tiny runs at something like 2–4x realtime on a
+/// mid-range Android phone, so a three-to-four minute song is right at the
+/// edge. Over the line the decode was abandoned, [_transcribePass]
+/// returned null, and the result screen showed no words at all — with
+/// nothing on screen distinguishing "the model heard nothing" from "we
+/// stopped listening". Short takes were unaffected, which is why it
+/// looked intermittent.
+///
+/// Scaled with the audio and generously, because the cost of being wrong
+/// in this direction is a longer wait, and the cost of being wrong in the
+/// other direction is losing the transcript entirely.
+///
+/// Public because the screens that run Whisper alongside pitch analysis
+/// bound the pair as well, and an outer cap shorter than this one would
+/// cancel a decode that was still making progress — which is the bug this
+/// replaced, moved one level out.
+Duration whisperTimeoutFor(int wavByteCount) {
+  final budget = 30 + (_wavSeconds(wavByteCount) * 8).round();
+  return Duration(seconds: budget.clamp(90, 1200));
+}
+
 /// Whisper's prompt window is small (a few hundred tokens), and anything
 /// past it is discarded — so a whole song's lyrics can't be handed over
 /// wholesale. This trims to a budget that comfortably fits, which is
@@ -227,9 +257,11 @@ Future<WhisperPass?> _transcribePass(
       // Without this the model is re-read from disk on every call, which
       // was a large part of why a 15-second take took 41 seconds.
       keepModelLoaded: true,
-    ).timeout(const Duration(seconds: 90));
-    debugPrint('Whisper transcribe() returned after ${sw.elapsedMilliseconds}ms, '
-        'wavBytes=${recordedWavBytes.length}, '
+    ).timeout(whisperTimeoutFor(recordedWavBytes.length));
+    final audioSeconds = _wavSeconds(recordedWavBytes.length);
+    debugPrint('Whisper transcribe() returned after ${sw.elapsedMilliseconds}ms '
+        'for ${audioSeconds.toStringAsFixed(1)}s of audio '
+        '(${(sw.elapsedMilliseconds / 1000 / math.max(audioSeconds, 0.001)).toStringAsFixed(2)}x realtime), '
         'rawText="${result?.transcription.text}"');
 
     final segments = result?.transcription.segments;
@@ -248,9 +280,17 @@ Future<WhisperPass?> _transcribePass(
     debugPrint('Whisper transcription failed: $e\n$st');
     return null;
   } finally {
-    if (tempWav != null && await tempWav.exists()) {
+    // Two files to clean up, not one. whisper_ggml runs every input
+    // through FFmpeg before decoding it — unconditionally, even though
+    // what it is asked to produce here (16 kHz mono PCM16) is exactly
+    // what it was handed — and writes the result beside the original as
+    // `<path>.wav`. Nothing deletes that, so before this each
+    // transcription left a second full copy of the recording in the
+    // temp directory for the rest of the session.
+    for (final file in [tempWav, if (tempWav != null) File('${tempWav.path}.wav')]) {
+      if (file == null) continue;
       try {
-        await tempWav.delete();
+        if (await file.exists()) await file.delete();
       } catch (_) {}
     }
   }

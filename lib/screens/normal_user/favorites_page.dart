@@ -3,8 +3,6 @@ import '../../constants/app_colors.dart';
 import '../../widgets/song_cover_art.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import 'library_page.dart';
-import 'record_selection_page.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -37,22 +35,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
     final title = _favorites[index]['title'] ?? '';
     await FavoritesService.removeFavorite(title);
     await _loadFavorites();
-  }
-
-  void _onItemTapped(int index) {
-    if (index == 0) {
-      Navigator.pop(context);
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LibraryPage()),
-      );
-    } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const RecordSelectionPage()),
-      );
-    }
   }
 
   @override
@@ -152,7 +134,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 0, onTap: _onItemTapped),
+      bottomNavigationBar: BottomNavBar(currentIndex: 0),
     );
   }
 

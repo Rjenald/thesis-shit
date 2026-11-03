@@ -21,9 +21,12 @@ class MusicLessonsPage extends StatelessWidget {
                     child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                  // Expanded so the subtitle ellipsises instead of running
+                  // the header past the edge of a narrow screen.
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       Text(
                         'Music Lessons',
                         style: TextStyle(
@@ -35,13 +38,16 @@ class MusicLessonsPage extends StatelessWidget {
                       ),
                       Text(
                         'Learn vocal techniques & music theory',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white54,
                           fontFamily: 'Roboto',
                         ),
                       ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

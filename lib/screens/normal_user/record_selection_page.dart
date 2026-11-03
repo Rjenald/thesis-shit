@@ -43,10 +43,21 @@ class RecordSelectionPage extends StatelessWidget {
             ),
 
             // Center Content
+            //
+            // Scrollable rather than a plain Center: the heading plus the
+            // three mode buttons are taller than a 320x568 handset can
+            // show, and a Column inside an Expanded clips what does not
+            // fit — the third mode was unreachable on a small phone.
+            // SliverFillRemaining keeps it centred when it does fit.
             Expanded(
-              child: Center(
+              child: CustomScrollView(
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 40, vertical: 16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -106,12 +117,15 @@ class RecordSelectionPage extends StatelessWidget {
                     ],
                   ),
                 ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 2, onTap: (_) {}),
+      bottomNavigationBar: BottomNavBar(currentIndex: 2),
     );
   }
 }

@@ -39,6 +39,14 @@ class CatalogSong {
   String get imagePath =>
       image.isNotEmpty ? image : 'assets/covers/$assetName.jpg';
 
+  /// A photo of the performer: `assets/artists/<Artist>.jpg`.
+  ///
+  /// Keyed on the artist alone, not the song, so the several songs by one
+  /// artist share a file. The home page's artist row used to borrow each
+  /// artist's first album cover, which meant the row showed ten album
+  /// sleeves rather than ten faces.
+  String get artistImagePath => SongCatalogService.artistImageFor(artist);
+
   Map<String, String> toMap() => {
         'title': title,
         'artist': artist,
@@ -87,6 +95,17 @@ class SongCatalogService {
     CatalogSong(title: 'Pano', artist: 'Zack Tabudlo'),
     CatalogSong(title: 'Randomantic', artist: 'James Reid'),
   ];
+
+  /// Where an artist's photo lives: `assets/artists/<Artist>.jpg`.
+  ///
+  /// Keyed on the artist's name alone, so two songs by one artist share
+  /// one file and the name in [bundled] is the only thing that has to
+  /// match. Takes a bare string because the home page groups by artist
+  /// name before it has a [CatalogSong] in hand, and because an
+  /// admin-added artist has no catalog entry at all — the path it returns
+  /// for one simply does not exist, and SongCoverArt falls back.
+  static String artistImageFor(String artist) =>
+      artist.isEmpty ? '' : 'assets/artists/$artist.jpg';
 
   /// The bundled songs, ignoring anything an admin added.
   static List<Map<String, String>> get bundledSongs =>

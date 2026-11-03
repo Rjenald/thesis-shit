@@ -154,13 +154,20 @@ class _RecordedKaraokePageState extends State<RecordedKaraokePage>
             child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 12),
-          Text(
-            widget.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Roboto',
+          // The title is a song name, so its length is not under this
+          // screen's control — without Expanded a long one pushed the row
+          // past the edge instead of being truncated.
+          Expanded(
+            child: Text(
+              widget.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
             ),
           ),
         ],

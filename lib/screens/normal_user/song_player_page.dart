@@ -83,6 +83,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   // Scroll controller for lyrics auto-scroll
   final ScrollController _lyricsScrollCtrl = ScrollController();
 
+  /// Attached to whichever line is currently being sung, so the scroller
+  /// can ask where that line actually ended up rather than estimating it
+  /// from a line height that is not constant. One key is enough: only one
+  /// line is current at a time.
+  final GlobalKey _currentLyricKey = GlobalKey();
+
   // High-frequency updates (position ticks ~several times/sec, pitch
   // results ~every 80ms) go through these instead of setState(), so only
   // the small widgets that actually need to redraw every tick do —
@@ -197,15 +203,58 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }
   }
 
+  /// Centres the line being sung, measuring where it really is.
+  ///
+  /// This used to scroll to `index * 56.0 - 120.0`, assuming every line
+  /// was exactly 56 logical pixels tall. None of them reliably are:
+  ///
+  ///  - a long lyric **wraps** onto a second text line and is roughly
+  ///    twice as tall
+  ///  - past lines render at 16pt, upcoming ones at 18pt, and the current
+  ///    one is a different widget again
+  ///  - the system text scale changes all of it
+  ///
+  /// The error compounds, because the estimate is multiplied by the line
+  /// index: a few pixels of drift per line becomes hundreds by the middle
+  /// of a song, so the view runs ahead of the singing and the highlighted
+  /// line ends up above the top of the viewport. That is the "scrolls too
+  /// fast" — it was not speed, it was accumulated error.
+  ///
+  /// [Scrollable.ensureVisible] asks the laid-out element where it
+  /// actually is, so wrapping, font size and text scale are all handled by
+  /// construction.
   void _scrollToCurrentLyric() {
     if (_currentLyricIdx < 0 || !_lyricsScrollCtrl.hasClients) return;
-    // Each lyric line is roughly 56px tall; center the current one
-    final targetOffset = (_currentLyricIdx * 56.0) - 120.0;
-    _lyricsScrollCtrl.animateTo(
-      targetOffset.clamp(0.0, _lyricsScrollCtrl.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
-    );
+
+    // The new current line is built during this frame, so its element
+    // does not exist yet. Measuring before layout would read the previous
+    // line's position.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_lyricsScrollCtrl.hasClients) return;
+
+      final ctx = _currentLyricKey.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          // 0.5 puts it in the middle of the viewport, so there is as
+          // much of the song ahead as behind.
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
+        return;
+      }
+
+      // No element: the line is outside the build cache, which happens
+      // after a seek across the whole song. The estimate is wrong but it
+      // is close enough to bring the line into range, and the next tick
+      // measures properly.
+      final approx = (_currentLyricIdx * 56.0) -
+          _lyricsScrollCtrl.position.viewportDimension / 2;
+      _lyricsScrollCtrl.jumpTo(
+        approx.clamp(0.0, _lyricsScrollCtrl.position.maxScrollExtent),
+      );
+    });
   }
 
   int _getHighlightedWordCount([Duration? at]) {
@@ -477,8 +526,15 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
         // Bounded so an unforeseen hang anywhere in this pipeline can never
         // leave the "Preparing the result..." dialog stuck up forever.
+        //
+        // Scaled with the recording rather than a flat two minutes. A
+        // whole song is three to four minutes of audio, and Whisper's own
+        // budget for that is longer than two minutes — so the outer cap
+        // was the one that fired, cancelling a decode that was still
+        // working and losing the pitch analysis with it.
         final results = await Future.wait([transcribeFuture, crepeFuture])
-            .timeout(const Duration(minutes: 2));
+            .timeout(whisperTimeoutFor(micOnlyWav.length) +
+                const Duration(minutes: 1));
         final recognizedWords = results[0] as List<TranscribedWord>;
         final pitchFrames = results[1] as List<PitchFrame>;
         debugPrint('recognizedWords=${recognizedWords.length}, '
@@ -862,6 +918,10 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         blendMode: BlendMode.dstIn,
         child: ListView.builder(
           controller: _lyricsScrollCtrl,
+          // Build well beyond the viewport so the next line is already
+          // laid out when it becomes current — otherwise every advance
+          // falls back to the estimate this change exists to avoid.
+          cacheExtent: 1200,
           padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
           itemCount: _lyrics.length,
           itemBuilder: (ctx, i) {
@@ -870,6 +930,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
             if (isCurrent) {
               return ValueListenableBuilder<Duration>(
+                key: _currentLyricKey,
                 valueListenable: _lyricPositionNotifier,
                 builder: (context, pos, _) =>
                     _buildCurrentLyricLine(i, _getHighlightedWordCount(pos)),

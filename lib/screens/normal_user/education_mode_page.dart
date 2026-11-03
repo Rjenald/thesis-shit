@@ -143,9 +143,6 @@ class EducationModePage extends StatelessWidget {
             ),
             BottomNavBar(
               currentIndex: 3,
-              onTap: (index) {
-                if (index != 3) Navigator.pop(context);
-              },
             ),
           ],
         ),
