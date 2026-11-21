@@ -24,7 +24,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class YoutubeConfig {
   /// Paste a key here for local development, or leave empty and use
   /// --dart-define=YOUTUBE_API_KEY=...
-  static const String _pastedApiKey = '';
+  static const String _pastedApiKey = 'AIzaSyBoFamo4M_WphWjWRL8PnmKIPp6ZDyNhjg';
 
   static const String _envApiKey =
       String.fromEnvironment('YOUTUBE_API_KEY', defaultValue: '');
