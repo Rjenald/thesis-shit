@@ -172,8 +172,12 @@ async def health():
 
 # ── Songs catalog ─────────────────────────────────────────────────────────────
 
-# Path to Flutter songs_data.dart  (two levels up from backend/)
-_SONGS_DART = Path(__file__).parent.parent / "lib" / "data" / "songs_data.dart"
+# The Flutter app's song catalog, parsed straight from source so the server
+# and the app can't drift apart. songs_data.dart never existed under that
+# name — this is where the catalog actually lives.
+_SONGS_DART = (
+    Path(__file__).parent.parent / "lib" / "data" / "tagalog_bisaya_songs.dart"
+)
 _songs_cache: list[dict] | None = None
 
 
@@ -185,26 +189,33 @@ def _load_songs_catalog() -> list[dict]:
 
     try:
         source = _SONGS_DART.read_text(encoding="utf-8")
-        # Match every map literal in kAllSongs — handles escaped apostrophes
+        # Each catalog entry is a KaraokeSong(...) constructor call, e.g.
+        #   KaraokeSong(title: 'Dadalhin', artist: 'Regine Velasquez',
+        #               language: 'Tagalog', offline: true)
+        # No image field exists on these, so one isn't invented here.
         pattern = (
-            r"\{'title':\s*'((?:[^'\\]|\\.)*)',\s*"
-            r"'artist':\s*'((?:[^'\\]|\\.)*)',\s*"
-            r"'image':\s*'((?:[^'\\]|\\.)*)',\s*"
-            r"'language':\s*'((?:[^'\\]|\\.)*)'\}"
+            r"KaraokeSong\(\s*title:\s*'((?:[^'\\]|\\.)*)',\s*"
+            r"artist:\s*'((?:[^'\\]|\\.)*)',\s*"
+            r"language:\s*'((?:[^'\\]|\\.)*)'"
         )
         matches = re.findall(pattern, source)
         _songs_cache = [
             {
                 "title":    m[0].replace("\\'", "'"),
                 "artist":   m[1].replace("\\'", "'"),
-                "image":    m[2],
-                "language": m[3],
+                "language": m[2],
             }
             for m in matches
         ]
-        log.info("Songs catalog loaded: %d songs from songs_data.dart", len(_songs_cache))
+        log.info(
+            "Songs catalog loaded: %d songs from %s",
+            len(_songs_cache), _SONGS_DART.name,
+        )
     except Exception as exc:
-        log.warning("Could not load songs_data.dart: %s — returning empty catalog", exc)
+        log.warning(
+            "Could not load %s: %s — returning empty catalog",
+            _SONGS_DART.name, exc,
+        )
         _songs_cache = []
 
     return _songs_cache

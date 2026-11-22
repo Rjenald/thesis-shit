@@ -81,3 +81,14 @@ backend/*.pyc
 
 # Large binary assets (videos) — track with Git LFS instead
 # assets/videos/
+
+# Transcription-accuracy clips and their generated output.
+# Licensed third-party audio plus large binaries; rebuild with
+# backend/fetch_eval_datasets.py rather than committing them.
+backend/clips/
+backend/fetch_clips.log
+hypotheses.json
+
+# Originals kept by backend/trim_bleed.py. Deliberately outside
+# assets/, which pubspec bundles wholesale into the APK.
+backend/ground_truth_backups/

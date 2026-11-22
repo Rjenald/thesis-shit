@@ -1,16 +1,14 @@
 import 'dart:async';
-import 'package:final_thesis_ui/screens/normal_user/education_mode_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../models/session_result.dart';
 import '../../services/session_storage_service.dart';
 import '../../services/song_audio_service.dart';
 import '../../services/song_catalog_service.dart';
-import '../../services/class_notifications_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/profile_avatar.dart';
 import 'favorites_page.dart';
-import 'library_page.dart';
 import 'song_player_page.dart';
 import 'settings_page.dart';
 import 'recently_deleted_page.dart';
@@ -21,7 +19,6 @@ class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     this.showBackButton = false,
-    required bool forceNormalUser,
   });
 
   @override
@@ -48,7 +45,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _loadUsername();
     _loadRecent();
-    _initNotifications();
   }
 
   Future<void> _loadUsername() async {
@@ -61,10 +57,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadRecent() async {
     final sessions = await SessionStorageService.loadSessions();
     if (mounted) setState(() => _recent = sessions);
-  }
-
-  Future<void> _initNotifications() async {
-    await ClassNotificationsService().initialize();
   }
 
   @override
@@ -99,22 +91,6 @@ class _HomePageState extends State<HomePage> {
   bool get _isSearching => _searchCtrl.text.trim().isNotEmpty;
 
   // ── Navigation ─────────────────────────────────────────────────────────────
-
-  void _onItemTapped(int index) {
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LibraryPage()),
-      );
-    } else if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const EducationModePage()),
-      );
-    } else {
-      setState(() {});
-    }
-  }
 
   void _openSong(Map<String, String> song) {
     final title = song['title'] ?? '';
@@ -181,7 +157,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 0, onTap: _onItemTapped),
+      bottomNavigationBar: BottomNavBar(currentIndex: 0),
     );
   }
 
@@ -348,19 +324,13 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Row(
           children: [
+            // Square corners on the right: this sits flush against the
+            // card's text column.
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
                 left: Radius.circular(12),
               ),
-              child: image.isNotEmpty
-                  ? Image.network(
-                      image,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _songPlaceholder(),
-                    )
-                  : _songPlaceholder(),
+              child: SongCoverArt(image: image, size: 70, borderRadius: 0),
             ),
             Expanded(
               child: Padding(
@@ -445,12 +415,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _songPlaceholder() => Container(
-    width: 70,
-    height: 70,
-    color: const Color(0xFF1E1E1E),
-    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 26),
-  );
 
   // ── Home feed (Spotify-style rows of horizontal cards) ────────────────────
 
@@ -491,13 +455,20 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Roboto',
+          // Flexible so a long heading yields to the trailing label
+          // instead of pushing it off the row, which is what happened at
+          // a larger system font size.
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Roboto',
+              ),
             ),
           ),
           if (trailing != null)
@@ -557,8 +528,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Unique artists from the catalog, each represented by their first song's
-  // art. Tapping one runs a search for that artist.
+  // Unique artists from the catalog, each with their own photo. Tapping one
+  // runs a search for that artist.
+  //
+  // The photo used to be the artist's first song's cover, so a row headed
+  // "Artists" showed ten album sleeves — and the same sleeve twice over
+  // for anyone with two songs in the catalog.
   List<Map<String, String>> _groupedArtists() {
     final seen = <String>{};
     final result = <Map<String, String>>[];
@@ -566,7 +541,13 @@ class _HomePageState extends State<HomePage> {
       final artist = song['artist'] ?? '';
       if (artist.isEmpty || seen.contains(artist)) continue;
       seen.add(artist);
-      result.add({'artist': artist, 'image': song['image'] ?? ''});
+      result.add({
+        'artist': artist,
+        // An admin-added artist has no bundled photo, so this names a
+        // file that is not there; SongCoverArt draws the person icon
+        // rather than a broken image.
+        'image': SongCatalogService.artistImageFor(artist),
+      });
     }
     return result;
   }
@@ -605,18 +586,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: s.songImage.isNotEmpty
-                      ? Image.network(
-                          s.songImage,
-                          width: 130,
-                          height: 130,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _gridPlaceholder(),
-                        )
-                      : _gridPlaceholder(),
-                ),
+                SongCoverArt(image: s.songImage, size: 130),
                 Positioned(
                   top: 4,
                   right: 4,
@@ -716,18 +686,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: image.isNotEmpty
-                      ? Image.network(
-                          image,
-                          width: 130,
-                          height: 130,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _gridPlaceholder(),
-                        )
-                      : _gridPlaceholder(),
-                ),
+                SongCoverArt(image: image, size: 130),
                 if (hasAudio)
                   Positioned(
                     right: 6,
@@ -793,27 +752,17 @@ class _HomePageState extends State<HomePage> {
               margin: const EdgeInsets.only(right: 14),
               child: Column(
                 children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF1E1E1E),
-                      image: image.isNotEmpty
-                          ? DecorationImage(
-                              image: NetworkImage(image),
-                              fit: BoxFit.cover,
-                              onError: (_, __) {},
-                            )
-                          : null,
-                    ),
-                    child: image.isEmpty
-                        ? const Icon(
-                            Icons.person,
-                            color: AppColors.primaryCyan,
-                            size: 28,
-                          )
-                        : null,
+                  // NetworkImage used to load this, which stopped working
+                  // the moment the art became a bundled asset: an asset
+                  // path is not a URL, the fetch failed, and `onError`
+                  // swallowed it — so the row drew ten empty circles with
+                  // nothing in the logs to say why.
+                  SongCoverArt(
+                    image: image,
+                    size: 72,
+                    borderRadius: 36,
+                    placeholderIcon: Icons.person,
+                    iconSize: 28,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -837,12 +786,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _gridPlaceholder() => Container(
-    width: 130,
-    height: 130,
-    color: const Color(0xFF1E1E1E),
-    child: const Icon(Icons.music_note, color: AppColors.primaryCyan, size: 32),
-  );
 
   // ── Profile menu overlay ───────────────────────────────────────────────────
 
@@ -936,7 +879,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   _menuItem(Icons.logout, 'Logout', () async {
                     await SessionStorageService.saveUsername('');
-                    await SessionStorageService.saveRole('');
                     if (!mounted) return;
                     // ignore: use_build_context_synchronously
                     Navigator.of(context).pushAndRemoveUntil(

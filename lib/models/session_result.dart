@@ -3,6 +3,8 @@
 /// SessionResult aggregates all lines into scores, health alerts, and recommendations.
 library;
 
+import 'singing_segment.dart';
+
 enum LineStatus { correct, flat, sharp, noSignal }
 
 class LyricPitchData {
@@ -93,6 +95,11 @@ class SessionResult {
   final List<LyricPitchData> lyricResults;
   final int durationSeconds;
 
+  /// Target-vs-actual pitch comparison per ground-truth syllable — only
+  /// non-empty for songs with a bundled reference melody (see
+  /// GroundTruthService); empty for every other song, same as before.
+  final List<SingingSegment> singingSegments;
+
   const SessionResult({
     required this.songTitle,
     required this.songArtist,
@@ -100,6 +107,7 @@ class SessionResult {
     required this.completedAt,
     required this.lyricResults,
     required this.durationSeconds,
+    this.singingSegments = const [],
   });
 
   /// Only lines that have actual lyric text.
@@ -116,8 +124,25 @@ class SessionResult {
       singableLines.where((l) => l.status == LineStatus.noSignal).length;
   int get totalLines => singableLines.length;
 
-  /// Score = correct / (total lines that had a detectable signal).
+  /// For a song with a real reference melody ([singingSegments] non-empty),
+  /// the score is a genuine target-vs-actual comparison — in-tune syllables
+  /// out of ALL syllables in the recorded window, silence included in the
+  /// denominator. Excluding silent syllables here (as the legacy line-based
+  /// fallback below does) would let singing just one short phrase well
+  /// report a perfect "100%, Good" for the whole take, regardless of how
+  /// little of the song was actually attempted — indistinguishable from a
+  /// fabricated result to anyone reading the number.
+  ///
+  /// For every other song (no ground truth available yet), this falls back
+  /// to the line-based heuristic estimate — the closest approximation
+  /// available in the absence of a real target melody.
   double get score {
+    if (singingSegments.isNotEmpty) {
+      final summary = SingingPerformanceSummary.fromSegments(singingSegments);
+      if (summary.totalSegments == 0) return 0;
+      return (summary.inTuneCount / summary.totalSegments * 100)
+          .clamp(0.0, 100.0);
+    }
     if (totalLines == 0) return 0;
     final active =
         singableLines.where((l) => l.status != LineStatus.noSignal).length;
@@ -228,6 +253,7 @@ class SessionResult {
         'completedAt': completedAt.toIso8601String(),
         'durationSeconds': durationSeconds,
         'lyricResults': lyricResults.map((l) => l.toJson()).toList(),
+        'singingSegments': singingSegments.map((s) => s.toJson()).toList(),
       };
 
   factory SessionResult.fromJson(Map<String, dynamic> j) => SessionResult(
@@ -243,5 +269,14 @@ class SessionResult {
                     LyricPitchData.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
+        // Older saved sessions (before this feature) have no key — default
+        // to empty rather than crashing on load.
+        singingSegments: (j['singingSegments'] as List<dynamic>?)
+                ?.map((e) =>
+                    SingingSegment.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
       );
+  // A 'lyricAlignment' key in an older saved session is ignored: words are
+  // no longer compared against the lyrics, so there is nothing to restore.
 }

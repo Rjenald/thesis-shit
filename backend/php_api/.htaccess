@@ -1,0 +1,39 @@
+# Huni account API — Apache/LiteSpeed configuration.
+#
+# Upload this with the rest of the folder. Hostinger's shared hosting runs
+# LiteSpeed, which reads .htaccess, so no panel settings are needed.
+
+# --- Keep the includes unservable -------------------------------------
+# config.php holds the database password. db.php and auth.php are meant to
+# be require()d, not fetched. Without this a request for /api/config.php
+# would be served as a download the moment PHP stopped executing — which
+# is exactly what happens during a failed PHP version switch.
+<FilesMatch "^(config|config\.example|db|auth)\.php$">
+    Require all denied
+</FilesMatch>
+
+# The test suite has no business being on a public server either.
+RedirectMatch 404 ^/.*/tests/
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Send everything that is not a real file to the front controller, so
+    # the app's paths (/auth/login) need no .php suffix and match the
+    # Python API's exactly.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L,QSA]
+
+    # DELIBERATELY NOT redirecting http to https here. The obvious rule --
+    #   RewriteCond %{HTTPS} off
+    #   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    # -- breaks login rather than securing it. A 301 on a POST is turned
+    # into a GET by most HTTP clients, Dart's included, so the redirected
+    # request arrives at /auth/login with no body and answers 405. The fix
+    # is to point the app at the https URL to begin with, which is what
+    # AUTH_BASE_URL in lib/services/auth_service.dart does.
+</IfModule>
+
+# PHP 8 is what this was written and tested against; 8.2 locally.
+# Hostinger's default is 8.x, so this is usually already true.

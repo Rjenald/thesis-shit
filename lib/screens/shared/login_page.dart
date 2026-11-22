@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../admin/admin_page.dart';
 import '../normal_user/home_page.dart';
 import 'register_page.dart';
 import '../../constants/app_colors.dart';
+import '../../services/auth_service.dart';
 import '../../services/session_storage_service.dart';
 
 class CurvedBottomPainter extends CustomPainter {
@@ -41,6 +43,10 @@ class _LoginPageState extends State<LoginPage> {
 
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
+
+  /// When true the credentials are checked against the admin account and a
+  /// successful login goes to the admin page instead of the home page.
+  bool _adminMode = false;
 
   int _currentPage = 0;
   Timer? _timer;
@@ -118,32 +124,61 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Check locally registered accounts
-      final account = await SessionStorageService.authenticateRegisteredAccount(
-        u,
-        p,
-      );
+      if (_adminMode) {
+        // Admin rights come from huni_db.users.is_admin, checked server-side
+        // after the password is verified. Previously this used a seeded
+        // local account, so admin access had nothing to do with the database.
+        final result = await AuthService.login(
+            username: u, password: p, requireAdmin: true);
+        if (!mounted) return;
+        if (result.ok && result.isAdmin) {
+          await SessionStorageService.saveUsername(result.username ?? u);
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminPage()),
+            (route) => false,
+          );
+        } else {
+          // A server that's unreachable isn't a credentials problem, so the
+          // fields aren't flagged red and the message says what's actually
+          // wrong.
+          setState(() {
+            showUsernameError = !result.isNetworkError;
+            showPasswordError = !result.isNetworkError;
+          });
+          _showError(result.error ?? 'Invalid admin credentials.');
+        }
+        return;
+      }
+
+      // Checked against huni_db through the backend API. Accounts used to
+      // live in this device's own storage, which meant anyone could
+      // register locally and sign in regardless of the database — and the
+      // accounts actually in huni_db could never sign in at all.
+      final result = await AuthService.login(username: u, password: p);
       if (!mounted) return;
 
-      if (account != null) {
-        await SessionStorageService.saveUsername(u);
-        await SessionStorageService.saveRole('normal');
+      if (result.ok) {
+        await SessionStorageService.saveUsername(result.username ?? u);
 
         if (!mounted) return;
 
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => const HomePage(forceNormalUser: true),
+            builder: (_) => const HomePage(),
           ),
           (route) => false,
         );
       } else {
+        // A server that can't be reached is not a wrong password — saying
+        // so would send people off changing credentials that are fine.
         setState(() {
-          showUsernameError = true;
-          showPasswordError = true;
+          showUsernameError = !result.isNetworkError;
+          showPasswordError = !result.isNetworkError;
         });
-        _showError('Invalid username or password.');
+        _showError(result.error ?? 'Invalid username or password.');
       }
     } catch (e) {
       if (!mounted) return;
@@ -348,16 +383,44 @@ class _LoginPageState extends State<LoginPage> {
                                 color: Colors.black,
                               ),
                             )
-                          : const Text(
-                              'Login',
-                              style: TextStyle(
+                          : Text(
+                              _adminMode ? 'Login as Admin' : 'Login',
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
+                  // Same credential fields, checked against the admin
+                  // account instead — rather than a second form.
+                  TextButton.icon(
+                    onPressed: _isLoading
+                        ? null
+                        : () => setState(() {
+                              _adminMode = !_adminMode;
+                              showUsernameError = false;
+                              showPasswordError = false;
+                            }),
+                    icon: Icon(
+                      _adminMode
+                          ? Icons.arrow_back
+                          : Icons.admin_panel_settings_outlined,
+                      size: 17,
+                      color: AppColors.primaryCyan,
+                    ),
+                    label: Text(
+                      _adminMode ? 'Back to user login' : 'Log in as Admin',
+                      style: const TextStyle(
+                        color: AppColors.primaryCyan,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Roboto',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   GestureDetector(
                     onTap: () {
                       Navigator.pushReplacement(

@@ -1,0 +1,2098 @@
+{
+ "data": [
+  {
+   "syllable": "",
+   "start": 0.47,
+   "end": 0.79,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 2.99,
+   "end": 3.16,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 3.44,
+   "end": 3.71,
+   "note": "A4"
+  },
+  {
+   "syllable": "",
+   "start": 3.83,
+   "end": 3.99,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 8.05,
+   "end": 8.18,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 8.69,
+   "end": 8.91,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 12.37,
+   "end": 12.54,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 12.6,
+   "end": 12.85,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 12.97,
+   "end": 13.08,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 13.88,
+   "end": 14.14,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 14.25,
+   "end": 14.42,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 14.83,
+   "end": 15.0,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 15.09,
+   "end": 15.5,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 15.77,
+   "end": 16.01,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 16.13,
+   "end": 16.26,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 16.89,
+   "end": 17.06,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 17.09,
+   "end": 17.19,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 17.62,
+   "end": 17.87,
+   "note": "B3"
+  },
+  {
+   "syllable": "What",
+   "start": 18.53,
+   "end": 18.71,
+   "note": "B3"
+  },
+  {
+   "syllable": "if",
+   "start": 18.74,
+   "end": 18.97,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 19.06,
+   "end": 19.61,
+   "note": "E4"
+  },
+  {
+   "syllable": "yo",
+   "start": 19.76,
+   "end": 19.93,
+   "note": "C#4"
+  },
+  {
+   "syllable": "that",
+   "start": 19.98,
+   "end": 20.2,
+   "note": "B3"
+  },
+  {
+   "syllable": "ve",
+   "start": 20.2,
+   "end": 20.39,
+   "note": "C#4"
+  },
+  {
+   "syllable": "fal",
+   "start": 20.39,
+   "end": 20.89,
+   "note": "B3"
+  },
+  {
+   "syllable": "len",
+   "start": 20.89,
+   "end": 21.75,
+   "note": "A3"
+  },
+  {
+   "syllable": "li",
+   "start": 23.29,
+   "end": 23.78,
+   "note": "A3"
+  },
+  {
+   "syllable": "way",
+   "start": 23.93,
+   "end": 24.29,
+   "note": "E4"
+  },
+  {
+   "syllable": "yo",
+   "start": 24.29,
+   "end": 24.84,
+   "note": "C#4"
+  },
+  {
+   "syllable": "say",
+   "start": 24.84,
+   "end": 25.03,
+   "note": "B3"
+  },
+  {
+   "syllable": "my",
+   "start": 25.09,
+   "end": 25.26,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 25.32,
+   "end": 25.49,
+   "note": "C#4"
+  },
+  {
+   "syllable": "na",
+   "start": 25.49,
+   "end": 25.59,
+   "note": "C4"
+  },
+  {
+   "syllable": "me",
+   "start": 25.59,
+   "end": 25.88,
+   "note": "C#4"
+  },
+  {
+   "syllable": "me",
+   "start": 25.88,
+   "end": 26.51,
+   "note": "B3"
+  },
+  {
+   "syllable": "My",
+   "start": 28.04,
+   "end": 28.2,
+   "note": "G#3"
+  },
+  {
+   "syllable": "art",
+   "start": 28.2,
+   "end": 28.36,
+   "note": "A3"
+  },
+  {
+   "syllable": "be",
+   "start": 29.01,
+   "end": 29.26,
+   "note": "D#4"
+  },
+  {
+   "syllable": "when",
+   "start": 29.32,
+   "end": 29.69,
+   "note": "C4"
+  },
+  {
+   "syllable": "he",
+   "start": 29.69,
+   "end": 30.02,
+   "note": "B3"
+  },
+  {
+   "syllable": "yo",
+   "start": 30.02,
+   "end": 30.19,
+   "note": "C#4"
+  },
+  {
+   "syllable": "cal",
+   "start": 30.23,
+   "end": 30.65,
+   "note": "B3"
+  },
+  {
+   "syllable": "ling",
+   "start": 30.65,
+   "end": 31.57,
+   "note": "A3"
+  },
+  {
+   "syllable": "And",
+   "start": 32.65,
+   "end": 32.79,
+   "note": "B3"
+  },
+  {
+   "syllable": "li",
+   "start": 33.11,
+   "end": 33.6,
+   "note": "A3"
+  },
+  {
+   "syllable": "that",
+   "start": 33.81,
+   "end": 34.18,
+   "note": "E4"
+  },
+  {
+   "syllable": "won't",
+   "start": 34.18,
+   "end": 34.61,
+   "note": "C#4"
+  },
+  {
+   "syllable": "go",
+   "start": 34.68,
+   "end": 34.94,
+   "note": "B3"
+  },
+  {
+   "syllable": "way",
+   "start": 34.94,
+   "end": 35.78,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 35.78,
+   "end": 36.0,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 36.63,
+   "end": 37.0,
+   "note": "G#4"
+  },
+  {
+   "syllable": "",
+   "start": 37.53,
+   "end": 37.68,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 37.68,
+   "end": 37.83,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 38.33,
+   "end": 38.44,
+   "note": "B3"
+  },
+  {
+   "syllable": "But",
+   "start": 39.25,
+   "end": 39.41,
+   "note": "F#3"
+  },
+  {
+   "syllable": "ver",
+   "start": 39.6,
+   "end": 39.76,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mind",
+   "start": 39.76,
+   "end": 42.15,
+   "note": "E4"
+  },
+  {
+   "syllable": "wan",
+   "start": 42.25,
+   "end": 42.75,
+   "note": "E4"
+  },
+  {
+   "syllable": "yo",
+   "start": 42.75,
+   "end": 43.14,
+   "note": "D4"
+  },
+  {
+   "syllable": "any",
+   "start": 43.14,
+   "end": 43.44,
+   "note": "C4"
+  },
+  {
+   "syllable": "any",
+   "start": 43.44,
+   "end": 43.63,
+   "note": "D4"
+  },
+  {
+   "syllable": "tro",
+   "start": 43.73,
+   "end": 43.86,
+   "note": "C4"
+  },
+  {
+   "syllable": "tro",
+   "start": 43.86,
+   "end": 43.96,
+   "note": "C#4"
+  },
+  {
+   "syllable": "le",
+   "start": 44.12,
+   "end": 44.29,
+   "note": "A3"
+  },
+  {
+   "syllable": "ver",
+   "start": 44.5,
+   "end": 44.62,
+   "note": "D#4"
+  },
+  {
+   "syllable": "mind",
+   "start": 44.62,
+   "end": 45.42,
+   "note": "E4"
+  },
+  {
+   "syllable": "mind",
+   "start": 45.42,
+   "end": 45.64,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 45.76,
+   "end": 46.05,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 46.05,
+   "end": 46.17,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 46.17,
+   "end": 46.6,
+   "note": "E4"
+  },
+  {
+   "syllable": "ne",
+   "start": 46.66,
+   "end": 46.89,
+   "note": "F#3"
+  },
+  {
+   "syllable": "ver",
+   "start": 46.92,
+   "end": 47.36,
+   "note": "C4"
+  },
+  {
+   "syllable": "mind",
+   "start": 47.36,
+   "end": 47.84,
+   "note": "A3"
+  },
+  {
+   "syllable": "mind",
+   "start": 48.05,
+   "end": 48.25,
+   "note": "A3"
+  },
+  {
+   "syllable": "mind",
+   "start": 48.66,
+   "end": 48.96,
+   "note": "A3"
+  },
+  {
+   "syllable": "mind",
+   "start": 48.99,
+   "end": 49.17,
+   "note": "C4"
+  },
+  {
+   "syllable": "I'm",
+   "start": 49.38,
+   "end": 49.87,
+   "note": "A3"
+  },
+  {
+   "syllable": "kay",
+   "start": 49.97,
+   "end": 50.08,
+   "note": "D#4"
+  },
+  {
+   "syllable": "by",
+   "start": 50.08,
+   "end": 51.32,
+   "note": "E4"
+  },
+  {
+   "syllable": "si",
+   "start": 51.38,
+   "end": 51.75,
+   "note": "C4"
+  },
+  {
+   "syllable": "si",
+   "start": 51.75,
+   "end": 52.34,
+   "note": "B3"
+  },
+  {
+   "syllable": "for",
+   "start": 52.49,
+   "end": 52.91,
+   "note": "E4"
+  },
+  {
+   "syllable": "long",
+   "start": 53.03,
+   "end": 53.82,
+   "note": "E4"
+  },
+  {
+   "syllable": "can",
+   "start": 53.87,
+   "end": 54.18,
+   "note": "C#4"
+  },
+  {
+   "syllable": "hi",
+   "start": 54.18,
+   "end": 54.51,
+   "note": "B3"
+  },
+  {
+   "syllable": "hi",
+   "start": 54.58,
+   "end": 54.7,
+   "note": "A3"
+  },
+  {
+   "syllable": "de",
+   "start": 54.97,
+   "end": 55.07,
+   "note": "D4"
+  },
+  {
+   "syllable": "What",
+   "start": 55.22,
+   "end": 55.67,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 56.08,
+   "end": 56.34,
+   "note": "E4"
+  },
+  {
+   "syllable": "that",
+   "start": 56.34,
+   "end": 57.22,
+   "note": "C4"
+  },
+  {
+   "syllable": "fal",
+   "start": 57.22,
+   "end": 57.59,
+   "note": "B3"
+  },
+  {
+   "syllable": "len",
+   "start": 57.59,
+   "end": 57.88,
+   "note": "A3"
+  },
+  {
+   "syllable": "What",
+   "start": 58.03,
+   "end": 58.27,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 60.61,
+   "end": 60.88,
+   "note": "C#4"
+  },
+  {
+   "syllable": "if",
+   "start": 61.72,
+   "end": 62.04,
+   "note": "B3"
+  },
+  {
+   "syllable": "if",
+   "start": 63.04,
+   "end": 63.41,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 63.79,
+   "end": 64.01,
+   "note": "F#3"
+  },
+  {
+   "syllable": "if",
+   "start": 64.29,
+   "end": 64.4,
+   "note": "B3"
+  },
+  {
+   "syllable": "if",
+   "start": 67.23,
+   "end": 67.62,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 68.46,
+   "end": 68.65,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 72.11,
+   "end": 72.3,
+   "note": "F#3"
+  },
+  {
+   "syllable": "if",
+   "start": 72.49,
+   "end": 72.6,
+   "note": "F#3"
+  },
+  {
+   "syllable": "if",
+   "start": 72.83,
+   "end": 73.36,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 73.91,
+   "end": 74.24,
+   "note": "B3"
+  },
+  {
+   "syllable": "if",
+   "start": 74.55,
+   "end": 74.7,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 75.48,
+   "end": 75.62,
+   "note": "C#4"
+  },
+  {
+   "syllable": "if",
+   "start": 76.44,
+   "end": 76.62,
+   "note": "B3"
+  },
+  {
+   "syllable": "if",
+   "start": 77.55,
+   "end": 77.8,
+   "note": "A#3"
+  },
+  {
+   "syllable": "",
+   "start": 77.84,
+   "end": 78.17,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 78.17,
+   "end": 78.4,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 78.45,
+   "end": 78.69,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 78.72,
+   "end": 78.93,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 78.93,
+   "end": 79.19,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 79.19,
+   "end": 79.64,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 79.64,
+   "end": 79.76,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 79.76,
+   "end": 80.56,
+   "note": "A3"
+  },
+  {
+   "syllable": "I",
+   "start": 80.97,
+   "end": 81.11,
+   "note": "G#3"
+  },
+  {
+   "syllable": "I",
+   "start": 81.49,
+   "end": 81.72,
+   "note": "B3"
+  },
+  {
+   "syllable": "that",
+   "start": 82.29,
+   "end": 82.41,
+   "note": "G#3"
+  },
+  {
+   "syllable": "fal",
+   "start": 82.41,
+   "end": 82.61,
+   "note": "A3"
+  },
+  {
+   "syllable": "ar",
+   "start": 82.8,
+   "end": 83.18,
+   "note": "E4"
+  },
+  {
+   "syllable": "thro",
+   "start": 83.18,
+   "end": 83.55,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ugh",
+   "start": 83.55,
+   "end": 83.72,
+   "note": "C4"
+  },
+  {
+   "syllable": "my",
+   "start": 83.72,
+   "end": 84.0,
+   "note": "A3"
+  },
+  {
+   "syllable": "chest",
+   "start": 84.14,
+   "end": 84.27,
+   "note": "C#4"
+  },
+  {
+   "syllable": "chest",
+   "start": 84.27,
+   "end": 84.42,
+   "note": "C4"
+  },
+  {
+   "syllable": "chest",
+   "start": 84.42,
+   "end": 84.67,
+   "note": "C#4"
+  },
+  {
+   "syllable": "chest",
+   "start": 84.67,
+   "end": 84.84,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 85.27,
+   "end": 85.38,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 85.5,
+   "end": 85.66,
+   "note": "A4"
+  },
+  {
+   "syllable": "",
+   "start": 85.89,
+   "end": 86.06,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 86.3,
+   "end": 86.43,
+   "note": "G#3"
+  },
+  {
+   "syllable": "I'll",
+   "start": 87.04,
+   "end": 87.57,
+   "note": "A3"
+  },
+  {
+   "syllable": "yo",
+   "start": 87.65,
+   "end": 87.77,
+   "note": "E4"
+  },
+  {
+   "syllable": "bre",
+   "start": 87.77,
+   "end": 87.87,
+   "note": "D4"
+  },
+  {
+   "syllable": "bre",
+   "start": 87.87,
+   "end": 88.19,
+   "note": "E4"
+  },
+  {
+   "syllable": "e",
+   "start": 88.51,
+   "end": 88.63,
+   "note": "B3"
+  },
+  {
+   "syllable": "mor",
+   "start": 88.73,
+   "end": 89.02,
+   "note": "C#4"
+  },
+  {
+   "syllable": "mor",
+   "start": 89.02,
+   "end": 89.39,
+   "note": "B3"
+  },
+  {
+   "syllable": "ning",
+   "start": 89.39,
+   "end": 90.0,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 90.0,
+   "end": 90.19,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 90.4,
+   "end": 90.51,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 90.76,
+   "end": 91.0,
+   "note": "G#3"
+  },
+  {
+   "syllable": "And",
+   "start": 91.94,
+   "end": 92.07,
+   "note": "G#3"
+  },
+  {
+   "syllable": "pick",
+   "start": 92.21,
+   "end": 92.42,
+   "note": "A#3"
+  },
+  {
+   "syllable": "up",
+   "start": 92.55,
+   "end": 92.93,
+   "note": "E4"
+  },
+  {
+   "syllable": "when",
+   "start": 92.93,
+   "end": 93.45,
+   "note": "C4"
+  },
+  {
+   "syllable": "yo",
+   "start": 93.45,
+   "end": 93.69,
+   "note": "B3"
+  },
+  {
+   "syllable": "mess",
+   "start": 93.69,
+   "end": 94.72,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 95.66,
+   "end": 95.82,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 96.18,
+   "end": 96.38,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 96.53,
+   "end": 96.63,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 96.83,
+   "end": 97.01,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 98.67,
+   "end": 98.77,
+   "note": "A3"
+  },
+  {
+   "syllable": "know",
+   "start": 99.58,
+   "end": 99.74,
+   "note": "D#4"
+  },
+  {
+   "syllable": "know",
+   "start": 99.74,
+   "end": 100.17,
+   "note": "E4"
+  },
+  {
+   "syllable": "know",
+   "start": 100.23,
+   "end": 100.36,
+   "note": "C4"
+  },
+  {
+   "syllable": "know",
+   "start": 100.36,
+   "end": 100.78,
+   "note": "C#4"
+  },
+  {
+   "syllable": "that",
+   "start": 100.78,
+   "end": 101.1,
+   "note": "B3"
+  },
+  {
+   "syllable": "that",
+   "start": 101.16,
+   "end": 101.38,
+   "note": "A3"
+  },
+  {
+   "syllable": "it",
+   "start": 101.38,
+   "end": 101.62,
+   "note": "C#4"
+  },
+  {
+   "syllable": "won't",
+   "start": 101.62,
+   "end": 102.09,
+   "note": "E4"
+  },
+  {
+   "syllable": "stop",
+   "start": 102.34,
+   "end": 102.85,
+   "note": "E4"
+  },
+  {
+   "syllable": "know",
+   "start": 102.97,
+   "end": 103.73,
+   "note": "A3"
+  },
+  {
+   "syllable": "be",
+   "start": 103.87,
+   "end": 104.12,
+   "note": "D#4"
+  },
+  {
+   "syllable": "when",
+   "start": 104.12,
+   "end": 104.61,
+   "note": "E4"
+  },
+  {
+   "syllable": "yo",
+   "start": 104.61,
+   "end": 104.8,
+   "note": "C#4"
+  },
+  {
+   "syllable": "call",
+   "start": 104.95,
+   "end": 105.22,
+   "note": "E4"
+  },
+  {
+   "syllable": "me",
+   "start": 105.28,
+   "end": 105.4,
+   "note": "C4"
+  },
+  {
+   "syllable": "me",
+   "start": 105.4,
+   "end": 105.67,
+   "note": "C#4"
+  },
+  {
+   "syllable": "whet",
+   "start": 105.67,
+   "end": 105.91,
+   "note": "B3"
+  },
+  {
+   "syllable": "her",
+   "start": 105.91,
+   "end": 106.02,
+   "note": "G#3"
+  },
+  {
+   "syllable": "yo",
+   "start": 106.02,
+   "end": 106.24,
+   "note": "A3"
+  },
+  {
+   "syllable": "li",
+   "start": 106.3,
+   "end": 106.5,
+   "note": "D#4"
+  },
+  {
+   "syllable": "it",
+   "start": 106.58,
+   "end": 106.95,
+   "note": "C#4"
+  },
+  {
+   "syllable": "not",
+   "start": 107.01,
+   "end": 107.64,
+   "note": "B3"
+  },
+  {
+   "syllable": "not",
+   "start": 107.64,
+   "end": 107.75,
+   "note": "D4"
+  },
+  {
+   "syllable": "Wit",
+   "start": 107.87,
+   "end": 108.06,
+   "note": "G#3"
+  },
+  {
+   "syllable": "ut",
+   "start": 108.16,
+   "end": 108.61,
+   "note": "A3"
+  },
+  {
+   "syllable": "war",
+   "start": 108.67,
+   "end": 108.78,
+   "note": "D4"
+  },
+  {
+   "syllable": "fal",
+   "start": 108.78,
+   "end": 110.25,
+   "note": "E4"
+  },
+  {
+   "syllable": "ling",
+   "start": 110.31,
+   "end": 110.56,
+   "note": "C#4"
+  },
+  {
+   "syllable": "for",
+   "start": 110.56,
+   "end": 110.88,
+   "note": "B3"
+  },
+  {
+   "syllable": "this",
+   "start": 110.88,
+   "end": 111.04,
+   "note": "A3"
+  },
+  {
+   "syllable": "pic",
+   "start": 111.19,
+   "end": 111.38,
+   "note": "F4"
+  },
+  {
+   "syllable": "my",
+   "start": 111.52,
+   "end": 112.24,
+   "note": "C#4"
+  },
+  {
+   "syllable": "pho",
+   "start": 112.24,
+   "end": 112.79,
+   "note": "B3"
+  },
+  {
+   "syllable": "But",
+   "start": 113.06,
+   "end": 113.26,
+   "note": "A#3"
+  },
+  {
+   "syllable": "don't",
+   "start": 113.36,
+   "end": 113.65,
+   "note": "A3"
+  },
+  {
+   "syllable": "fal",
+   "start": 113.71,
+   "end": 115.13,
+   "note": "E4"
+  },
+  {
+   "syllable": "ling",
+   "start": 115.19,
+   "end": 115.49,
+   "note": "C4"
+  },
+  {
+   "syllable": "I'll",
+   "start": 115.49,
+   "end": 115.71,
+   "note": "B3"
+  },
+  {
+   "syllable": "get",
+   "start": 115.82,
+   "end": 115.96,
+   "note": "A3"
+  },
+  {
+   "syllable": "back",
+   "start": 116.13,
+   "end": 116.28,
+   "note": "E4"
+  },
+  {
+   "syllable": "up",
+   "start": 116.42,
+   "end": 116.67,
+   "note": "C4"
+  },
+  {
+   "syllable": "on",
+   "start": 116.72,
+   "end": 116.94,
+   "note": "B3"
+  },
+  {
+   "syllable": "my",
+   "start": 116.94,
+   "end": 117.19,
+   "note": "C#4"
+  },
+  {
+   "syllable": "own",
+   "start": 117.19,
+   "end": 117.49,
+   "note": "B3"
+  },
+  {
+   "syllable": "own",
+   "start": 117.49,
+   "end": 118.14,
+   "note": "A3"
+  },
+  {
+   "syllable": "don't",
+   "start": 118.22,
+   "end": 118.71,
+   "note": "B3"
+  },
+  {
+   "syllable": "say",
+   "start": 119.11,
+   "end": 119.86,
+   "note": "E4"
+  },
+  {
+   "syllable": "my",
+   "start": 119.86,
+   "end": 120.49,
+   "note": "C#4"
+  },
+  {
+   "syllable": "na",
+   "start": 120.56,
+   "end": 121.15,
+   "note": "B3"
+  },
+  {
+   "syllable": "me",
+   "start": 121.25,
+   "end": 121.38,
+   "note": "C4"
+  },
+  {
+   "syllable": "help",
+   "start": 121.38,
+   "end": 122.79,
+   "note": "A3"
+  },
+  {
+   "syllable": "put",
+   "start": 122.82,
+   "end": 123.12,
+   "note": "B3"
+  },
+  {
+   "syllable": "o",
+   "start": 123.52,
+   "end": 123.77,
+   "note": "C#4"
+  },
+  {
+   "syllable": "o",
+   "start": 124.07,
+   "end": 124.21,
+   "note": "D#4"
+  },
+  {
+   "syllable": "ut",
+   "start": 124.21,
+   "end": 124.82,
+   "note": "E4"
+  },
+  {
+   "syllable": "this",
+   "start": 125.0,
+   "end": 125.28,
+   "note": "C4"
+  },
+  {
+   "syllable": "fla",
+   "start": 125.57,
+   "end": 126.27,
+   "note": "B3"
+  },
+  {
+   "syllable": "me",
+   "start": 126.27,
+   "end": 126.72,
+   "note": "A3"
+  },
+  {
+   "syllable": "me",
+   "start": 127.14,
+   "end": 127.27,
+   "note": "C4"
+  },
+  {
+   "syllable": "rat",
+   "start": 127.46,
+   "end": 128.25,
+   "note": "A3"
+  },
+  {
+   "syllable": "hold",
+   "start": 128.37,
+   "end": 128.61,
+   "note": "C#4"
+  },
+  {
+   "syllable": "on",
+   "start": 128.61,
+   "end": 128.97,
+   "note": "E4"
+  },
+  {
+   "syllable": "to",
+   "start": 128.97,
+   "end": 129.22,
+   "note": "C#4"
+  },
+  {
+   "syllable": "this",
+   "start": 129.28,
+   "end": 129.41,
+   "note": "E4"
+  },
+  {
+   "syllable": "fe",
+   "start": 129.55,
+   "end": 129.68,
+   "note": "C4"
+  },
+  {
+   "syllable": "e",
+   "start": 129.68,
+   "end": 129.81,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ling",
+   "start": 129.81,
+   "end": 130.11,
+   "note": "B3"
+  },
+  {
+   "syllable": "that",
+   "start": 130.11,
+   "end": 130.69,
+   "note": "A3"
+  },
+  {
+   "syllable": "don't",
+   "start": 130.8,
+   "end": 131.06,
+   "note": "C#4"
+  },
+  {
+   "syllable": "don't",
+   "start": 131.06,
+   "end": 131.33,
+   "note": "E4"
+  },
+  {
+   "syllable": "ven",
+   "start": 131.33,
+   "end": 131.68,
+   "note": "C#4"
+  },
+  {
+   "syllable": "be",
+   "start": 131.68,
+   "end": 131.93,
+   "note": "D#4"
+  },
+  {
+   "syllable": "li",
+   "start": 131.99,
+   "end": 132.13,
+   "note": "B3"
+  },
+  {
+   "syllable": "ve",
+   "start": 132.13,
+   "end": 132.36,
+   "note": "C4"
+  },
+  {
+   "syllable": "in",
+   "start": 132.36,
+   "end": 132.81,
+   "note": "B3"
+  },
+  {
+   "syllable": "What",
+   "start": 133.11,
+   "end": 133.26,
+   "note": "B3"
+  },
+  {
+   "syllable": "What",
+   "start": 133.26,
+   "end": 133.4,
+   "note": "C#4"
+  },
+  {
+   "syllable": "What",
+   "start": 133.58,
+   "end": 133.8,
+   "note": "G#3"
+  },
+  {
+   "syllable": "if",
+   "start": 133.8,
+   "end": 134.02,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 134.17,
+   "end": 134.73,
+   "note": "E4"
+  },
+  {
+   "syllable": "yo",
+   "start": 134.73,
+   "end": 134.99,
+   "note": "C#4"
+  },
+  {
+   "syllable": "that",
+   "start": 135.02,
+   "end": 135.23,
+   "note": "B3"
+  },
+  {
+   "syllable": "fal",
+   "start": 135.23,
+   "end": 135.63,
+   "note": "C4"
+  },
+  {
+   "syllable": "fal",
+   "start": 135.63,
+   "end": 135.99,
+   "note": "B3"
+  },
+  {
+   "syllable": "len",
+   "start": 136.05,
+   "end": 136.68,
+   "note": "A3"
+  },
+  {
+   "syllable": "What",
+   "start": 136.76,
+   "end": 136.87,
+   "note": "A#3"
+  },
+  {
+   "syllable": "told",
+   "start": 138.15,
+   "end": 138.46,
+   "note": "A4"
+  },
+  {
+   "syllable": "told",
+   "start": 138.75,
+   "end": 139.02,
+   "note": "E3"
+  },
+  {
+   "syllable": "told",
+   "start": 139.21,
+   "end": 139.33,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 139.69,
+   "end": 139.92,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 139.98,
+   "end": 140.24,
+   "note": "E4"
+  },
+  {
+   "syllable": "told",
+   "start": 140.38,
+   "end": 140.54,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 141.64,
+   "end": 141.75,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 141.79,
+   "end": 141.94,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 142.61,
+   "end": 142.8,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 143.07,
+   "end": 143.29,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 143.4,
+   "end": 143.57,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 144.12,
+   "end": 144.51,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 144.56,
+   "end": 144.85,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 144.88,
+   "end": 145.17,
+   "note": "E4"
+  },
+  {
+   "syllable": "told",
+   "start": 145.45,
+   "end": 145.73,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 145.82,
+   "end": 146.1,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 146.25,
+   "end": 146.38,
+   "note": "E4"
+  },
+  {
+   "syllable": "told",
+   "start": 146.55,
+   "end": 146.66,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 146.88,
+   "end": 146.99,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 148.61,
+   "end": 148.73,
+   "note": "E3"
+  },
+  {
+   "syllable": "told",
+   "start": 148.99,
+   "end": 149.28,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 149.77,
+   "end": 149.89,
+   "note": "E4"
+  },
+  {
+   "syllable": "told",
+   "start": 151.88,
+   "end": 152.0,
+   "note": "C4"
+  },
+  {
+   "syllable": "told",
+   "start": 152.28,
+   "end": 152.53,
+   "note": "B3"
+  },
+  {
+   "syllable": "told",
+   "start": 153.2,
+   "end": 153.41,
+   "note": "F#4"
+  },
+  {
+   "syllable": "told",
+   "start": 155.18,
+   "end": 155.31,
+   "note": "A#3"
+  },
+  {
+   "syllable": "told",
+   "start": 155.56,
+   "end": 156.16,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 156.19,
+   "end": 156.77,
+   "note": "E4"
+  },
+  {
+   "syllable": "told",
+   "start": 156.83,
+   "end": 156.97,
+   "note": "C4"
+  },
+  {
+   "syllable": "told",
+   "start": 156.97,
+   "end": 157.1,
+   "note": "C#4"
+  },
+  {
+   "syllable": "told",
+   "start": 157.16,
+   "end": 157.97,
+   "note": "B3"
+  },
+  {
+   "syllable": "told",
+   "start": 157.97,
+   "end": 158.36,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 158.55,
+   "end": 159.52,
+   "note": "E4"
+  },
+  {
+   "syllable": "told",
+   "start": 159.56,
+   "end": 159.7,
+   "note": "C#4"
+  },
+  {
+   "syllable": "told",
+   "start": 159.76,
+   "end": 160.45,
+   "note": "B3"
+  },
+  {
+   "syllable": "told",
+   "start": 160.5,
+   "end": 160.66,
+   "note": "G#3"
+  },
+  {
+   "syllable": "told",
+   "start": 160.66,
+   "end": 160.79,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 160.79,
+   "end": 160.94,
+   "note": "B3"
+  },
+  {
+   "syllable": "yo",
+   "start": 161.02,
+   "end": 161.75,
+   "note": "A3"
+  },
+  {
+   "syllable": "that",
+   "start": 161.85,
+   "end": 162.07,
+   "note": "C#4"
+  },
+  {
+   "syllable": "fal",
+   "start": 162.07,
+   "end": 162.92,
+   "note": "B3"
+  },
+  {
+   "syllable": "len",
+   "start": 162.92,
+   "end": 163.26,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 163.32,
+   "end": 163.44,
+   "note": "D4"
+  },
+  {
+   "syllable": "ve",
+   "start": 163.44,
+   "end": 164.36,
+   "note": "E4"
+  },
+  {
+   "syllable": "fal",
+   "start": 164.73,
+   "end": 165.34,
+   "note": "B3"
+  },
+  {
+   "syllable": "fal",
+   "start": 165.4,
+   "end": 165.54,
+   "note": "G#3"
+  },
+  {
+   "syllable": "fal",
+   "start": 165.54,
+   "end": 165.66,
+   "note": "A3"
+  },
+  {
+   "syllable": "fal",
+   "start": 165.66,
+   "end": 165.83,
+   "note": "B3"
+  },
+  {
+   "syllable": "fal",
+   "start": 165.83,
+   "end": 165.97,
+   "note": "G#3"
+  },
+  {
+   "syllable": "fal",
+   "start": 165.97,
+   "end": 166.63,
+   "note": "A3"
+  },
+  {
+   "syllable": "fal",
+   "start": 166.63,
+   "end": 166.74,
+   "note": "B3"
+  },
+  {
+   "syllable": "fal",
+   "start": 166.74,
+   "end": 166.97,
+   "note": "C#4"
+  },
+  {
+   "syllable": "fal",
+   "start": 166.97,
+   "end": 167.78,
+   "note": "B3"
+  },
+  {
+   "syllable": "len",
+   "start": 167.78,
+   "end": 168.13,
+   "note": "A3"
+  },
+  {
+   "syllable": "told",
+   "start": 168.19,
+   "end": 168.89,
+   "note": "E4"
+  },
+  {
+   "syllable": "that",
+   "start": 168.89,
+   "end": 169.01,
+   "note": "D4"
+  },
+  {
+   "syllable": "that",
+   "start": 169.01,
+   "end": 169.18,
+   "note": "E4"
+  },
+  {
+   "syllable": "ve",
+   "start": 169.22,
+   "end": 169.54,
+   "note": "C#4"
+  },
+  {
+   "syllable": "What",
+   "start": 169.54,
+   "end": 170.33,
+   "note": "B3"
+  },
+  {
+   "syllable": "told",
+   "start": 170.33,
+   "end": 170.58,
+   "note": "A3"
+  },
+  {
+   "syllable": "that",
+   "start": 170.58,
+   "end": 170.75,
+   "note": "B3"
+  },
+  {
+   "syllable": "What",
+   "start": 170.75,
+   "end": 171.58,
+   "note": "A3"
+  },
+  {
+   "syllable": "u",
+   "start": 171.63,
+   "end": 171.78,
+   "note": "C#4"
+  },
+  {
+   "syllable": "that",
+   "start": 171.88,
+   "end": 172.17,
+   "note": "B3"
+  },
+  {
+   "syllable": "that",
+   "start": 172.17,
+   "end": 172.28,
+   "note": "A3"
+  },
+  {
+   "syllable": "that",
+   "start": 172.28,
+   "end": 172.67,
+   "note": "B3"
+  },
+  {
+   "syllable": "that",
+   "start": 172.67,
+   "end": 172.87,
+   "note": "A3"
+  },
+  {
+   "syllable": "I",
+   "start": 173.13,
+   "end": 174.06,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 174.25,
+   "end": 174.4,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ve",
+   "start": 174.48,
+   "end": 175.58,
+   "note": "B3"
+  },
+  {
+   "syllable": "ve",
+   "start": 175.68,
+   "end": 176.09,
+   "note": "A3"
+  },
+  {
+   "syllable": "ve",
+   "start": 176.36,
+   "end": 176.52,
+   "note": "A3"
+  },
+  {
+   "syllable": "ve",
+   "start": 176.52,
+   "end": 176.64,
+   "note": "A#3"
+  },
+  {
+   "syllable": "fal",
+   "start": 176.79,
+   "end": 177.2,
+   "note": "E4"
+  },
+  {
+   "syllable": "len",
+   "start": 177.3,
+   "end": 177.41,
+   "note": "E4"
+  },
+  {
+   "syllable": "len",
+   "start": 177.56,
+   "end": 180.97,
+   "note": "E4"
+  },
+  {
+   "syllable": "What",
+   "start": 180.97,
+   "end": 181.34,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ve",
+   "start": 181.54,
+   "end": 181.67,
+   "note": "G#3"
+  },
+  {
+   "syllable": "What",
+   "start": 181.79,
+   "end": 183.62,
+   "note": "E4"
+  },
+  {
+   "syllable": "if",
+   "start": 183.73,
+   "end": 184.17,
+   "note": "C#4"
+  },
+  {
+   "syllable": "if",
+   "start": 184.37,
+   "end": 184.52,
+   "note": "C4"
+  },
+  {
+   "syllable": "if",
+   "start": 184.52,
+   "end": 184.66,
+   "note": "C#4"
+  },
+  {
+   "syllable": "if",
+   "start": 184.66,
+   "end": 184.87,
+   "note": "C4"
+  },
+  {
+   "syllable": "if",
+   "start": 185.09,
+   "end": 185.84,
+   "note": "A3"
+  },
+  {
+   "syllable": "if",
+   "start": 185.9,
+   "end": 186.1,
+   "note": "F#4"
+  },
+  {
+   "syllable": "if",
+   "start": 186.1,
+   "end": 186.24,
+   "note": "E4"
+  },
+  {
+   "syllable": "if",
+   "start": 186.24,
+   "end": 186.49,
+   "note": "A3"
+  },
+  {
+   "syllable": "I",
+   "start": 186.68,
+   "end": 186.81,
+   "note": "C4"
+  },
+  {
+   "syllable": "told",
+   "start": 186.81,
+   "end": 189.17,
+   "note": "E4"
+  },
+  {
+   "syllable": "yo",
+   "start": 189.32,
+   "end": 190.02,
+   "note": "E4"
+  },
+  {
+   "syllable": "u",
+   "start": 190.02,
+   "end": 190.19,
+   "note": "D4"
+  },
+  {
+   "syllable": "that",
+   "start": 190.44,
+   "end": 190.56,
+   "note": "D#4"
+  },
+  {
+   "syllable": "I",
+   "start": 190.76,
+   "end": 191.01,
+   "note": "E4"
+  },
+  {
+   "syllable": "I",
+   "start": 191.01,
+   "end": 191.33,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ve",
+   "start": 191.6,
+   "end": 191.75,
+   "note": "C#4"
+  },
+  {
+   "syllable": "fal",
+   "start": 191.75,
+   "end": 192.0,
+   "note": "E4"
+  },
+  {
+   "syllable": "fal",
+   "start": 192.21,
+   "end": 193.64,
+   "note": "E4"
+  },
+  {
+   "syllable": "mind",
+   "start": 194.27,
+   "end": 194.77,
+   "note": "A4"
+  },
+  {
+   "syllable": "mind",
+   "start": 195.06,
+   "end": 195.32,
+   "note": "A3"
+  },
+  {
+   "syllable": "mind",
+   "start": 195.35,
+   "end": 195.53,
+   "note": "E4"
+  },
+  {
+   "syllable": "mind",
+   "start": 195.69,
+   "end": 195.97,
+   "note": "E4"
+  },
+  {
+   "syllable": "mind",
+   "start": 195.97,
+   "end": 196.28,
+   "note": "C#4"
+  },
+  {
+   "syllable": "mind",
+   "start": 196.28,
+   "end": 196.48,
+   "note": "B3"
+  },
+  {
+   "syllable": "mind",
+   "start": 196.48,
+   "end": 196.76,
+   "note": "C#4"
+  },
+  {
+   "syllable": "",
+   "start": 196.76,
+   "end": 197.2,
+   "note": "B3"
+  },
+  {
+   "syllable": "",
+   "start": 197.2,
+   "end": 197.88,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 197.88,
+   "end": 197.99,
+   "note": "F#3"
+  },
+  {
+   "syllable": "",
+   "start": 198.49,
+   "end": 198.61,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 198.78,
+   "end": 199.4,
+   "note": "E4"
+  }
+ ]
+}

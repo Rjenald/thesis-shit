@@ -3,31 +3,43 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../constants/app_colors.dart';
-import '../../core/lyric_alignment_service.dart';
-import '../../data/tagalog_bisaya_songs.dart';
+import '../../core/note_utils.dart' show PitchFeedback;
+import '../../core/singing_segment_builder.dart' show groupSegmentsByLyricLine;
+import '../../data/song_lyrics.dart';
 import '../../models/session_result.dart';
 import '../../services/downloads_service.dart';
-import '../../services/enrollment_service.dart';
+import '../../services/ground_truth_service.dart';
+import '../../services/lyrics_service.dart' show LrcLine;
 import '../../services/session_storage_service.dart';
 import '../../services/song_audio_service.dart';
-import '../../services/submission_service.dart';
+import '../../widgets/karaoke_summary_card.dart';
+import '../../widgets/pitch_timeline_view.dart';
+import '../../widgets/result_share_sheet.dart';
+import '../../widgets/shareable_result_card.dart';
+import '../../models/singing_segment.dart' show SingingPerformanceSummary;
+import 'practice_drill_page.dart';
+import 'solfagepitch_page.dart';
 import 'song_player_page.dart';
+import 'voice_classification_page.dart';
 
 class ResultsPage extends StatefulWidget {
   final SessionResult session;
-  final bool isAssignment;
   final Uint8List? recordedVoiceWav;
-  final LyricAlignmentResult? lyricAlignment;
+
+  /// If mixing the backing track into the recording hadn't finished yet
+  /// when this page was pushed, this resolves to the mixed WAV once it's
+  /// ready (null if mixing wasn't attempted or failed) — [recordedVoiceWav]
+  /// is the mic-only take available immediately, so "Listen" works right
+  /// away and silently upgrades to the mixed version in the background
+  /// instead of the result screen waiting on it before it can even appear.
+  final Future<Uint8List?>? pendingMixedAudio;
 
   const ResultsPage({
     super.key,
     required this.session,
-    this.isAssignment = false,
     this.recordedVoiceWav,
-    this.lyricAlignment,
+    this.pendingMixedAudio,
   });
 
   @override
@@ -41,13 +53,84 @@ class _ResultsPageState extends State<ResultsPage> {
   AudioPlayer? _listenPlayer;
   bool _isListening = false;
   File? _listenFile;
+  late Uint8List? _recordedVoiceWav;
+
+  /// The song's bundled timed lyric lines, used to group the pitch timeline
+  /// into lyric-line sections. Read straight from the local bundle (never
+  /// the network — this screen must work offline, and a session opened from
+  /// the Library has no lyrics passed to it), and empty for songs with none,
+  /// which the timeline handles by falling back to pause-based grouping.
+  List<LrcLine> get _lyrics =>
+      LocalSongLyrics.getLyrics(widget.session.songTitle) ?? const [];
+
+  /// Whether this song has a reference melody at all, as opposed to this
+  /// particular take having failed to produce one.
+  ///
+  /// Null until checked. Needed because an empty [SessionResult.singingSegments]
+  /// has two very different causes and the screen used to show neither: the
+  /// song ships no ground truth (ordinary — most don't yet), or it does and
+  /// something in this take's analysis went wrong. Saying which is the whole
+  /// difference between "nothing to compare against" and "something broke".
+  bool? _songHasReference;
 
   @override
   void initState() {
     super.initState();
+    _recordedVoiceWav = widget.recordedVoiceWav;
+    _checkForReferenceMelody();
     // Auto-save session so it appears in "Recently Visited" on Home page
     _autoSaveSession();
     WidgetsBinding.instance.addPostFrameCallback((_) => _autoDownload());
+    _awaitMixedAudio();
+  }
+
+  /// Only asked when there is no timeline to show, and only to explain why.
+  Future<void> _checkForReferenceMelody() async {
+    if (widget.session.singingSegments.isNotEmpty) return;
+    try {
+      final gt = await GroundTruthService.loadForSong(
+          widget.session.songTitle);
+      if (mounted) {
+        setState(() => _songHasReference = gt != null && gt.isNotEmpty);
+      }
+    } catch (_) {
+      // Not worth surfacing: the fallback copy covers both cases.
+      if (mounted) setState(() => _songHasReference = null);
+    }
+  }
+
+  /// What to tell the singer in place of the timeline, or null when there
+  /// is a timeline to show.
+  String? get _timelineEmptyReason {
+    if (widget.session.singingSegments.isNotEmpty) return null;
+    switch (_songHasReference) {
+      case true:
+        return 'This song has a reference melody, but no note-by-note '
+            'comparison came out of this take — usually no audio reached '
+            'the recorder. Try recording again.';
+      case false:
+        return 'No reference melody has been added for this song yet, so '
+            'there is nothing to compare each note against. The score '
+            'above comes from how steady your pitch was, not from whether '
+            'you hit this song\'s notes.';
+      default:
+        return 'No note-by-note comparison is available for this take.';
+    }
+  }
+
+  Future<void> _awaitMixedAudio() async {
+    final pending = widget.pendingMixedAudio;
+    if (pending == null) return;
+    try {
+      final mixed = await pending;
+      if (mixed != null && mounted) {
+        setState(() => _recordedVoiceWav = mixed);
+      }
+    } catch (e) {
+      // Mixing failed — the mic-only take already in _recordedVoiceWav
+      // stays the "Listen" source, so there's nothing more to do here.
+      debugPrint('Background audio mixing failed: $e');
+    }
   }
 
   Future<void> _autoSaveSession() async {
@@ -66,15 +149,9 @@ class _ResultsPageState extends State<ResultsPage> {
 
   Future<void> _autoDownload() async {
     final s = widget.session;
-    final match = TagalogBisayaSongs.songs.cast<KaraokeSong?>().firstWhere(
-      (song) =>
-          song!.title.toLowerCase() == s.songTitle.toLowerCase() &&
-          song.artist.toLowerCase() == s.songArtist.toLowerCase(),
-      orElse: () => null,
-    );
-    final language = match?.language ?? 'Unknown';
-
-    await DownloadsService.download(s.songTitle, s.songArtist, language);
+    // Every bundled song is OPM; the old lookup existed only to read a
+    // language off a 763-entry table of songs the app had no audio for.
+    await DownloadsService.download(s.songTitle, s.songArtist, 'Tagalog');
     if (!mounted) return;
     setState(() => _downloaded = true);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -118,18 +195,17 @@ class _ResultsPageState extends State<ResultsPage> {
       // base64-encoded into a data URI — that recording can be tens of MB
       // (a full mixed song + voice WAV), and synchronously base64-encoding
       // that on the main isolate froze the UI for several seconds.
-      if (widget.recordedVoiceWav != null) {
+      if (_recordedVoiceWav != null) {
         final dir = await getTemporaryDirectory();
         final file = File(
             '${dir.path}/huni_listen_${DateTime.now().microsecondsSinceEpoch}.wav');
-        await file.writeAsBytes(widget.recordedVoiceWav!, flush: true);
+        await file.writeAsBytes(_recordedVoiceWav!, flush: true);
         _listenFile = file;
         await _listenPlayer!.setFilePath(file.path);
       } else {
         // Fallback: play original song
-        final audioUrl =
-            SongAudioService.getAudioUrl(widget.session.songTitle);
-        if (audioUrl == null) {
+        final audio = SongAudioService.resolve(widget.session.songTitle);
+        if (audio == null) {
           _listenPlayer?.dispose();
           _listenPlayer = null;
           if (mounted) {
@@ -139,7 +215,11 @@ class _ResultsPageState extends State<ResultsPage> {
           }
           return;
         }
-        await _listenPlayer!.setAsset(audioUrl);
+        if (audio.isAsset) {
+          await _listenPlayer!.setAsset(audio.path);
+        } else {
+          await _listenPlayer!.setFilePath(audio.path);
+        }
       }
 
       _listenPlayer!.playerStateStream.listen((state) {
@@ -158,18 +238,56 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
+  /// Opens the share sheet with a rendered result card.
+  ///
+  /// This used to share plain text. An image is what the social apps
+  /// actually display, and it carries the same figures, so the caption is
+  /// now a fallback for the apps that take text as well rather than the
+  /// whole payload.
   void _shareSong() {
     final s = widget.session;
     final scoreInt = s.score.round();
-    final text =
-        'I just sang "${s.songTitle}" by ${s.songArtist} on Huni Karaoke!\n'
-        'Score: $scoreInt% - ${_feedbackLabel(scoreInt)}\n\n'
-        'Try it on Huni Karaoke App';
-    Share.share(text, subject: '${s.songTitle} - My Karaoke Score');
+    ResultShareSheet.show(
+      context,
+      baseName: s.songTitle,
+      shareText:
+          'I just sang "${s.songTitle}" by ${s.songArtist} on Huni — '
+          '$scoreInt% (${_feedbackLabel(scoreInt)})',
+      card: ShareableResultCard(
+        songTitle: s.songTitle,
+        songArtist: s.songArtist,
+        completedAt: s.completedAt,
+        score: s.score,
+        scoreLabel: _feedbackLabel(scoreInt),
+        stats: _shareStats(s),
+      ),
+    );
+  }
+
+  /// The three figures worth putting on a shared card.
+  ///
+  /// Only lines that could be sung are counted, which is the same basis
+  /// the score itself uses — counting silent or unauthored lines would
+  /// make the card disagree with the number next to it.
+  List<ShareStat> _shareStats(SessionResult s) {
+    final total = s.totalLines;
+    return [
+      ShareStat('On pitch', '${s.correctLines}/$total'),
+      if (s.flatLines + s.sharpLines > 0)
+        ShareStat('Off pitch', '${s.flatLines + s.sharpLines}')
+      else
+        ShareStat('Lines', '$total'),
+      ShareStat('Duration', _formatDuration(s.durationSeconds)),
+    ];
+  }
+
+  static String _formatDuration(int seconds) {
+    final m = seconds ~/ 60;
+    final sec = seconds % 60;
+    return '$m:${sec.toString().padLeft(2, '0')}';
   }
 
   static const _onTuneColor = Color(0xFF4CAF50);
-  static const _offTuneColor = Color(0xFFF44336);
   static const _silentColor = Color(0xFF757575);
   static const _flatColor = Color(0xFF448AFF);
   static const _sharpColor = Color(0xFFFF5252);
@@ -186,24 +304,6 @@ class _ResultsPageState extends State<ResultsPage> {
     setState(() => _saving = true);
     await SessionStorageService.saveSession(widget.session);
 
-    if (widget.isAssignment) {
-      final enrollment = context.read<EnrollmentService>();
-      final username =
-          await SessionStorageService.loadUsername() ?? 'Student';
-      final className = enrollment.primaryClass ?? 'Unknown Class';
-      await SubmissionService().addSubmission(
-        StudentSubmission(
-          id: '${DateTime.now().millisecondsSinceEpoch}',
-          studentName: username,
-          className: className,
-          activityName: widget.session.songTitle,
-          activityType: 'Karaoke',
-          score: widget.session.score,
-          submittedAt: DateTime.now(),
-        ),
-      );
-    }
-
     if (!mounted) return;
     setState(() {
       _saved = true;
@@ -215,11 +315,9 @@ class _ResultsPageState extends State<ResultsPage> {
           children: [
             const Icon(Icons.check, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Text(
-              widget.isAssignment
-                  ? 'Submitted to teacher!'
-                  : 'Session saved to Library',
-              style: const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+            const Text(
+              'Session saved to Library',
+              style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
             ),
           ],
         ),
@@ -317,7 +415,7 @@ class _ResultsPageState extends State<ResultsPage> {
       case 'Pitch Down Drill':
         return const Color(0xFFFF9800);
       case 'Scale Practice':
-        return const Color(0xFF00E5FF);
+        return AppColors.primaryCyan;
       case 'Voice Classification':
         return const Color(0xFFE91E63);
       default:
@@ -325,26 +423,55 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
+  /// The lyric lines this take actually struggled on — passed to
+  /// [PracticeDrillPage] so its phrase-loop drill practices the singer's own
+  /// problem lines rather than a generic list. Ground-truth songs prefer the
+  /// real target-vs-actual segments; everything else falls back to the
+  /// line-level estimate, which is all those songs have.
+  List<String> _problemLines() {
+    final s = widget.session;
+    if (s.singingSegments.isNotEmpty) {
+      final lyrics = _lyrics;
+      if (lyrics.isNotEmpty) {
+        final missed = groupSegmentsByLyricLine(s.singingSegments, lyrics)
+            .where((line) =>
+                line.lineText.isNotEmpty &&
+                line.segments.any((seg) =>
+                    seg.status == PitchFeedback.tooHigh ||
+                    seg.status == PitchFeedback.tooLow))
+            .map((line) => line.lineText)
+            .toList();
+        if (missed.isNotEmpty) return missed;
+      }
+    }
+    return s.singableLines
+        .where((l) => l.status != LineStatus.correct && l.lyricText.isNotEmpty)
+        .map((l) => l.lyricText)
+        .toList();
+  }
+
+  /// Opens the real drill screen the recommendation points at. These are
+  /// pushed directly (the same way EducationModePage opens them) rather than
+  /// by named route — this app registers no `routes` table, so the named
+  /// routes this used to call could never resolve and the card did nothing.
   void _navigateToDrill() {
     final title = _getRecommendationTitle();
-    String route;
+    final Widget page;
     switch (title) {
-      case 'Sustain Drill':
-      case 'Scale Practice':
-        route = '/practice-drills';
-        break;
       case 'Pitch Up Drill':
       case 'Pitch Down Drill':
       case 'Solfege Pitch':
-        route = '/solfege-pitch';
+        page = const SolfegePitchPage();
         break;
       case 'Voice Classification':
-        route = '/voice-classification';
+        page = const VoiceClassificationPage();
         break;
+      case 'Sustain Drill':
+      case 'Scale Practice':
       default:
-        route = '/practice-drills';
+        page = PracticeDrillPage(problemLines: _problemLines());
     }
-    Navigator.pushNamed(context, route);
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   }
 
   @override
@@ -353,7 +480,7 @@ class _ResultsPageState extends State<ResultsPage> {
     final scoreInt = s.score.round();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.bgDark,
       body: SafeArea(
         child: Column(
           children: [
@@ -367,12 +494,31 @@ class _ResultsPageState extends State<ResultsPage> {
                   const SizedBox(height: 12),
                   _buildFeedbackRow(scoreInt, s),
                   const SizedBox(height: 20),
-                  _buildHeatmapStrip(s),
-                  const SizedBox(height: 20),
-                  _buildLyricAlignment(),
-                  const SizedBox(height: 20),
-                  _buildLyricsResults(s),
-                  const SizedBox(height: 20),
+                  // The Pitch Heatmap / Lyrics Performance sections below
+                  // compare against the nearest chromatic note, not this
+                  // song's actual melody (no reference frequency is available
+                  // for most songs) — for a song WITH a real ground-truth
+                  // melody, showing that alongside the genuine target-vs-
+                  // actual PitchTimelineView/KaraokeSummaryCard would put two
+                  // different, disagreeing notions of "in tune" on the same
+                  // screen. Only shown as a fallback when there's no real
+                  // comparison available at all.
+                  if (s.singingSegments.isEmpty) ...[
+                    _buildHeatmapStrip(s),
+                    const SizedBox(height: 20),
+                  ],
+                  KaraokeSummaryCard(
+                    summary: SingingPerformanceSummary.fromSegments(
+                      s.singingSegments,
+                    ),
+                  ),
+                  if (s.singingSegments.isNotEmpty) const SizedBox(height: 20),
+                  PitchTimelineView(
+                    segments: s.singingSegments,
+                    lyrics: _lyrics,
+                    emptyReason: _timelineEmptyReason,
+                  ),
+                  if (s.singingSegments.isNotEmpty) const SizedBox(height: 20),
                   _buildRecommendations(s),
                   const SizedBox(height: 24),
                   _buildRecommendationButton(),
@@ -599,7 +745,7 @@ class _ResultsPageState extends State<ResultsPage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: AppColors.cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
           boxShadow: [
@@ -673,90 +819,6 @@ class _ResultsPageState extends State<ResultsPage> {
   // Whisper actually heard it sung, from a real on-device transcription
   // of the recording — not the static playback-position timestamps used
   // for the live scrolling highlight.
-  Widget _buildLyricAlignment() {
-    final alignment = widget.lyricAlignment;
-    if (alignment == null || alignment.totalCount == 0) return const SizedBox.shrink();
-
-    final matchRate = alignment.matchRatePercent;
-    final avgOffsetMs = alignment.avgAbsTimingOffsetMs;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.graphic_eq, color: Color(0xFF00E5FF), size: 16),
-              const SizedBox(width: 6),
-              const Text(
-                'Lyric Alignment · Whisper-Tiny',
-                style: TextStyle(color: Colors.white70, fontSize: 13,
-                    fontWeight: FontWeight.w600, fontFamily: 'Roboto', letterSpacing: 0.3),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _alignmentStat('${matchRate.toStringAsFixed(0)}%', 'Words matched'),
-              ),
-              Expanded(
-                child: _alignmentStat('${avgOffsetMs.round()}ms', 'Avg. timing offset'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 20,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: alignment.words.take(60).map((w) {
-                final color = !w.matched
-                    ? Colors.white24
-                    : (w.timingOffsetMs!.abs() <= 400 ? _onTuneColor : const Color(0xFFFF9800));
-                return Container(
-                  margin: const EdgeInsets.only(right: 5),
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: color.withValues(alpha: 0.5)),
-                  ),
-                  child: Center(
-                    child: Text(w.expectedWord,
-                        style: TextStyle(color: color, fontSize: 10.5, fontFamily: 'Roboto')),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _alignmentStat(String value, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18,
-            fontWeight: FontWeight.w700, fontFamily: 'Roboto')),
-        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 11, fontFamily: 'Roboto')),
-      ],
-    );
-  }
-
-  // ── FLATNESS / SHARPNESS HEATMAP ──
-  // One block per singable line, colored by how far — and which
-  // direction — the singer drifted from the target pitch on that line.
   Widget _buildHeatmapStrip(SessionResult s) {
     final singable = s.singableLines;
     if (singable.isEmpty) return const SizedBox.shrink();
@@ -874,14 +936,14 @@ class _ResultsPageState extends State<ResultsPage> {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                  color: AppColors.primaryCyan.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.25)),
+                  border: Border.all(color: AppColors.primaryCyan.withValues(alpha: 0.25)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.fitness_center, color: Color(0xFF00E5FF), size: 16),
+                    const Icon(Icons.fitness_center, color: AppColors.primaryCyan, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(r, style: const TextStyle(color: Colors.white70,
@@ -891,167 +953,6 @@ class _ResultsPageState extends State<ResultsPage> {
                 ),
               )),
         ],
-      ],
-    );
-  }
-
-  Widget _buildLyricsResults(SessionResult s) {
-    final singable = s.lyricResults
-        .where((l) => l.lyricText.isNotEmpty)
-        .toList();
-
-    if (singable.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Text(
-          'No lyric data recorded',
-          style: TextStyle(color: Colors.white38, fontFamily: 'Roboto'),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Row(
-            children: [
-              const Icon(Icons.lyrics_outlined, color: Colors.white54, size: 16),
-              const SizedBox(width: 6),
-              const Text(
-                'Lyrics Performance',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Roboto',
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const Spacer(),
-              // Legend
-              _legendDot(_onTuneColor, 'In Tune'),
-              const SizedBox(width: 10),
-              _legendDot(_offTuneColor, 'Off Pitch'),
-              const SizedBox(width: 10),
-              _legendDot(_silentColor, 'No Signal'),
-            ],
-          ),
-        ),
-        const Divider(color: Colors.white10, height: 1),
-        const SizedBox(height: 6),
-        // Each lyric line with pitch status
-        ...singable.asMap().entries.map((entry) {
-          final i = entry.key;
-          final line = entry.value;
-
-          String statusLabel;
-          IconData statusIcon;
-          Color color;
-          switch (line.status) {
-            case LineStatus.correct:
-              statusLabel = 'In Tune';
-              statusIcon = Icons.check_circle;
-              color = _onTuneColor;
-              break;
-            case LineStatus.flat:
-              statusLabel = 'Flat';
-              statusIcon = Icons.arrow_downward;
-              color = _offTuneColor;
-              break;
-            case LineStatus.sharp:
-              statusLabel = 'Sharp';
-              statusIcon = Icons.arrow_upward;
-              color = _offTuneColor;
-              break;
-            case LineStatus.noSignal:
-              statusLabel = 'No Signal';
-              statusIcon = Icons.mic_off;
-              color = _silentColor;
-              break;
-          }
-
-          // Skip intro markers from display
-          final isIntro = line.lyricText.contains('Intro') ||
-              line.lyricText.contains('♪');
-
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 3),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: color.withValues(alpha: 0.2),
-                width: 0.5,
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Line number
-                SizedBox(
-                  width: 24,
-                  child: Text(
-                    '${i + 1}',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 11,
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
-                ),
-                // Lyric text
-                Expanded(
-                  child: Text(
-                    isIntro ? '♪ Intro ♪' : line.lyricText,
-                    style: TextStyle(
-                      color: line.status == LineStatus.correct
-                          ? Colors.white
-                          : line.status == LineStatus.noSignal
-                              ? Colors.white.withValues(alpha: 0.4)
-                              : Colors.white.withValues(alpha: 0.85),
-                      fontSize: 13,
-                      fontWeight: line.status == LineStatus.correct
-                          ? FontWeight.w500
-                          : FontWeight.normal,
-                      fontFamily: 'Roboto',
-                      fontStyle: isIntro ? FontStyle.italic : FontStyle.normal,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Status badge
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, color: color, size: 12),
-                      const SizedBox(width: 3),
-                      Text(
-                        statusLabel,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Roboto',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
       ],
     );
   }
@@ -1105,7 +1006,6 @@ class _ResultsPageState extends State<ResultsPage> {
                       songTitle: widget.session.songTitle,
                       songArtist: widget.session.songArtist,
                       songImage: widget.session.songImage,
-                      isAssignment: widget.isAssignment,
                     ),
                   ),
                 );
@@ -1147,7 +1047,7 @@ class _ResultsPageState extends State<ResultsPage> {
                   Icon(
                     _isListening
                         ? Icons.stop
-                        : (widget.recordedVoiceWav != null
+                        : (_recordedVoiceWav != null
                             ? Icons.record_voice_over
                             : Icons.headphones),
                     size: 18,
@@ -1156,7 +1056,7 @@ class _ResultsPageState extends State<ResultsPage> {
                   Text(
                     _isListening
                         ? 'Stop'
-                        : (widget.recordedVoiceWav != null
+                        : (_recordedVoiceWav != null
                             ? 'My Voice'
                             : 'Listen'),
                     style: const TextStyle(
@@ -1171,21 +1071,10 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
           const SizedBox(width: 8),
 
-          // Save / Submit button
+          // Save button
           Expanded(
             child: ElevatedButton(
-              onPressed: _saving
-                  ? null
-                  : widget.isAssignment
-                      ? () async {
-                          final nav = Navigator.of(context);
-                          await _saveSession();
-                          if (!mounted) return;
-                          nav.popUntil(
-                            (r) => r.isFirst || r.settings.name == '/',
-                          );
-                        }
-                      : _saveSession,
+              onPressed: _saving ? null : _saveSession,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _saved
                     ? _onTuneColor
@@ -1205,9 +1094,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       ),
                     )
                   : Text(
-                      _saved
-                          ? (widget.isAssignment ? 'Submitted' : 'Saved')
-                          : (widget.isAssignment ? 'Submit' : 'Save'),
+                      _saved ? 'Saved' : 'Save',
                       style: const TextStyle(
                         fontSize: 14,
                         fontFamily: 'Roboto',

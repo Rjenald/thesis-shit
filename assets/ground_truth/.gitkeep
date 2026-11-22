@@ -1,0 +1,9 @@
+Per-syllable target melodies live here as "<Title> - <Artist>.json",
+matching the backing track's filename exactly.
+
+Shape that ground_truth_service.dart parses:
+  {"data": [{"syllable": "Umaga", "start": 0.15, "end": 0.47, "note": "B3"}]}
+start/end are seconds on the BACKING TRACK's own timeline.
+
+pubspec.yaml declares this directory, and Flutter fails the build if a
+declared asset directory is missing - hence this placeholder.

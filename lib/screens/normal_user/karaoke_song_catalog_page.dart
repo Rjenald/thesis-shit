@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../services/song_audio_service.dart';
 import '../../services/song_catalog_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -97,7 +98,7 @@ class _KaraokeSongCatalogPageState extends State<KaraokeSongCatalogPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: 2, onTap: (_) {}),
+      bottomNavigationBar: BottomNavBar(currentIndex: 2),
     );
   }
 
@@ -111,9 +112,12 @@ class _KaraokeSongCatalogPageState extends State<KaraokeSongCatalogPage> {
             child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
           ),
           const SizedBox(width: 12),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          // Expanded so the subtitle can ellipsise rather than run the
+          // row past the edge of a narrow screen.
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Text(
                 'Karaoke',
                 style: TextStyle(
@@ -125,13 +129,16 @@ class _KaraokeSongCatalogPageState extends State<KaraokeSongCatalogPage> {
               ),
               Text(
                 'Choose a song to sing',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.white54,
                   fontFamily: 'Roboto',
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -243,19 +250,13 @@ class _KaraokeSongCatalogPageState extends State<KaraokeSongCatalogPage> {
         ),
         child: Row(
           children: [
+            // Square corners on the right: this sits flush against the
+            // card's text column.
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
                 left: Radius.circular(12),
               ),
-              child: image.isNotEmpty
-                  ? Image.network(
-                      image,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _songPlaceholder(),
-                    )
-                  : _songPlaceholder(),
+              child: SongCoverArt(image: image, size: 70, borderRadius: 0),
             ),
             Expanded(
               child: Padding(
@@ -329,14 +330,4 @@ class _KaraokeSongCatalogPageState extends State<KaraokeSongCatalogPage> {
     );
   }
 
-  Widget _songPlaceholder() => Container(
-        width: 70,
-        height: 70,
-        color: const Color(0xFF1E1E1E),
-        child: const Icon(
-          Icons.music_note,
-          color: AppColors.primaryCyan,
-          size: 26,
-        ),
-      );
 }

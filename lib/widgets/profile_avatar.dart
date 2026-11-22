@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../constants/app_colors.dart';
 import '../services/profile_picture_service.dart';
 
 /// Reusable profile avatar widget.
@@ -26,7 +27,7 @@ class ProfileAvatar extends StatelessWidget {
     required this.username,
     this.radius = 24,
     this.editable = false,
-    this.accentColor = const Color(0xFF00E5FF),
+    this.accentColor = AppColors.primaryCyan,
   });
 
   // ── Image picker ───────────────────────────────────────────────────────────

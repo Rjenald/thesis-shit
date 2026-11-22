@@ -106,6 +106,10 @@ double centsFromTarget(double detectedFreq, double targetFreq) {
   return 1200.0 * log(detectedFreq / targetFreq) / ln2;
 }
 
+/// Inverse of [freqToMidi]: a fractional MIDI note number back to Hz.
+/// midiToFreq(69) == 440.0 (A4).
+double midiToFreq(double midi) => 440.0 * pow(2.0, (midi - 69.0) / 12.0);
+
 /// Convert Hz directly to a note name string (e.g. 440.0 → "A4").
 /// Used by CrepeService and AudioService for quick display.
 String hzToNoteName(double hz) {
@@ -117,17 +121,69 @@ String hzToNoteName(double hz) {
   return '$noteName$octave';
 }
 
+/// Parses a note name like "A4", "C#5", "C♯4", "Bb3", or "B♭3" into a
+/// frequency in Hz (A4 = 440). Returns null if [name] isn't a recognizable
+/// note name — callers should skip/ignore rather than guess.
+double? noteNameToFrequency(String name) {
+  final m = RegExp(r'^([A-Ga-g])([#♯b♭]?)(-?\d+)$').firstMatch(name.trim());
+  if (m == null) return null;
+
+  const letterToChromatic = {
+    'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11,
+  };
+  final letter = m.group(1)!.toUpperCase();
+  final accidental = m.group(2) ?? '';
+  final octave = int.parse(m.group(3)!);
+
+  var chromatic = letterToChromatic[letter]!;
+  if (accidental == '#' || accidental == '♯') chromatic += 1;
+  if (accidental == 'b' || accidental == '♭') chromatic -= 1;
+  chromatic = ((chromatic % 12) + 12) % 12;
+
+  final midi = (octave + 1) * 12 + chromatic;
+  return midiToFreq(midi.toDouble());
+}
+
 // ── Feedback classification ───────────────────────────────────────────────────
 
 enum PitchFeedback { correct, tooHigh, tooLow, noSignal }
 
-/// Classify pitch feedback given a cents deviation.
+/// Default cents tolerance for "in tune" classification — the one place
+/// this value is defined; [classifyPitch], [analyzeFrequency], and
+/// [NoteResult.fromFrequency] all default to it, so it's a single clearly
+/// named constant to tune rather than a magic number repeated at each
+/// call site.
 ///
 /// Tolerance guide:
 ///  • 25 cents (default) — quarter-semitone, beginner-friendly
 ///  • 15 cents           — strict, advanced/performance mode
 ///  • 35 cents           — lenient, young/beginner students
-PitchFeedback classifyPitch(double cents, {double toleranceCents = 25.0}) {
+const double kDefaultPitchToleranceCents = 25.0;
+
+/// Default CREPE confidence a pitch frame must reach before it's trusted —
+/// the one place this value is defined, so [OnDeviceCrepeService] and every
+/// frame-to-segment builder (karaoke's [buildSingingSegments], "without
+/// karaoke"'s buildWordNotes) share one number instead of drifting apart.
+/// 0.5 is CREPE's own convention, and the model now in assets/models/
+/// reaches it comfortably: measured against synthesised tones of known
+/// pitch (A2–A4), it reports 0.87–0.96 confidence with under 5 cents of
+/// error.
+///
+/// This was previously 0.15. That was never a tuning choice — it was
+/// compensation for a broken model. The custom-trained huni_crepe.tflite
+/// shipped before scored a maximum confidence of ~0.3 and read 355–831
+/// cents sharp (worsening with pitch, consistent with its 360 bins
+/// spanning 5 octaves while this file's decoder assumes 6). At the stock
+/// 0.5 threshold it produced no usable frames at all, so the threshold was
+/// lowered until something came through. With a model that actually works,
+/// a low threshold only lets noise in.
+const double kDefaultPitchConfidenceThreshold = 0.5;
+
+/// Classify pitch feedback given a cents deviation.
+PitchFeedback classifyPitch(
+  double cents, {
+  double toleranceCents = kDefaultPitchToleranceCents,
+}) {
   if (cents.abs() <= toleranceCents) return PitchFeedback.correct;
   if (cents > 0) return PitchFeedback.tooHigh;
   return PitchFeedback.tooLow;
@@ -141,7 +197,7 @@ NoteResult analyzeFrequency(
   double freq, {
   double? targetFreq,
   double confidence = 1.0,
-  double toleranceCents = 25.0,   // ← new: configurable tolerance
+  double toleranceCents = kDefaultPitchToleranceCents,
 }) {
   final midi        = freqToMidi(freq);
   final nearestMidi = midiToNearestNote(midi);
@@ -205,7 +261,7 @@ class NoteResult {
     double freq, {
     double confidence = 1.0,
     double? targetFreq,
-    double toleranceCents = 25.0,
+    double toleranceCents = kDefaultPitchToleranceCents,
   }) {
     return analyzeFrequency(
       freq,
@@ -260,4 +316,25 @@ class NoteResult {
   String toString() =>
       'NoteResult($fullName, ${frequency.toStringAsFixed(1)} Hz, '
       '${cents.toStringAsFixed(1)} ¢, $clarityPercent% clarity, $feedback)';
+}
+
+// ── Offline/batch pitch analysis ──────────────────────────────────────────────
+
+/// One frame of a batch (non-real-time) pitch analysis pass over a full
+/// recording — a timestamped Hz + confidence reading, as opposed to
+/// [NoteResult] which is a live analyzed-against-target reading.
+class PitchFrame {
+  final int timeMs;
+  final double frequency;
+
+  /// Model confidence for this frame (0.0–1.0). 0 means silence/no-signal.
+  final double confidence;
+
+  const PitchFrame({
+    required this.timeMs,
+    required this.frequency,
+    required this.confidence,
+  });
+
+  bool get hasSignal => frequency > 0;
 }

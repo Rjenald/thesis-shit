@@ -1,0 +1,10 @@
+Backing tracks live here as "<Title> - <Artist>.mp3".
+
+pubspec.yaml declares this whole directory as an asset bundle, and Flutter
+fails the build if a declared asset directory does not exist - so this
+placeholder keeps it present while the folder is empty. Delete it once
+there are real tracks here if you like; nothing reads it.
+
+SongCatalogService.bundled lists which songs the app offers, and
+SongAudioService resolves each one to this folder by that exact filename
+convention. There is no registry: the name IS the link.

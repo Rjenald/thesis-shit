@@ -13,9 +13,12 @@ import 'package:path_provider/path_provider.dart';
 /// Returns the mixed WAV bytes, or null if mixing failed for any reason
 /// (caller should fall back to the mic-only recording in that case).
 Future<Uint8List?> mixSongAndVoice({
-  required String songAssetPath,
+  required String songPath,
   required Duration songStartOffset,
   required Uint8List micWavBytes,
+  /// True when [songPath] points into the read-only asset bundle, false for
+  /// an admin-uploaded track on disk — the two are read differently.
+  bool songIsAsset = true,
   double playbackSpeed = 1.0,
 }) async {
   File? songFile, micFile, outFile;
@@ -26,7 +29,9 @@ Future<Uint8List?> mixSongAndVoice({
     micFile = File('${tempDir.path}/huni_mix_mic_$stamp.wav');
     outFile = File('${tempDir.path}/huni_mix_out_$stamp.wav');
 
-    final songBytes = (await rootBundle.load(songAssetPath)).buffer.asUint8List();
+    final songBytes = songIsAsset
+        ? (await rootBundle.load(songPath)).buffer.asUint8List()
+        : await File(songPath).readAsBytes();
     await songFile.writeAsBytes(songBytes, flush: true);
     await micFile.writeAsBytes(micWavBytes, flush: true);
 

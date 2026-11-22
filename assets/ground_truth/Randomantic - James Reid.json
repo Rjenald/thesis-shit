@@ -1,0 +1,3664 @@
+{
+ "data": [
+  {
+   "syllable": "Ka",
+   "start": 0.3,
+   "end": 0.42,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 0.42,
+   "end": 0.6,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 0.6,
+   "end": 0.95,
+   "note": "G4"
+  },
+  {
+   "syllable": "wa",
+   "start": 0.95,
+   "end": 1.05,
+   "note": "E4"
+  },
+  {
+   "syllable": "la",
+   "start": 1.05,
+   "end": 1.9,
+   "note": "D4"
+  },
+  {
+   "syllable": "na",
+   "start": 1.9,
+   "end": 2.01,
+   "note": "E4"
+  },
+  {
+   "syllable": "na",
+   "start": 2.01,
+   "end": 2.25,
+   "note": "D4"
+  },
+  {
+   "syllable": "na",
+   "start": 2.25,
+   "end": 2.36,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 2.36,
+   "end": 2.53,
+   "note": "A4"
+  },
+  {
+   "syllable": "",
+   "start": 2.53,
+   "end": 2.71,
+   "note": "G4"
+  },
+  {
+   "syllable": "",
+   "start": 2.87,
+   "end": 3.01,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 3.01,
+   "end": 3.18,
+   "note": "A4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 3.18,
+   "end": 3.37,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 3.37,
+   "end": 3.53,
+   "note": "A4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 3.53,
+   "end": 3.64,
+   "note": "E4"
+  },
+  {
+   "syllable": "hit",
+   "start": 3.64,
+   "end": 3.85,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 3.95,
+   "end": 4.48,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 4.48,
+   "end": 4.81,
+   "note": "C4"
+  },
+  {
+   "syllable": "hit",
+   "start": 4.93,
+   "end": 5.12,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 5.12,
+   "end": 5.59,
+   "note": "G4"
+  },
+  {
+   "syllable": "hit",
+   "start": 5.59,
+   "end": 5.75,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 5.75,
+   "end": 5.94,
+   "note": "G4"
+  },
+  {
+   "syllable": "ka",
+   "start": 6.1,
+   "end": 6.23,
+   "note": "E4"
+  },
+  {
+   "syllable": "ka",
+   "start": 6.23,
+   "end": 6.42,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 6.42,
+   "end": 6.53,
+   "note": "E4"
+  },
+  {
+   "syllable": "hit",
+   "start": 6.53,
+   "end": 7.07,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 7.17,
+   "end": 7.4,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 7.49,
+   "end": 7.7,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 8.04,
+   "end": 8.16,
+   "note": "G4"
+  },
+  {
+   "syllable": "hit",
+   "start": 8.16,
+   "end": 8.35,
+   "note": "A4"
+  },
+  {
+   "syllable": "wa",
+   "start": 8.69,
+   "end": 8.83,
+   "note": "E4"
+  },
+  {
+   "syllable": "la",
+   "start": 8.83,
+   "end": 9.64,
+   "note": "D4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 9.64,
+   "end": 9.93,
+   "note": "C4"
+  },
+  {
+   "syllable": "hit",
+   "start": 10.05,
+   "end": 10.88,
+   "note": "A5"
+  },
+  {
+   "syllable": "Pa",
+   "start": 10.99,
+   "end": 11.1,
+   "note": "D4"
+  },
+  {
+   "syllable": "kung",
+   "start": 11.1,
+   "end": 11.42,
+   "note": "C4"
+  },
+  {
+   "syllable": "kung",
+   "start": 11.42,
+   "end": 11.62,
+   "note": "D4"
+  },
+  {
+   "syllable": "big",
+   "start": 11.62,
+   "end": 11.86,
+   "note": "E4"
+  },
+  {
+   "syllable": "na",
+   "start": 12.07,
+   "end": 12.31,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 12.41,
+   "end": 12.92,
+   "note": "A3"
+  },
+  {
+   "syllable": "mang",
+   "start": 12.92,
+   "end": 13.37,
+   "note": "C4"
+  },
+  {
+   "syllable": "wrap",
+   "start": 13.77,
+   "end": 14.22,
+   "note": "D4"
+  },
+  {
+   "syllable": "my",
+   "start": 14.22,
+   "end": 14.42,
+   "note": "C4"
+  },
+  {
+   "syllable": "my",
+   "start": 14.42,
+   "end": 14.55,
+   "note": "D4"
+  },
+  {
+   "syllable": "arms",
+   "start": 14.55,
+   "end": 14.87,
+   "note": "C4"
+  },
+  {
+   "syllable": "on",
+   "start": 14.87,
+   "end": 15.16,
+   "note": "D4"
+  },
+  {
+   "syllable": "yo",
+   "start": 15.21,
+   "end": 15.33,
+   "note": "F#4"
+  },
+  {
+   "syllable": "ur",
+   "start": 15.33,
+   "end": 15.5,
+   "note": "G4"
+  },
+  {
+   "syllable": "hips",
+   "start": 15.58,
+   "end": 17.36,
+   "note": "E4"
+  },
+  {
+   "syllable": "Baby",
+   "start": 17.78,
+   "end": 17.92,
+   "note": "C4"
+  },
+  {
+   "syllable": "Baby",
+   "start": 17.92,
+   "end": 18.03,
+   "note": "A3"
+  },
+  {
+   "syllable": "Baby",
+   "start": 18.12,
+   "end": 18.23,
+   "note": "B3"
+  },
+  {
+   "syllable": "ye",
+   "start": 18.23,
+   "end": 19.41,
+   "note": "C4"
+  },
+  {
+   "syllable": "ye",
+   "start": 19.44,
+   "end": 19.64,
+   "note": "A3"
+  },
+  {
+   "syllable": "",
+   "start": 19.64,
+   "end": 19.77,
+   "note": "G#3"
+  },
+  {
+   "syllable": "",
+   "start": 19.77,
+   "end": 20.1,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 20.16,
+   "end": 20.27,
+   "note": "A3"
+  },
+  {
+   "syllable": "'di",
+   "start": 21.38,
+   "end": 21.74,
+   "note": "C4"
+  },
+  {
+   "syllable": "mo",
+   "start": 21.74,
+   "end": 21.95,
+   "note": "D4"
+  },
+  {
+   "syllable": "i",
+   "start": 21.99,
+   "end": 22.26,
+   "note": "E4"
+  },
+  {
+   "syllable": "na",
+   "start": 22.29,
+   "end": 22.39,
+   "note": "C4"
+  },
+  {
+   "syllable": "na",
+   "start": 22.39,
+   "end": 22.57,
+   "note": "D4"
+  },
+  {
+   "syllable": "a",
+   "start": 22.61,
+   "end": 22.73,
+   "note": "C4"
+  },
+  {
+   "syllable": "sa",
+   "start": 23.02,
+   "end": 23.22,
+   "note": "A3"
+  },
+  {
+   "syllable": "han",
+   "start": 23.25,
+   "end": 23.67,
+   "note": "C4"
+  },
+  {
+   "syllable": "I'll",
+   "start": 24.02,
+   "end": 24.18,
+   "note": "D4"
+  },
+  {
+   "syllable": "kiss",
+   "start": 24.41,
+   "end": 24.52,
+   "note": "E4"
+  },
+  {
+   "syllable": "right",
+   "start": 24.55,
+   "end": 25.19,
+   "note": "C4"
+  },
+  {
+   "syllable": "on",
+   "start": 25.19,
+   "end": 25.37,
+   "note": "D4"
+  },
+  {
+   "syllable": "the",
+   "start": 25.37,
+   "end": 25.52,
+   "note": "D#4"
+  },
+  {
+   "syllable": "the",
+   "start": 25.52,
+   "end": 25.63,
+   "note": "G4"
+  },
+  {
+   "syllable": "lips",
+   "start": 25.63,
+   "end": 26.34,
+   "note": "E4"
+  },
+  {
+   "syllable": "lips",
+   "start": 26.34,
+   "end": 26.51,
+   "note": "F4"
+  },
+  {
+   "syllable": "lips",
+   "start": 26.51,
+   "end": 27.64,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 27.64,
+   "end": 27.79,
+   "note": "F4"
+  },
+  {
+   "syllable": "baby",
+   "start": 28.18,
+   "end": 28.32,
+   "note": "C4"
+  },
+  {
+   "syllable": "baby",
+   "start": 28.32,
+   "end": 28.42,
+   "note": "D4"
+  },
+  {
+   "syllable": "ye",
+   "start": 28.42,
+   "end": 28.59,
+   "note": "E4"
+  },
+  {
+   "syllable": "ah",
+   "start": 28.71,
+   "end": 28.89,
+   "note": "D4"
+  },
+  {
+   "syllable": "ah",
+   "start": 28.89,
+   "end": 29.65,
+   "note": "C4"
+  },
+  {
+   "syllable": "Wri",
+   "start": 29.72,
+   "end": 30.04,
+   "note": "A3"
+  },
+  {
+   "syllable": "Wri",
+   "start": 30.12,
+   "end": 30.22,
+   "note": "D4"
+  },
+  {
+   "syllable": "Wri",
+   "start": 30.22,
+   "end": 30.63,
+   "note": "C4"
+  },
+  {
+   "syllable": "te",
+   "start": 30.63,
+   "end": 30.74,
+   "note": "D4"
+  },
+  {
+   "syllable": "te",
+   "start": 30.74,
+   "end": 30.98,
+   "note": "E4"
+  },
+  {
+   "syllable": "lit",
+   "start": 30.98,
+   "end": 31.28,
+   "note": "F4"
+  },
+  {
+   "syllable": "ve",
+   "start": 31.28,
+   "end": 31.63,
+   "note": "G4"
+  },
+  {
+   "syllable": "ve",
+   "start": 31.63,
+   "end": 31.82,
+   "note": "F4"
+  },
+  {
+   "syllable": "tes",
+   "start": 31.98,
+   "end": 32.56,
+   "note": "C4"
+  },
+  {
+   "syllable": "post",
+   "start": 32.56,
+   "end": 32.67,
+   "note": "A3"
+  },
+  {
+   "syllable": "post",
+   "start": 32.67,
+   "end": 32.81,
+   "note": "B3"
+  },
+  {
+   "syllable": "Then",
+   "start": 32.91,
+   "end": 33.53,
+   "note": "C4"
+  },
+  {
+   "syllable": "post",
+   "start": 33.53,
+   "end": 33.65,
+   "note": "A3"
+  },
+  {
+   "syllable": "post",
+   "start": 33.65,
+   "end": 33.8,
+   "note": "B3"
+  },
+  {
+   "syllable": "it",
+   "start": 33.88,
+   "end": 34.49,
+   "note": "C4"
+  },
+  {
+   "syllable": "front",
+   "start": 34.58,
+   "end": 34.81,
+   "note": "E4"
+  },
+  {
+   "syllable": "or",
+   "start": 34.81,
+   "end": 35.23,
+   "note": "D4"
+  },
+  {
+   "syllable": "or",
+   "start": 35.23,
+   "end": 35.35,
+   "note": "E4"
+  },
+  {
+   "syllable": "Show",
+   "start": 35.53,
+   "end": 35.71,
+   "note": "C4"
+  },
+  {
+   "syllable": "up",
+   "start": 35.85,
+   "end": 36.08,
+   "note": "E4"
+  },
+  {
+   "syllable": "in",
+   "start": 36.08,
+   "end": 36.43,
+   "note": "F4"
+  },
+  {
+   "syllable": "su",
+   "start": 36.43,
+   "end": 36.7,
+   "note": "G4"
+  },
+  {
+   "syllable": "and",
+   "start": 36.76,
+   "end": 37.36,
+   "note": "C4"
+  },
+  {
+   "syllable": "with",
+   "start": 37.39,
+   "end": 37.54,
+   "note": "B3"
+  },
+  {
+   "syllable": "bro",
+   "start": 37.73,
+   "end": 37.83,
+   "note": "A3"
+  },
+  {
+   "syllable": "och",
+   "start": 37.83,
+   "end": 38.0,
+   "note": "B3"
+  },
+  {
+   "syllable": "And",
+   "start": 38.05,
+   "end": 38.65,
+   "note": "C4"
+  },
+  {
+   "syllable": "ro",
+   "start": 38.8,
+   "end": 38.98,
+   "note": "B3"
+  },
+  {
+   "syllable": "ses",
+   "start": 39.03,
+   "end": 39.64,
+   "note": "C4"
+  },
+  {
+   "syllable": "front",
+   "start": 39.73,
+   "end": 39.9,
+   "note": "E4"
+  },
+  {
+   "syllable": "yard",
+   "start": 39.98,
+   "end": 40.59,
+   "note": "D4"
+  },
+  {
+   "syllable": "who",
+   "start": 40.61,
+   "end": 40.91,
+   "note": "C4"
+  },
+  {
+   "syllable": "Do",
+   "start": 41.05,
+   "end": 41.24,
+   "note": "E4"
+  },
+  {
+   "syllable": "o",
+   "start": 41.24,
+   "end": 41.47,
+   "note": "D4"
+  },
+  {
+   "syllable": "do",
+   "start": 41.57,
+   "end": 41.68,
+   "note": "G4"
+  },
+  {
+   "syllable": "do",
+   "start": 41.68,
+   "end": 41.9,
+   "note": "A4"
+  },
+  {
+   "syllable": "o",
+   "start": 41.9,
+   "end": 42.0,
+   "note": "A#4"
+  },
+  {
+   "syllable": "o",
+   "start": 42.0,
+   "end": 42.14,
+   "note": "A4"
+  },
+  {
+   "syllable": "do",
+   "start": 42.24,
+   "end": 42.71,
+   "note": "G4"
+  },
+  {
+   "syllable": "do",
+   "start": 42.71,
+   "end": 42.88,
+   "note": "E4"
+  },
+  {
+   "syllable": "o",
+   "start": 42.88,
+   "end": 43.52,
+   "note": "G4"
+  },
+  {
+   "syllable": "do",
+   "start": 43.52,
+   "end": 43.82,
+   "note": "A4"
+  },
+  {
+   "syllable": "do",
+   "start": 44.02,
+   "end": 44.14,
+   "note": "D4"
+  },
+  {
+   "syllable": "o",
+   "start": 44.14,
+   "end": 45.05,
+   "note": "C4"
+  },
+  {
+   "syllable": "ye",
+   "start": 45.19,
+   "end": 45.4,
+   "note": "A3"
+  },
+  {
+   "syllable": "Ang",
+   "start": 46.24,
+   "end": 46.51,
+   "note": "E4"
+  },
+  {
+   "syllable": "da",
+   "start": 46.51,
+   "end": 46.75,
+   "note": "D4"
+  },
+  {
+   "syllable": "ming",
+   "start": 46.75,
+   "end": 47.57,
+   "note": "C4"
+  },
+  {
+   "syllable": "ra",
+   "start": 47.57,
+   "end": 47.69,
+   "note": "A3"
+  },
+  {
+   "syllable": "an",
+   "start": 47.78,
+   "end": 48.21,
+   "note": "C4"
+  },
+  {
+   "syllable": "i",
+   "start": 48.44,
+   "end": 48.54,
+   "note": "G3"
+  },
+  {
+   "syllable": "i",
+   "start": 48.54,
+   "end": 48.69,
+   "note": "C4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 48.73,
+   "end": 48.85,
+   "note": "F3"
+  },
+  {
+   "syllable": "kaw",
+   "start": 48.85,
+   "end": 49.04,
+   "note": "G3"
+  },
+  {
+   "syllable": "ang",
+   "start": 49.04,
+   "end": 49.2,
+   "note": "A3"
+  },
+  {
+   "syllable": "ta",
+   "start": 49.26,
+   "end": 49.38,
+   "note": "C4"
+  },
+  {
+   "syllable": "nging",
+   "start": 49.47,
+   "end": 50.15,
+   "note": "G4"
+  },
+  {
+   "syllable": "hi",
+   "start": 50.15,
+   "end": 50.32,
+   "note": "E4"
+  },
+  {
+   "syllable": "lan",
+   "start": 50.32,
+   "end": 51.09,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 51.09,
+   "end": 51.28,
+   "note": "A4"
+  },
+  {
+   "syllable": "oh",
+   "start": 51.28,
+   "end": 51.5,
+   "note": "E4"
+  },
+  {
+   "syllable": "be",
+   "start": 51.68,
+   "end": 52.15,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ha",
+   "start": 52.26,
+   "end": 52.48,
+   "note": "G3"
+  },
+  {
+   "syllable": "ha",
+   "start": 52.61,
+   "end": 52.73,
+   "note": "F3"
+  },
+  {
+   "syllable": "ra",
+   "start": 52.73,
+   "end": 52.88,
+   "note": "G3"
+  },
+  {
+   "syllable": "ra",
+   "start": 52.88,
+   "end": 53.15,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 53.15,
+   "end": 53.3,
+   "note": "B3"
+  },
+  {
+   "syllable": "hin",
+   "start": 53.3,
+   "end": 53.51,
+   "note": "C4"
+  },
+  {
+   "syllable": "hin",
+   "start": 53.51,
+   "end": 53.73,
+   "note": "D4"
+  },
+  {
+   "syllable": "ki",
+   "start": 53.86,
+   "end": 54.12,
+   "note": "E4"
+  },
+  {
+   "syllable": "ta",
+   "start": 54.33,
+   "end": 54.44,
+   "note": "E4"
+  },
+  {
+   "syllable": "man",
+   "start": 54.84,
+   "end": 55.45,
+   "note": "G3"
+  },
+  {
+   "syllable": "ta",
+   "start": 55.45,
+   "end": 55.73,
+   "note": "A3"
+  },
+  {
+   "syllable": "yo",
+   "start": 55.78,
+   "end": 56.08,
+   "note": "C4"
+  },
+  {
+   "syllable": "mag",
+   "start": 56.08,
+   "end": 56.51,
+   "note": "D4"
+  },
+  {
+   "syllable": "pun",
+   "start": 56.51,
+   "end": 56.69,
+   "note": "E4"
+  },
+  {
+   "syllable": "ta",
+   "start": 56.73,
+   "end": 57.08,
+   "note": "D4"
+  },
+  {
+   "syllable": "'Yong",
+   "start": 57.4,
+   "end": 57.77,
+   "note": "G3"
+  },
+  {
+   "syllable": "ti",
+   "start": 57.77,
+   "end": 57.95,
+   "note": "A3"
+  },
+  {
+   "syllable": "pong",
+   "start": 58.02,
+   "end": 58.14,
+   "note": "B3"
+  },
+  {
+   "syllable": "pong",
+   "start": 58.14,
+   "end": 58.34,
+   "note": "C4"
+  },
+  {
+   "syllable": "ka",
+   "start": 58.48,
+   "end": 58.66,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 58.66,
+   "end": 59.0,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 59.06,
+   "end": 59.92,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 59.98,
+   "end": 60.55,
+   "note": "C4"
+  },
+  {
+   "syllable": "lang",
+   "start": 60.69,
+   "end": 60.92,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 60.99,
+   "end": 61.16,
+   "note": "F4"
+  },
+  {
+   "syllable": "lang",
+   "start": 61.16,
+   "end": 61.44,
+   "note": "E4"
+  },
+  {
+   "syllable": "ya",
+   "start": 62.06,
+   "end": 62.33,
+   "note": "D4"
+  },
+  {
+   "syllable": "ya",
+   "start": 62.33,
+   "end": 62.51,
+   "note": "E4"
+  },
+  {
+   "syllable": "big",
+   "start": 62.54,
+   "end": 62.77,
+   "note": "F4"
+  },
+  {
+   "syllable": "lang",
+   "start": 62.86,
+   "end": 62.97,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 62.97,
+   "end": 63.13,
+   "note": "E4"
+  },
+  {
+   "syllable": "may",
+   "start": 63.13,
+   "end": 63.28,
+   "note": "D4"
+  },
+  {
+   "syllable": "bre",
+   "start": 63.28,
+   "end": 63.78,
+   "note": "C4"
+  },
+  {
+   "syllable": "fast",
+   "start": 63.85,
+   "end": 63.99,
+   "note": "D4"
+  },
+  {
+   "syllable": "in",
+   "start": 64.25,
+   "end": 64.43,
+   "note": "A4"
+  },
+  {
+   "syllable": "Just",
+   "start": 64.48,
+   "end": 65.44,
+   "note": "G4"
+  },
+  {
+   "syllable": "to",
+   "start": 65.47,
+   "end": 65.57,
+   "note": "F4"
+  },
+  {
+   "syllable": "ep",
+   "start": 65.57,
+   "end": 66.09,
+   "note": "G4"
+  },
+  {
+   "syllable": "yo",
+   "start": 66.09,
+   "end": 66.2,
+   "note": "F4"
+  },
+  {
+   "syllable": "yo",
+   "start": 66.2,
+   "end": 66.38,
+   "note": "G4"
+  },
+  {
+   "syllable": "in",
+   "start": 66.38,
+   "end": 66.67,
+   "note": "F4"
+  },
+  {
+   "syllable": "res",
+   "start": 66.74,
+   "end": 66.87,
+   "note": "E4"
+  },
+  {
+   "syllable": "ted",
+   "start": 67.16,
+   "end": 67.38,
+   "note": "D4"
+  },
+  {
+   "syllable": "La",
+   "start": 67.71,
+   "end": 67.93,
+   "note": "G3"
+  },
+  {
+   "syllable": "hat",
+   "start": 68.05,
+   "end": 68.29,
+   "note": "G3"
+  },
+  {
+   "syllable": "ay",
+   "start": 68.36,
+   "end": 68.56,
+   "note": "A#3"
+  },
+  {
+   "syllable": "da",
+   "start": 68.56,
+   "end": 68.69,
+   "note": "A3"
+  },
+  {
+   "syllable": "hil",
+   "start": 68.92,
+   "end": 69.06,
+   "note": "A4"
+  },
+  {
+   "syllable": "hil",
+   "start": 69.06,
+   "end": 69.31,
+   "note": "G4"
+  },
+  {
+   "syllable": "hil",
+   "start": 69.37,
+   "end": 70.18,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 70.18,
+   "end": 70.84,
+   "note": "C4"
+  },
+  {
+   "syllable": "lang",
+   "start": 71.45,
+   "end": 71.6,
+   "note": "E4"
+  },
+  {
+   "syllable": "lang",
+   "start": 71.63,
+   "end": 71.85,
+   "note": "C4"
+  },
+  {
+   "syllable": "lang",
+   "start": 72.29,
+   "end": 72.5,
+   "note": "C4"
+  },
+  {
+   "syllable": "just",
+   "start": 72.59,
+   "end": 72.69,
+   "note": "D4"
+  },
+  {
+   "syllable": "wan",
+   "start": 72.99,
+   "end": 73.18,
+   "note": "E4"
+  },
+  {
+   "syllable": "do",
+   "start": 73.18,
+   "end": 73.62,
+   "note": "D4"
+  },
+  {
+   "syllable": "do",
+   "start": 73.62,
+   "end": 73.99,
+   "note": "E4"
+  },
+  {
+   "syllable": "sim",
+   "start": 74.26,
+   "end": 74.57,
+   "note": "D4"
+  },
+  {
+   "syllable": "ple",
+   "start": 74.57,
+   "end": 74.8,
+   "note": "E4"
+  },
+  {
+   "syllable": "ran",
+   "start": 75.06,
+   "end": 75.56,
+   "note": "F4"
+  },
+  {
+   "syllable": "dom",
+   "start": 75.6,
+   "end": 76.06,
+   "note": "G4"
+  },
+  {
+   "syllable": "things",
+   "start": 76.2,
+   "end": 76.33,
+   "note": "E4"
+  },
+  {
+   "syllable": "things",
+   "start": 76.33,
+   "end": 76.45,
+   "note": "C4"
+  },
+  {
+   "syllable": "to",
+   "start": 76.85,
+   "end": 77.0,
+   "note": "D4"
+  },
+  {
+   "syllable": "say",
+   "start": 77.51,
+   "end": 77.65,
+   "note": "B3"
+  },
+  {
+   "syllable": "say",
+   "start": 77.86,
+   "end": 78.27,
+   "note": "C4"
+  },
+  {
+   "syllable": "lo",
+   "start": 78.41,
+   "end": 78.93,
+   "note": "C4"
+  },
+  {
+   "syllable": "la",
+   "start": 79.36,
+   "end": 79.75,
+   "note": "F3"
+  },
+  {
+   "syllable": "na",
+   "start": 79.75,
+   "end": 81.5,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 81.54,
+   "end": 81.91,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 81.91,
+   "end": 82.01,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 82.01,
+   "end": 82.13,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 82.28,
+   "end": 82.4,
+   "note": "C4"
+  },
+  {
+   "syllable": "hit",
+   "start": 82.4,
+   "end": 83.35,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 83.35,
+   "end": 83.71,
+   "note": "C4"
+  },
+  {
+   "syllable": "na",
+   "start": 83.71,
+   "end": 83.9,
+   "note": "D4"
+  },
+  {
+   "syllable": "na",
+   "start": 83.9,
+   "end": 84.12,
+   "note": "E4"
+  },
+  {
+   "syllable": "na",
+   "start": 84.12,
+   "end": 84.26,
+   "note": "F4"
+  },
+  {
+   "syllable": "hit",
+   "start": 84.26,
+   "end": 84.79,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 84.79,
+   "end": 85.03,
+   "note": "C4"
+  },
+  {
+   "syllable": "ka",
+   "start": 85.03,
+   "end": 85.14,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 85.14,
+   "end": 85.31,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 85.31,
+   "end": 85.43,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 85.43,
+   "end": 85.61,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 85.61,
+   "end": 85.72,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 85.78,
+   "end": 85.95,
+   "note": "A3"
+  },
+  {
+   "syllable": "hit",
+   "start": 86.01,
+   "end": 86.38,
+   "note": "G3"
+  },
+  {
+   "syllable": "hit",
+   "start": 86.54,
+   "end": 86.67,
+   "note": "A3"
+  },
+  {
+   "syllable": "hit",
+   "start": 86.67,
+   "end": 86.83,
+   "note": "G3"
+  },
+  {
+   "syllable": "wa",
+   "start": 86.83,
+   "end": 87.0,
+   "note": "A3"
+  },
+  {
+   "syllable": "la",
+   "start": 87.0,
+   "end": 87.15,
+   "note": "C4"
+  },
+  {
+   "syllable": "na",
+   "start": 87.15,
+   "end": 87.96,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 88.04,
+   "end": 88.16,
+   "note": "G4"
+  },
+  {
+   "syllable": "na",
+   "start": 88.16,
+   "end": 88.34,
+   "note": "A4"
+  },
+  {
+   "syllable": "na",
+   "start": 88.48,
+   "end": 88.7,
+   "note": "A4"
+  },
+  {
+   "syllable": "na",
+   "start": 88.7,
+   "end": 88.82,
+   "note": "E4"
+  },
+  {
+   "syllable": "na",
+   "start": 88.82,
+   "end": 89.65,
+   "note": "D4"
+  },
+  {
+   "syllable": "na",
+   "start": 89.65,
+   "end": 89.92,
+   "note": "C4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 90.05,
+   "end": 90.64,
+   "note": "A5"
+  },
+  {
+   "syllable": "lit",
+   "start": 91.09,
+   "end": 91.4,
+   "note": "C4"
+  },
+  {
+   "syllable": "kang",
+   "start": 91.4,
+   "end": 91.54,
+   "note": "D4"
+  },
+  {
+   "syllable": "pa",
+   "start": 91.6,
+   "end": 91.92,
+   "note": "E4"
+  },
+  {
+   "syllable": "ta",
+   "start": 91.92,
+   "end": 92.03,
+   "note": "C#4"
+  },
+  {
+   "syllable": "ta",
+   "start": 92.03,
+   "end": 92.28,
+   "note": "D4"
+  },
+  {
+   "syllable": "ta",
+   "start": 92.28,
+   "end": 92.38,
+   "note": "C4"
+  },
+  {
+   "syllable": "wa",
+   "start": 92.38,
+   "end": 92.87,
+   "note": "A3"
+  },
+  {
+   "syllable": "nin",
+   "start": 92.87,
+   "end": 93.38,
+   "note": "C4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 93.55,
+   "end": 93.65,
+   "note": "C#4"
+  },
+  {
+   "syllable": "hit",
+   "start": 93.65,
+   "end": 94.14,
+   "note": "D4"
+  },
+  {
+   "syllable": "ang",
+   "start": 94.14,
+   "end": 94.81,
+   "note": "C4"
+  },
+  {
+   "syllable": "ngit",
+   "start": 94.87,
+   "end": 95.18,
+   "note": "D4"
+  },
+  {
+   "syllable": "ngit",
+   "start": 95.21,
+   "end": 95.35,
+   "note": "G4"
+  },
+  {
+   "syllable": "mo",
+   "start": 95.45,
+   "end": 95.97,
+   "note": "E4"
+  },
+  {
+   "syllable": "mo",
+   "start": 95.97,
+   "end": 96.11,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 96.11,
+   "end": 96.55,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 96.89,
+   "end": 97.06,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 97.06,
+   "end": 97.53,
+   "note": "D4"
+  },
+  {
+   "syllable": "oh",
+   "start": 97.53,
+   "end": 97.63,
+   "note": "D#4"
+  },
+  {
+   "syllable": "oh",
+   "start": 97.69,
+   "end": 98.48,
+   "note": "C4"
+  },
+  {
+   "syllable": "ah",
+   "start": 98.48,
+   "end": 98.61,
+   "note": "E4"
+  },
+  {
+   "syllable": "ah",
+   "start": 98.69,
+   "end": 98.82,
+   "note": "C4"
+  },
+  {
+   "syllable": "ah",
+   "start": 98.82,
+   "end": 98.95,
+   "note": "A3"
+  },
+  {
+   "syllable": "ah",
+   "start": 99.03,
+   "end": 99.18,
+   "note": "C5"
+  },
+  {
+   "syllable": "ah",
+   "start": 99.18,
+   "end": 99.45,
+   "note": "C#5"
+  },
+  {
+   "syllable": "ah",
+   "start": 99.54,
+   "end": 99.66,
+   "note": "F#4"
+  },
+  {
+   "syllable": "",
+   "start": 99.79,
+   "end": 99.9,
+   "note": "D#4"
+  },
+  {
+   "syllable": "",
+   "start": 100.64,
+   "end": 100.74,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 101.3,
+   "end": 101.42,
+   "note": "C4"
+  },
+  {
+   "syllable": "'di",
+   "start": 101.42,
+   "end": 101.89,
+   "note": "D4"
+  },
+  {
+   "syllable": "ga",
+   "start": 101.95,
+   "end": 102.24,
+   "note": "E4"
+  },
+  {
+   "syllable": "no'ng",
+   "start": 102.24,
+   "end": 102.37,
+   "note": "C4"
+  },
+  {
+   "syllable": "no'ng",
+   "start": 102.37,
+   "end": 102.64,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 102.64,
+   "end": 102.76,
+   "note": "C4"
+  },
+  {
+   "syllable": "wa",
+   "start": 102.84,
+   "end": 103.22,
+   "note": "A3"
+  },
+  {
+   "syllable": "ngis",
+   "start": 103.22,
+   "end": 103.49,
+   "note": "C4"
+  },
+  {
+   "syllable": "ngis",
+   "start": 103.58,
+   "end": 103.68,
+   "note": "F3"
+  },
+  {
+   "syllable": "I",
+   "start": 103.68,
+   "end": 103.95,
+   "note": "G3"
+  },
+  {
+   "syllable": "I",
+   "start": 104.09,
+   "end": 104.19,
+   "note": "G3"
+  },
+  {
+   "syllable": "ka'y",
+   "start": 104.23,
+   "end": 104.49,
+   "note": "D4"
+  },
+  {
+   "syllable": "gu",
+   "start": 104.55,
+   "end": 105.11,
+   "note": "C4"
+  },
+  {
+   "syllable": "gu",
+   "start": 105.17,
+   "end": 105.34,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 105.55,
+   "end": 105.69,
+   "note": "A4"
+  },
+  {
+   "syllable": "ko",
+   "start": 106.18,
+   "end": 106.32,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 106.42,
+   "end": 106.54,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 106.61,
+   "end": 106.78,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 106.78,
+   "end": 106.95,
+   "note": "E4"
+  },
+  {
+   "syllable": "who",
+   "start": 107.27,
+   "end": 107.83,
+   "note": "E4"
+  },
+  {
+   "syllable": "who",
+   "start": 107.83,
+   "end": 108.18,
+   "note": "C4"
+  },
+  {
+   "syllable": "a",
+   "start": 108.18,
+   "end": 108.35,
+   "note": "D4"
+  },
+  {
+   "syllable": "a",
+   "start": 108.35,
+   "end": 108.49,
+   "note": "E4"
+  },
+  {
+   "syllable": "oh",
+   "start": 108.49,
+   "end": 108.7,
+   "note": "C4"
+  },
+  {
+   "syllable": "oh",
+   "start": 108.74,
+   "end": 108.86,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 108.86,
+   "end": 109.1,
+   "note": "A4"
+  },
+  {
+   "syllable": "oh",
+   "start": 109.1,
+   "end": 109.38,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 109.38,
+   "end": 109.49,
+   "note": "D4"
+  },
+  {
+   "syllable": "oh",
+   "start": 109.49,
+   "end": 109.75,
+   "note": "E4"
+  },
+  {
+   "syllable": "oh",
+   "start": 109.75,
+   "end": 109.99,
+   "note": "G4"
+  },
+  {
+   "syllable": "I'll",
+   "start": 110.06,
+   "end": 110.58,
+   "note": "D4"
+  },
+  {
+   "syllable": "pro",
+   "start": 110.75,
+   "end": 110.89,
+   "note": "E4"
+  },
+  {
+   "syllable": "bably",
+   "start": 110.96,
+   "end": 111.1,
+   "note": "F4"
+  },
+  {
+   "syllable": "ta",
+   "start": 111.34,
+   "end": 111.51,
+   "note": "G4"
+  },
+  {
+   "syllable": "ke",
+   "start": 111.7,
+   "end": 111.89,
+   "note": "G4"
+  },
+  {
+   "syllable": "yo",
+   "start": 111.93,
+   "end": 112.08,
+   "note": "C4"
+  },
+  {
+   "syllable": "u",
+   "start": 112.08,
+   "end": 112.19,
+   "note": "E4"
+  },
+  {
+   "syllable": "a",
+   "start": 112.37,
+   "end": 112.55,
+   "note": "C4"
+  },
+  {
+   "syllable": "pri",
+   "start": 112.55,
+   "end": 112.68,
+   "note": "A#3"
+  },
+  {
+   "syllable": "va",
+   "start": 112.68,
+   "end": 113.03,
+   "note": "B3"
+  },
+  {
+   "syllable": "lit",
+   "start": 113.13,
+   "end": 113.54,
+   "note": "C4"
+  },
+  {
+   "syllable": "tle",
+   "start": 113.62,
+   "end": 113.79,
+   "note": "B3"
+  },
+  {
+   "syllable": "Baby",
+   "start": 113.85,
+   "end": 114.4,
+   "note": "C4"
+  },
+  {
+   "syllable": "that's",
+   "start": 114.5,
+   "end": 114.61,
+   "note": "D#4"
+  },
+  {
+   "syllable": "that's",
+   "start": 114.61,
+   "end": 114.71,
+   "note": "E4"
+  },
+  {
+   "syllable": "right",
+   "start": 114.82,
+   "end": 115.13,
+   "note": "D4"
+  },
+  {
+   "syllable": "And",
+   "start": 115.47,
+   "end": 115.77,
+   "note": "C4"
+  },
+  {
+   "syllable": "may",
+   "start": 115.77,
+   "end": 115.87,
+   "note": "D4"
+  },
+  {
+   "syllable": "may",
+   "start": 115.87,
+   "end": 116.25,
+   "note": "E4"
+  },
+  {
+   "syllable": "re",
+   "start": 116.55,
+   "end": 116.68,
+   "note": "C5"
+  },
+  {
+   "syllable": "re",
+   "start": 116.76,
+   "end": 116.89,
+   "note": "B3"
+  },
+  {
+   "syllable": "snack",
+   "start": 117.05,
+   "end": 117.24,
+   "note": "C4"
+  },
+  {
+   "syllable": "that",
+   "start": 117.41,
+   "end": 117.63,
+   "note": "C4"
+  },
+  {
+   "syllable": "li",
+   "start": 117.69,
+   "end": 117.81,
+   "note": "A3"
+  },
+  {
+   "syllable": "li",
+   "start": 117.81,
+   "end": 117.98,
+   "note": "B3"
+  },
+  {
+   "syllable": "ke",
+   "start": 118.07,
+   "end": 118.17,
+   "note": "C4"
+  },
+  {
+   "syllable": "baby",
+   "start": 118.3,
+   "end": 118.65,
+   "note": "C4"
+  },
+  {
+   "syllable": "I'll",
+   "start": 118.81,
+   "end": 118.99,
+   "note": "B3"
+  },
+  {
+   "syllable": "gi",
+   "start": 119.07,
+   "end": 119.17,
+   "note": "C4"
+  },
+  {
+   "syllable": "ve",
+   "start": 119.17,
+   "end": 119.35,
+   "note": "E4"
+  },
+  {
+   "syllable": "the",
+   "start": 119.35,
+   "end": 119.65,
+   "note": "C4"
+  },
+  {
+   "syllable": "last",
+   "start": 119.65,
+   "end": 119.76,
+   "note": "D4"
+  },
+  {
+   "syllable": "last",
+   "start": 119.76,
+   "end": 119.96,
+   "note": "E4"
+  },
+  {
+   "syllable": "bi",
+   "start": 119.99,
+   "end": 120.31,
+   "note": "D4"
+  },
+  {
+   "syllable": "oh",
+   "start": 120.62,
+   "end": 120.73,
+   "note": "C4"
+  },
+  {
+   "syllable": "oh",
+   "start": 120.73,
+   "end": 120.88,
+   "note": "C#4"
+  },
+  {
+   "syllable": "oh",
+   "start": 120.88,
+   "end": 121.04,
+   "note": "D#4"
+  },
+  {
+   "syllable": "oh",
+   "start": 121.04,
+   "end": 121.23,
+   "note": "E4"
+  },
+  {
+   "syllable": "oh",
+   "start": 121.23,
+   "end": 121.46,
+   "note": "D4"
+  },
+  {
+   "syllable": "o",
+   "start": 121.71,
+   "end": 122.19,
+   "note": "A4"
+  },
+  {
+   "syllable": "do",
+   "start": 122.22,
+   "end": 122.69,
+   "note": "G4"
+  },
+  {
+   "syllable": "do",
+   "start": 122.69,
+   "end": 122.88,
+   "note": "E4"
+  },
+  {
+   "syllable": "do",
+   "start": 122.88,
+   "end": 123.47,
+   "note": "G4"
+  },
+  {
+   "syllable": "do",
+   "start": 123.5,
+   "end": 123.75,
+   "note": "A4"
+  },
+  {
+   "syllable": "do",
+   "start": 124.02,
+   "end": 124.14,
+   "note": "D4"
+  },
+  {
+   "syllable": "do",
+   "start": 124.14,
+   "end": 124.4,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 124.4,
+   "end": 124.87,
+   "note": "D4"
+  },
+  {
+   "syllable": "o",
+   "start": 124.87,
+   "end": 125.58,
+   "note": "C4"
+  },
+  {
+   "syllable": "Oh",
+   "start": 125.77,
+   "end": 126.08,
+   "note": "A3"
+  },
+  {
+   "syllable": "ang",
+   "start": 126.19,
+   "end": 126.49,
+   "note": "E4"
+  },
+  {
+   "syllable": "da",
+   "start": 126.49,
+   "end": 126.77,
+   "note": "D4"
+  },
+  {
+   "syllable": "ming",
+   "start": 126.91,
+   "end": 127.56,
+   "note": "C4"
+  },
+  {
+   "syllable": "ra",
+   "start": 127.56,
+   "end": 127.7,
+   "note": "A3"
+  },
+  {
+   "syllable": "an",
+   "start": 127.76,
+   "end": 128.11,
+   "note": "C4"
+  },
+  {
+   "syllable": "i",
+   "start": 128.17,
+   "end": 128.62,
+   "note": "G3"
+  },
+  {
+   "syllable": "kaw",
+   "start": 128.83,
+   "end": 129.01,
+   "note": "G3"
+  },
+  {
+   "syllable": "ang",
+   "start": 129.01,
+   "end": 129.28,
+   "note": "A#3"
+  },
+  {
+   "syllable": "nging",
+   "start": 129.45,
+   "end": 129.87,
+   "note": "G4"
+  },
+  {
+   "syllable": "da",
+   "start": 130.01,
+   "end": 130.15,
+   "note": "G4"
+  },
+  {
+   "syllable": "hi",
+   "start": 130.15,
+   "end": 130.3,
+   "note": "E4"
+  },
+  {
+   "syllable": "lan",
+   "start": 130.36,
+   "end": 130.8,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 130.99,
+   "end": 131.1,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 131.27,
+   "end": 131.48,
+   "note": "E4"
+  },
+  {
+   "syllable": "be",
+   "start": 132.07,
+   "end": 132.19,
+   "note": "E4"
+  },
+  {
+   "syllable": "Ha",
+   "start": 132.27,
+   "end": 132.48,
+   "note": "G3"
+  },
+  {
+   "syllable": "ha",
+   "start": 132.61,
+   "end": 132.73,
+   "note": "F3"
+  },
+  {
+   "syllable": "ra",
+   "start": 132.73,
+   "end": 132.88,
+   "note": "G3"
+  },
+  {
+   "syllable": "ra",
+   "start": 132.88,
+   "end": 133.15,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 133.15,
+   "end": 133.32,
+   "note": "B3"
+  },
+  {
+   "syllable": "hin",
+   "start": 133.32,
+   "end": 133.5,
+   "note": "C4"
+  },
+  {
+   "syllable": "hin",
+   "start": 133.5,
+   "end": 133.73,
+   "note": "D4"
+  },
+  {
+   "syllable": "ki",
+   "start": 133.86,
+   "end": 134.11,
+   "note": "E4"
+  },
+  {
+   "syllable": "ta",
+   "start": 134.31,
+   "end": 134.44,
+   "note": "E4"
+  },
+  {
+   "syllable": "man",
+   "start": 134.91,
+   "end": 135.46,
+   "note": "G3"
+  },
+  {
+   "syllable": "ta",
+   "start": 135.46,
+   "end": 135.77,
+   "note": "A3"
+  },
+  {
+   "syllable": "yo",
+   "start": 135.77,
+   "end": 136.06,
+   "note": "C4"
+  },
+  {
+   "syllable": "mag",
+   "start": 136.06,
+   "end": 136.51,
+   "note": "D4"
+  },
+  {
+   "syllable": "pun",
+   "start": 136.51,
+   "end": 136.69,
+   "note": "E4"
+  },
+  {
+   "syllable": "ta",
+   "start": 136.73,
+   "end": 137.08,
+   "note": "D4"
+  },
+  {
+   "syllable": "'Yong",
+   "start": 137.41,
+   "end": 137.78,
+   "note": "G3"
+  },
+  {
+   "syllable": "ti",
+   "start": 137.78,
+   "end": 137.96,
+   "note": "A3"
+  },
+  {
+   "syllable": "pong",
+   "start": 138.01,
+   "end": 138.14,
+   "note": "B3"
+  },
+  {
+   "syllable": "pong",
+   "start": 138.14,
+   "end": 138.33,
+   "note": "C4"
+  },
+  {
+   "syllable": "ka",
+   "start": 138.38,
+   "end": 138.49,
+   "note": "G4"
+  },
+  {
+   "syllable": "ka",
+   "start": 138.49,
+   "end": 138.67,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 138.67,
+   "end": 139.01,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 139.07,
+   "end": 139.91,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 139.91,
+   "end": 140.52,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 140.69,
+   "end": 140.93,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 140.99,
+   "end": 141.15,
+   "note": "F4"
+  },
+  {
+   "syllable": "",
+   "start": 141.15,
+   "end": 141.39,
+   "note": "E4"
+  },
+  {
+   "syllable": "O",
+   "start": 141.39,
+   "end": 141.53,
+   "note": "C4"
+  },
+  {
+   "syllable": "ya",
+   "start": 142.08,
+   "end": 142.33,
+   "note": "D4"
+  },
+  {
+   "syllable": "may",
+   "start": 142.33,
+   "end": 142.54,
+   "note": "E4"
+  },
+  {
+   "syllable": "may",
+   "start": 142.54,
+   "end": 142.87,
+   "note": "F4"
+  },
+  {
+   "syllable": "on",
+   "start": 142.97,
+   "end": 143.15,
+   "note": "E4"
+  },
+  {
+   "syllable": "the",
+   "start": 143.15,
+   "end": 143.29,
+   "note": "D4"
+  },
+  {
+   "syllable": "spot",
+   "start": 143.59,
+   "end": 143.71,
+   "note": "C4"
+  },
+  {
+   "syllable": "spot",
+   "start": 143.71,
+   "end": 143.82,
+   "note": "A3"
+  },
+  {
+   "syllable": "ner",
+   "start": 144.16,
+   "end": 144.29,
+   "note": "G4"
+  },
+  {
+   "syllable": "ner",
+   "start": 144.29,
+   "end": 144.45,
+   "note": "A4"
+  },
+  {
+   "syllable": "da",
+   "start": 144.49,
+   "end": 144.88,
+   "note": "G4"
+  },
+  {
+   "syllable": "this",
+   "start": 145.05,
+   "end": 146.4,
+   "note": "G4"
+  },
+  {
+   "syllable": "won't",
+   "start": 146.46,
+   "end": 146.66,
+   "note": "F4"
+  },
+  {
+   "syllable": "be",
+   "start": 146.84,
+   "end": 146.98,
+   "note": "E4"
+  },
+  {
+   "syllable": "la",
+   "start": 147.04,
+   "end": 147.15,
+   "note": "C4"
+  },
+  {
+   "syllable": "te",
+   "start": 147.15,
+   "end": 147.4,
+   "note": "D4"
+  },
+  {
+   "syllable": "La",
+   "start": 147.7,
+   "end": 147.92,
+   "note": "G3"
+  },
+  {
+   "syllable": "hat",
+   "start": 148.06,
+   "end": 148.23,
+   "note": "G3"
+  },
+  {
+   "syllable": "ay",
+   "start": 148.37,
+   "end": 148.6,
+   "note": "A3"
+  },
+  {
+   "syllable": "da",
+   "start": 148.67,
+   "end": 148.78,
+   "note": "G4"
+  },
+  {
+   "syllable": "hil",
+   "start": 148.92,
+   "end": 149.06,
+   "note": "A4"
+  },
+  {
+   "syllable": "hil",
+   "start": 149.06,
+   "end": 149.31,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 149.37,
+   "end": 150.2,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 150.28,
+   "end": 150.73,
+   "note": "C4"
+  },
+  {
+   "syllable": "I",
+   "start": 150.91,
+   "end": 151.06,
+   "note": "D4"
+  },
+  {
+   "syllable": "",
+   "start": 151.46,
+   "end": 151.71,
+   "note": "E4"
+  },
+  {
+   "syllable": "",
+   "start": 151.85,
+   "end": 152.01,
+   "note": "E4"
+  },
+  {
+   "syllable": "just",
+   "start": 152.28,
+   "end": 152.49,
+   "note": "C4"
+  },
+  {
+   "syllable": "wan",
+   "start": 152.99,
+   "end": 153.17,
+   "note": "E4"
+  },
+  {
+   "syllable": "do",
+   "start": 153.17,
+   "end": 153.62,
+   "note": "D4"
+  },
+  {
+   "syllable": "do",
+   "start": 153.62,
+   "end": 153.85,
+   "note": "E4"
+  },
+  {
+   "syllable": "sim",
+   "start": 154.26,
+   "end": 154.57,
+   "note": "D4"
+  },
+  {
+   "syllable": "ple",
+   "start": 154.57,
+   "end": 154.79,
+   "note": "E4"
+  },
+  {
+   "syllable": "ran",
+   "start": 155.18,
+   "end": 155.56,
+   "note": "F4"
+  },
+  {
+   "syllable": "dom",
+   "start": 155.59,
+   "end": 156.05,
+   "note": "G4"
+  },
+  {
+   "syllable": "things",
+   "start": 156.09,
+   "end": 156.34,
+   "note": "E4"
+  },
+  {
+   "syllable": "to",
+   "start": 156.85,
+   "end": 157.02,
+   "note": "D4"
+  },
+  {
+   "syllable": "say",
+   "start": 157.56,
+   "end": 158.62,
+   "note": "C4"
+  },
+  {
+   "syllable": "I",
+   "start": 158.73,
+   "end": 158.94,
+   "note": "C4"
+  },
+  {
+   "syllable": "lo",
+   "start": 159.36,
+   "end": 159.75,
+   "note": "F3"
+  },
+  {
+   "syllable": "Ran",
+   "start": 159.75,
+   "end": 160.47,
+   "note": "G3"
+  },
+  {
+   "syllable": "man",
+   "start": 160.6,
+   "end": 161.64,
+   "note": "G3"
+  },
+  {
+   "syllable": "uh",
+   "start": 166.19,
+   "end": 166.3,
+   "note": "A4"
+  },
+  {
+   "syllable": "uh",
+   "start": 166.43,
+   "end": 166.68,
+   "note": "E4"
+  },
+  {
+   "syllable": "Do",
+   "start": 166.87,
+   "end": 167.37,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 167.84,
+   "end": 169.29,
+   "note": "E4"
+  },
+  {
+   "syllable": "Oh",
+   "start": 169.73,
+   "end": 169.99,
+   "note": "C4"
+  },
+  {
+   "syllable": "ang",
+   "start": 170.1,
+   "end": 170.39,
+   "note": "E4"
+  },
+  {
+   "syllable": "da",
+   "start": 170.39,
+   "end": 170.64,
+   "note": "D4"
+  },
+  {
+   "syllable": "ming",
+   "start": 170.64,
+   "end": 171.41,
+   "note": "C4"
+  },
+  {
+   "syllable": "ra",
+   "start": 171.41,
+   "end": 171.53,
+   "note": "A3"
+  },
+  {
+   "syllable": "an",
+   "start": 171.59,
+   "end": 171.94,
+   "note": "C4"
+  },
+  {
+   "syllable": "kaw",
+   "start": 172.05,
+   "end": 172.67,
+   "note": "G3"
+  },
+  {
+   "syllable": "kaw",
+   "start": 172.67,
+   "end": 172.88,
+   "note": "A3"
+  },
+  {
+   "syllable": "ang",
+   "start": 172.95,
+   "end": 173.15,
+   "note": "B3"
+  },
+  {
+   "syllable": "ta",
+   "start": 173.15,
+   "end": 173.26,
+   "note": "C#4"
+  },
+  {
+   "syllable": "nging",
+   "start": 173.32,
+   "end": 173.74,
+   "note": "G4"
+  },
+  {
+   "syllable": "nging",
+   "start": 173.74,
+   "end": 173.87,
+   "note": "E4"
+  },
+  {
+   "syllable": "da",
+   "start": 173.87,
+   "end": 174.02,
+   "note": "G4"
+  },
+  {
+   "syllable": "hi",
+   "start": 174.02,
+   "end": 174.16,
+   "note": "E4"
+  },
+  {
+   "syllable": "lan",
+   "start": 174.22,
+   "end": 174.94,
+   "note": "G4"
+  },
+  {
+   "syllable": "oh",
+   "start": 174.94,
+   "end": 175.14,
+   "note": "A4"
+  },
+  {
+   "syllable": "ba",
+   "start": 175.14,
+   "end": 175.39,
+   "note": "E4"
+  },
+  {
+   "syllable": "be",
+   "start": 175.48,
+   "end": 175.65,
+   "note": "G4"
+  },
+  {
+   "syllable": "Ha",
+   "start": 175.84,
+   "end": 175.96,
+   "note": "E4"
+  },
+  {
+   "syllable": "Ha",
+   "start": 175.96,
+   "end": 176.07,
+   "note": "G4"
+  },
+  {
+   "syllable": "ha",
+   "start": 176.52,
+   "end": 176.66,
+   "note": "C4"
+  },
+  {
+   "syllable": "ra",
+   "start": 176.76,
+   "end": 177.01,
+   "note": "A3"
+  },
+  {
+   "syllable": "hin",
+   "start": 177.14,
+   "end": 177.38,
+   "note": "C4"
+  },
+  {
+   "syllable": "hin",
+   "start": 177.38,
+   "end": 177.61,
+   "note": "D4"
+  },
+  {
+   "syllable": "ki",
+   "start": 177.64,
+   "end": 177.88,
+   "note": "E4"
+  },
+  {
+   "syllable": "sa'n",
+   "start": 178.07,
+   "end": 178.89,
+   "note": "G4"
+  },
+  {
+   "syllable": "ta",
+   "start": 179.06,
+   "end": 179.33,
+   "note": "G4"
+  },
+  {
+   "syllable": "yo",
+   "start": 179.53,
+   "end": 179.64,
+   "note": "G4"
+  },
+  {
+   "syllable": "mag",
+   "start": 179.67,
+   "end": 179.95,
+   "note": "C4"
+  },
+  {
+   "syllable": "pun",
+   "start": 180.17,
+   "end": 180.31,
+   "note": "E4"
+  },
+  {
+   "syllable": "pun",
+   "start": 180.31,
+   "end": 180.5,
+   "note": "D4"
+  },
+  {
+   "syllable": "ta",
+   "start": 180.5,
+   "end": 180.62,
+   "note": "E4"
+  },
+  {
+   "syllable": "'Yong",
+   "start": 180.93,
+   "end": 181.26,
+   "note": "E4"
+  },
+  {
+   "syllable": "'Yong",
+   "start": 181.33,
+   "end": 181.52,
+   "note": "G3"
+  },
+  {
+   "syllable": "ti",
+   "start": 181.65,
+   "end": 181.89,
+   "note": "A3"
+  },
+  {
+   "syllable": "pong",
+   "start": 181.89,
+   "end": 182.18,
+   "note": "C4"
+  },
+  {
+   "syllable": "ka",
+   "start": 182.34,
+   "end": 182.53,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 182.53,
+   "end": 182.86,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 182.98,
+   "end": 183.17,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 183.17,
+   "end": 183.28,
+   "note": "D#4"
+  },
+  {
+   "syllable": "la",
+   "start": 183.28,
+   "end": 183.77,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 183.77,
+   "end": 184.48,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 184.56,
+   "end": 184.83,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 185.13,
+   "end": 185.27,
+   "note": "E4"
+  },
+  {
+   "syllable": "lang",
+   "start": 185.33,
+   "end": 185.54,
+   "note": "C4"
+  },
+  {
+   "syllable": "ya",
+   "start": 185.93,
+   "end": 186.19,
+   "note": "D4"
+  },
+  {
+   "syllable": "'li",
+   "start": 186.19,
+   "end": 186.44,
+   "note": "E4"
+  },
+  {
+   "syllable": "'li",
+   "start": 186.44,
+   "end": 186.71,
+   "note": "F4"
+  },
+  {
+   "syllable": "lib",
+   "start": 186.71,
+   "end": 186.85,
+   "note": "D#4"
+  },
+  {
+   "syllable": "lib",
+   "start": 186.85,
+   "end": 187.07,
+   "note": "E4"
+  },
+  {
+   "syllable": "re",
+   "start": 187.07,
+   "end": 187.23,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 187.39,
+   "end": 187.68,
+   "note": "C4"
+  },
+  {
+   "syllable": "ng",
+   "start": 187.68,
+   "end": 187.93,
+   "note": "D4"
+  },
+  {
+   "syllable": "si",
+   "start": 188.15,
+   "end": 188.35,
+   "note": "A4"
+  },
+  {
+   "syllable": "'di",
+   "start": 188.35,
+   "end": 189.95,
+   "note": "G4"
+  },
+  {
+   "syllable": "trip",
+   "start": 190.07,
+   "end": 190.29,
+   "note": "G4"
+  },
+  {
+   "syllable": "ay",
+   "start": 190.29,
+   "end": 190.47,
+   "note": "F4"
+  },
+  {
+   "syllable": "si",
+   "start": 190.71,
+   "end": 190.86,
+   "note": "E4"
+  },
+  {
+   "syllable": "ge",
+   "start": 190.94,
+   "end": 191.05,
+   "note": "C4"
+  },
+  {
+   "syllable": "ge",
+   "start": 191.05,
+   "end": 191.34,
+   "note": "D4"
+  },
+  {
+   "syllable": "La",
+   "start": 191.57,
+   "end": 191.82,
+   "note": "G3"
+  },
+  {
+   "syllable": "hat",
+   "start": 191.94,
+   "end": 192.2,
+   "note": "G3"
+  },
+  {
+   "syllable": "ay",
+   "start": 192.25,
+   "end": 192.53,
+   "note": "A3"
+  },
+  {
+   "syllable": "hil",
+   "start": 192.62,
+   "end": 192.9,
+   "note": "A4"
+  },
+  {
+   "syllable": "hil",
+   "start": 192.9,
+   "end": 193.16,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 193.3,
+   "end": 194.09,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 194.14,
+   "end": 194.82,
+   "note": "C4"
+  },
+  {
+   "syllable": "lang",
+   "start": 195.05,
+   "end": 195.23,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 195.33,
+   "end": 195.9,
+   "note": "E4"
+  },
+  {
+   "syllable": "wan",
+   "start": 196.84,
+   "end": 197.03,
+   "note": "E4"
+  },
+  {
+   "syllable": "do",
+   "start": 197.03,
+   "end": 197.48,
+   "note": "D4"
+  },
+  {
+   "syllable": "do",
+   "start": 197.48,
+   "end": 197.68,
+   "note": "E4"
+  },
+  {
+   "syllable": "ran",
+   "start": 198.39,
+   "end": 198.81,
+   "note": "E4"
+  },
+  {
+   "syllable": "ran",
+   "start": 198.81,
+   "end": 198.95,
+   "note": "F4"
+  },
+  {
+   "syllable": "ran",
+   "start": 199.08,
+   "end": 199.41,
+   "note": "F4"
+  },
+  {
+   "syllable": "dom",
+   "start": 199.46,
+   "end": 199.92,
+   "note": "G4"
+  },
+  {
+   "syllable": "things",
+   "start": 200.11,
+   "end": 200.31,
+   "note": "C4"
+  },
+  {
+   "syllable": "to",
+   "start": 200.7,
+   "end": 200.87,
+   "note": "D4"
+  },
+  {
+   "syllable": "to",
+   "start": 200.95,
+   "end": 201.06,
+   "note": "C#4"
+  },
+  {
+   "syllable": "say",
+   "start": 201.41,
+   "end": 201.93,
+   "note": "C4"
+  },
+  {
+   "syllable": "Ha",
+   "start": 201.96,
+   "end": 202.09,
+   "note": "G3"
+  },
+  {
+   "syllable": "ra",
+   "start": 202.36,
+   "end": 202.55,
+   "note": "G3"
+  },
+  {
+   "syllable": "ra",
+   "start": 202.55,
+   "end": 202.84,
+   "note": "A3"
+  },
+  {
+   "syllable": "na",
+   "start": 202.84,
+   "end": 203.17,
+   "note": "C4"
+  },
+  {
+   "syllable": "hin",
+   "start": 203.17,
+   "end": 203.42,
+   "note": "D4"
+  },
+  {
+   "syllable": "ta",
+   "start": 203.56,
+   "end": 204.11,
+   "note": "E4"
+  },
+  {
+   "syllable": "man",
+   "start": 204.48,
+   "end": 205.11,
+   "note": "G3"
+  },
+  {
+   "syllable": "ta",
+   "start": 205.17,
+   "end": 205.45,
+   "note": "A3"
+  },
+  {
+   "syllable": "yo",
+   "start": 205.45,
+   "end": 205.75,
+   "note": "C4"
+  },
+  {
+   "syllable": "mag",
+   "start": 205.75,
+   "end": 205.98,
+   "note": "D4"
+  },
+  {
+   "syllable": "pun",
+   "start": 206.19,
+   "end": 206.35,
+   "note": "E4"
+  },
+  {
+   "syllable": "ta",
+   "start": 206.43,
+   "end": 206.78,
+   "note": "D4"
+  },
+  {
+   "syllable": "'Yong",
+   "start": 207.05,
+   "end": 207.33,
+   "note": "G3"
+  },
+  {
+   "syllable": "pong",
+   "start": 207.47,
+   "end": 207.69,
+   "note": "A3"
+  },
+  {
+   "syllable": "pong",
+   "start": 207.69,
+   "end": 207.92,
+   "note": "C4"
+  },
+  {
+   "syllable": "ka",
+   "start": 208.14,
+   "end": 208.33,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 208.33,
+   "end": 208.67,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 208.79,
+   "end": 209.58,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 209.65,
+   "end": 210.29,
+   "note": "C4"
+  },
+  {
+   "syllable": "lang",
+   "start": 210.38,
+   "end": 210.76,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 210.82,
+   "end": 211.11,
+   "note": "E4"
+  },
+  {
+   "syllable": "lang",
+   "start": 211.11,
+   "end": 211.22,
+   "note": "C4"
+  },
+  {
+   "syllable": "ya",
+   "start": 211.73,
+   "end": 212.0,
+   "note": "D4"
+  },
+  {
+   "syllable": "ya",
+   "start": 212.0,
+   "end": 212.21,
+   "note": "E4"
+  },
+  {
+   "syllable": "i",
+   "start": 212.21,
+   "end": 212.48,
+   "note": "F4"
+  },
+  {
+   "syllable": "a",
+   "start": 212.54,
+   "end": 212.66,
+   "note": "D4"
+  },
+  {
+   "syllable": "a",
+   "start": 212.66,
+   "end": 212.8,
+   "note": "E4"
+  },
+  {
+   "syllable": "lay",
+   "start": 212.84,
+   "end": 213.01,
+   "note": "D4"
+  },
+  {
+   "syllable": "lay",
+   "start": 213.01,
+   "end": 213.46,
+   "note": "C4"
+  },
+  {
+   "syllable": "kan",
+   "start": 213.54,
+   "end": 213.73,
+   "note": "D4"
+  },
+  {
+   "syllable": "tang",
+   "start": 213.94,
+   "end": 214.14,
+   "note": "A4"
+  },
+  {
+   "syllable": "'to",
+   "start": 214.14,
+   "end": 215.12,
+   "note": "G4"
+  },
+  {
+   "syllable": "nu",
+   "start": 215.12,
+   "end": 215.25,
+   "note": "F4"
+  },
+  {
+   "syllable": "lat",
+   "start": 215.25,
+   "end": 216.09,
+   "note": "G4"
+  },
+  {
+   "syllable": "ra",
+   "start": 216.09,
+   "end": 216.25,
+   "note": "F4"
+  },
+  {
+   "syllable": "sa",
+   "start": 216.4,
+   "end": 216.55,
+   "note": "E4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 216.55,
+   "end": 216.74,
+   "note": "C4"
+  },
+  {
+   "syllable": "'yo",
+   "start": 216.74,
+   "end": 217.35,
+   "note": "D4"
+  },
+  {
+   "syllable": "La",
+   "start": 217.38,
+   "end": 217.61,
+   "note": "G3"
+  },
+  {
+   "syllable": "hat",
+   "start": 217.75,
+   "end": 217.95,
+   "note": "G3"
+  },
+  {
+   "syllable": "ay",
+   "start": 217.95,
+   "end": 218.34,
+   "note": "A3"
+  },
+  {
+   "syllable": "da",
+   "start": 218.43,
+   "end": 218.64,
+   "note": "A4"
+  },
+  {
+   "syllable": "hil",
+   "start": 218.71,
+   "end": 218.96,
+   "note": "G4"
+  },
+  {
+   "syllable": "la",
+   "start": 219.05,
+   "end": 219.9,
+   "note": "D4"
+  },
+  {
+   "syllable": "lang",
+   "start": 219.99,
+   "end": 220.61,
+   "note": "C4"
+  },
+  {
+   "syllable": "I",
+   "start": 220.71,
+   "end": 220.98,
+   "note": "D4"
+  },
+  {
+   "syllable": "I",
+   "start": 221.13,
+   "end": 221.69,
+   "note": "E4"
+  },
+  {
+   "syllable": "just",
+   "start": 221.97,
+   "end": 222.19,
+   "note": "C4"
+  },
+  {
+   "syllable": "wan",
+   "start": 222.54,
+   "end": 222.65,
+   "note": "D4"
+  },
+  {
+   "syllable": "wan",
+   "start": 222.65,
+   "end": 222.84,
+   "note": "E4"
+  },
+  {
+   "syllable": "do",
+   "start": 222.84,
+   "end": 223.28,
+   "note": "D4"
+  },
+  {
+   "syllable": "do",
+   "start": 223.28,
+   "end": 223.49,
+   "note": "E4"
+  },
+  {
+   "syllable": "sim",
+   "start": 223.49,
+   "end": 223.6,
+   "note": "D4"
+  },
+  {
+   "syllable": "sim",
+   "start": 223.93,
+   "end": 224.08,
+   "note": "D4"
+  },
+  {
+   "syllable": "ran",
+   "start": 224.08,
+   "end": 224.63,
+   "note": "E4"
+  },
+  {
+   "syllable": "ran",
+   "start": 224.63,
+   "end": 225.25,
+   "note": "F4"
+  },
+  {
+   "syllable": "dom",
+   "start": 225.25,
+   "end": 225.74,
+   "note": "G4"
+  },
+  {
+   "syllable": "things",
+   "start": 225.89,
+   "end": 226.03,
+   "note": "E4"
+  },
+  {
+   "syllable": "to",
+   "start": 226.18,
+   "end": 226.35,
+   "note": "E4"
+  },
+  {
+   "syllable": "to",
+   "start": 226.51,
+   "end": 226.98,
+   "note": "D4"
+  },
+  {
+   "syllable": "say",
+   "start": 227.07,
+   "end": 227.19,
+   "note": "B3"
+  },
+  {
+   "syllable": "say",
+   "start": 227.19,
+   "end": 228.63,
+   "note": "C4"
+  },
+  {
+   "syllable": "I",
+   "start": 228.99,
+   "end": 229.14,
+   "note": "E3"
+  },
+  {
+   "syllable": "lo",
+   "start": 229.14,
+   "end": 229.43,
+   "note": "F3"
+  },
+  {
+   "syllable": "yo",
+   "start": 229.43,
+   "end": 231.05,
+   "note": "G3"
+  },
+  {
+   "syllable": "",
+   "start": 231.09,
+   "end": 231.58,
+   "note": "D4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 231.58,
+   "end": 231.69,
+   "note": "E4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 231.69,
+   "end": 231.84,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 232.1,
+   "end": 232.22,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 232.3,
+   "end": 232.42,
+   "note": "C4"
+  },
+  {
+   "syllable": "la",
+   "start": 232.42,
+   "end": 233.07,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 233.07,
+   "end": 233.35,
+   "note": "C4"
+  },
+  {
+   "syllable": "na",
+   "start": 233.35,
+   "end": 233.51,
+   "note": "D4"
+  },
+  {
+   "syllable": "Ka",
+   "start": 233.51,
+   "end": 233.64,
+   "note": "E4"
+  },
+  {
+   "syllable": "hit",
+   "start": 233.64,
+   "end": 233.78,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 233.89,
+   "end": 234.34,
+   "note": "D4"
+  },
+  {
+   "syllable": "hit",
+   "start": 234.37,
+   "end": 234.48,
+   "note": "C4"
+  },
+  {
+   "syllable": "hit",
+   "start": 234.61,
+   "end": 234.8,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 234.84,
+   "end": 235.28,
+   "note": "C4"
+  },
+  {
+   "syllable": "",
+   "start": 235.47,
+   "end": 235.67,
+   "note": "A3"
+  },
+  {
+   "syllable": "ka",
+   "start": 235.78,
+   "end": 235.9,
+   "note": "E4"
+  },
+  {
+   "syllable": "ka",
+   "start": 235.9,
+   "end": 236.14,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 236.53,
+   "end": 236.75,
+   "note": "D4"
+  },
+  {
+   "syllable": "ka",
+   "start": 236.81,
+   "end": 236.98,
+   "note": "A3"
+  },
+  {
+   "syllable": "hit",
+   "start": 237.17,
+   "end": 237.37,
+   "note": "A4"
+  },
+  {
+   "syllable": "hit",
+   "start": 237.44,
+   "end": 237.85,
+   "note": "C4"
+  },
+  {
+   "syllable": "wa",
+   "start": 238.09,
+   "end": 238.35,
+   "note": "A3"
+  },
+  {
+   "syllable": "wa",
+   "start": 238.39,
+   "end": 238.5,
+   "note": "E4"
+  },
+  {
+   "syllable": "wa",
+   "start": 238.5,
+   "end": 238.86,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 239.03,
+   "end": 239.33,
+   "note": "D4"
+  },
+  {
+   "syllable": "la",
+   "start": 239.4,
+   "end": 239.54,
+   "note": "A3"
+  },
+  {
+   "syllable": "la",
+   "start": 239.57,
+   "end": 239.71,
+   "note": "C4"
+  },
+  {
+   "syllable": "na",
+   "start": 239.9,
+   "end": 242.22,
+   "note": "A5"
+  }
+ ]
+}

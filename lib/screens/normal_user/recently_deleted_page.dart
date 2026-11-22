@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../services/session_storage_service.dart';
 import 'results_page.dart';
 
@@ -322,18 +323,7 @@ class _RecentlyDeletedPageState extends State<RecentlyDeletedPage> {
               child: Row(
                 children: [
                   // Album art
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: session.songImage.isNotEmpty
-                        ? Image.network(
-                            session.songImage,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, e, st) => _iconBox(),
-                          )
-                        : _iconBox(),
-                  ),
+                  SongCoverArt(image: session.songImage, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -504,13 +494,4 @@ class _RecentlyDeletedPageState extends State<RecentlyDeletedPage> {
     );
   }
 
-  Widget _iconBox() => Container(
-    width: 52,
-    height: 52,
-    decoration: BoxDecoration(
-      color: AppColors.inputBg,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: const Icon(Icons.music_note, color: AppColors.grey, size: 22),
-  );
 }

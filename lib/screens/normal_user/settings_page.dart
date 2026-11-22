@@ -19,6 +19,16 @@ class _SettingsPageState extends State<SettingsPage> {
   bool obscureNew = true;
   bool obscureConfirm = true;
 
+  @override
+  void dispose() {
+    // Three text controllers were created with the state and never
+    // released, so every visit to Settings leaked one set.
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   // Method to handle password change
   void _changePassword() {
     final current = currentPasswordController.text.trim();

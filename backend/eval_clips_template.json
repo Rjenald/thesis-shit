@@ -1,0 +1,130 @@
+[
+  {
+    "id": "spoken_tagalog_1",
+    "category": "spoken_tagalog",
+    "audio": "clips/spoken_tagalog_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_tagalog_2",
+    "category": "spoken_tagalog",
+    "audio": "clips/spoken_tagalog_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_taglish_1",
+    "category": "spoken_taglish",
+    "audio": "clips/spoken_taglish_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_taglish_2",
+    "category": "spoken_taglish",
+    "audio": "clips/spoken_taglish_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_english_1",
+    "category": "spoken_english",
+    "audio": "clips/spoken_english_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_english_2",
+    "category": "spoken_english",
+    "audio": "clips/spoken_english_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_noisy_1",
+    "category": "spoken_noisy",
+    "audio": "clips/spoken_noisy_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_noisy_2",
+    "category": "spoken_noisy",
+    "audio": "clips/spoken_noisy_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_short_1",
+    "category": "spoken_short",
+    "audio": "clips/spoken_short_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_short_2",
+    "category": "spoken_short",
+    "audio": "clips/spoken_short_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_repeats_1",
+    "category": "spoken_repeats",
+    "audio": "clips/spoken_repeats_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "spoken_repeats_2",
+    "category": "spoken_repeats",
+    "audio": "clips/spoken_repeats_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "sung_tagalog_1",
+    "category": "sung_tagalog",
+    "audio": "clips/sung_tagalog_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "sung_tagalog_2",
+    "category": "sung_tagalog",
+    "audio": "clips/sung_tagalog_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "sung_acappella_1",
+    "category": "sung_acappella",
+    "audio": "clips/sung_acappella_1.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  },
+  {
+    "id": "sung_acappella_2",
+    "category": "sung_acappella",
+    "audio": "clips/sung_acappella_2.wav",
+    "reference": "",
+    "hypothesis": "",
+    "notes": ""
+  }
+]

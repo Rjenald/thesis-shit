@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../constants/app_colors.dart';
+import '../../widgets/song_cover_art.dart';
 import '../../core/audio_service.dart';
 import '../../core/crepe_pitch_service.dart';
 import '../../core/lyric_alignment_service.dart';
@@ -9,26 +11,28 @@ import '../../core/mixed_recording_service.dart';
 import '../../core/note_utils.dart';
 import '../../core/ondevice_crepe_service.dart';
 import '../../core/pitch_detection_service.dart';
+import '../../core/singing_segment_builder.dart';
 import '../../core/web_audio_fix.dart';
 import '../../widgets/pitch_graph.dart';
 import '../../models/session_result.dart';
+import '../../models/singing_segment.dart';
 import '../../data/song_lyrics.dart';
+import '../../services/ground_truth_service.dart';
 import '../../services/lyrics_service.dart';
 import '../../services/song_audio_service.dart';
+import '../../services/song_catalog_service.dart';
 import 'results_page.dart';
 
 class SongPlayerPage extends StatefulWidget {
   final String songTitle;
   final String songArtist;
   final String songImage;
-  final bool isAssignment;
 
   const SongPlayerPage({
     super.key,
     required this.songTitle,
     required this.songArtist,
     this.songImage = '',
-    this.isAssignment = false,
   });
 
   @override
@@ -79,6 +83,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   // Scroll controller for lyrics auto-scroll
   final ScrollController _lyricsScrollCtrl = ScrollController();
 
+  /// Attached to whichever line is currently being sung, so the scroller
+  /// can ask where that line actually ended up rather than estimating it
+  /// from a line height that is not constant. One key is enough: only one
+  /// line is current at a time.
+  final GlobalKey _currentLyricKey = GlobalKey();
+
   // High-frequency updates (position ticks ~several times/sec, pitch
   // results ~every 80ms) go through these instead of setState(), so only
   // the small widgets that actually need to redraw every tick do —
@@ -97,21 +107,36 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   static const Duration _lyricSyncOffset = Duration(milliseconds: 350);
   final ValueNotifier<Duration> _lyricPositionNotifier = ValueNotifier(Duration.zero);
 
+  // ── Post-recording analysis pre-warming ───────────────────────────────────
+  // The batch CREPE pass (target-vs-actual pitch, see _showResults) and
+  // Whisper's lyric alignment both have a fixed one-time model-load cost.
+  // Starting that here, while the song is loading/playing and well before
+  // the user stops recording, moves it off the critical path — see
+  // OnDeviceCrepeService._loadModelBytes / warmUpWhisperModel.
+  final OnDeviceCrepeService _offlineCrepe = OnDeviceCrepeService();
+
   @override
   void initState() {
     super.initState();
     _initAudio();
     _loadLyrics();
+    _offlineCrepe.preload().ignore();
+    warmUpWhisperModel().ignore();
   }
 
   Future<void> _initAudio() async {
-    final audioUrl = SongAudioService.getAudioUrl(widget.songTitle);
-    if (audioUrl == null) {
+    final audio = SongAudioService.resolve(widget.songTitle);
+    if (audio == null) {
       debugPrint('No audio URL for "${widget.songTitle}"');
       return;
     }
     try {
-      await _player.setAsset(audioUrl);
+      // An admin-uploaded track lives on disk, not in the asset bundle.
+      if (audio.isAsset) {
+        await _player.setAsset(audio.path);
+      } else {
+        await _player.setFilePath(audio.path);
+      }
       await _player.setVolume(1.0);
       _duration = _player.duration ?? Duration.zero;
       setState(() {});
@@ -162,8 +187,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     final ms = pos.inMilliseconds;
     int idx = -1;
     for (int i = 0; i < _lyrics.length; i++) {
-      if (_lyrics[i].timestamp.inMilliseconds <= ms) idx = i;
-      else break;
+      if (_lyrics[i].timestamp.inMilliseconds <= ms) {
+        idx = i;
+      } else {
+        break;
+      }
     }
     if (idx == -1 && _isPlaying && _lyrics.first.timestamp.inMilliseconds == 0) {
       idx = 0;
@@ -175,15 +203,58 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }
   }
 
+  /// Centres the line being sung, measuring where it really is.
+  ///
+  /// This used to scroll to `index * 56.0 - 120.0`, assuming every line
+  /// was exactly 56 logical pixels tall. None of them reliably are:
+  ///
+  ///  - a long lyric **wraps** onto a second text line and is roughly
+  ///    twice as tall
+  ///  - past lines render at 16pt, upcoming ones at 18pt, and the current
+  ///    one is a different widget again
+  ///  - the system text scale changes all of it
+  ///
+  /// The error compounds, because the estimate is multiplied by the line
+  /// index: a few pixels of drift per line becomes hundreds by the middle
+  /// of a song, so the view runs ahead of the singing and the highlighted
+  /// line ends up above the top of the viewport. That is the "scrolls too
+  /// fast" — it was not speed, it was accumulated error.
+  ///
+  /// [Scrollable.ensureVisible] asks the laid-out element where it
+  /// actually is, so wrapping, font size and text scale are all handled by
+  /// construction.
   void _scrollToCurrentLyric() {
     if (_currentLyricIdx < 0 || !_lyricsScrollCtrl.hasClients) return;
-    // Each lyric line is roughly 56px tall; center the current one
-    final targetOffset = (_currentLyricIdx * 56.0) - 120.0;
-    _lyricsScrollCtrl.animateTo(
-      targetOffset.clamp(0.0, _lyricsScrollCtrl.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
-    );
+
+    // The new current line is built during this frame, so its element
+    // does not exist yet. Measuring before layout would read the previous
+    // line's position.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_lyricsScrollCtrl.hasClients) return;
+
+      final ctx = _currentLyricKey.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          // 0.5 puts it in the middle of the viewport, so there is as
+          // much of the song ahead as behind.
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
+        return;
+      }
+
+      // No element: the line is outside the build cache, which happens
+      // after a seek across the whole song. The estimate is wrong but it
+      // is close enough to bring the line into range, and the next tick
+      // measures properly.
+      final approx = (_currentLyricIdx * 56.0) -
+          _lyricsScrollCtrl.position.viewportDimension / 2;
+      _lyricsScrollCtrl.jumpTo(
+        approx.clamp(0.0, _lyricsScrollCtrl.position.maxScrollExtent),
+      );
+    });
   }
 
   // Per-character sweep rate, relative to the line's real duration. 1.0 would
@@ -330,48 +401,187 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     Uint8List? wav = _recordedPcm.isNotEmpty ? _buildWav(_recordedPcm) : null;
     final micOnlyWav = wav;
 
-    LyricAlignmentResult? alignment;
+    // The end of the RECORDED audio, not wherever song playback position
+    // happens to be after _player.stop() — that stream's behavior around
+    // stop() isn't something to depend on. Derived straight from how many
+    // samples were actually captured, which is also exactly what the CREPE
+    // pass below (and the lyric-line time filtering further down) uses, so
+    // none of them can disagree with each other.
+    const sampleRate = 16000;
+    final recordedDurationMs =
+        (_recordedPcm.length / 2 / sampleRate * 1000).round();
+    final recordEndOffset =
+        _recordStartPosition + Duration(milliseconds: recordedDurationMs);
+
+    // Logged outside the `if (wav != null)` below, because that is exactly
+    // the case worth seeing: with no captured PCM the whole ground-truth
+    // pass is skipped and the result screen shows a score and drills but no
+    // Pitch Timeline, while every other diagnostic here stays silent.
+    // _rawHz comes from the live pitch stream and _recordedPcm from the raw
+    // byte stream, so one can be full while the other is empty.
+    debugPrint('Recording captured: pcmBytes=${_recordedPcm.length} '
+        '(${recordedDurationMs}ms), liveReadings=${_rawHz.length}, '
+        'detector=$_detectorLabel, '
+        'start=$_recordStartPosition end=$recordEndOffset');
+    if (_recordedPcm.isEmpty) {
+      debugPrint('  !! no PCM captured — skipping ground-truth analysis, '
+          'so there will be no Pitch Timeline for this take.');
+    }
+
+    List<SingingSegment> singingSegments = const [];
+    // Mixing the backing track into the recording (ffmpeg, via
+    // mixSongAndVoice) is the slowest of these three independent steps, but
+    // it's only needed for the optional "Listen"/"My Voice" playback on the
+    // results screen — not for anything scoring/analysis-related. Awaiting
+    // it before navigating was adding its full duration to every wait,
+    // for a feature the user might not even use that session. It's kicked
+    // off here but deliberately NOT awaited below — ResultsPage gets the
+    // mic-only WAV immediately and upgrades to this once it resolves.
+    Future<Uint8List?>? pendingMixedAudio;
 
     if (wav != null) {
       _showMixingDialog();
+      // The dialog blocks back-navigation (PopScope canPop: false) while
+      // it's up, so if anything below throws or hangs without this
+      // try/finally, the user would be stuck on it with no way out — this
+      // guarantees it always gets dismissed, success or failure.
+      try {
+        // Ground truth is a small local JSON parse — check it first so the
+        // batch CREPE pass below only runs when there's an actual target
+        // melody to compare against (most songs don't have one yet).
+        final groundTruth = await GroundTruthService.loadForSong(widget.songTitle);
 
-      // Mix the song into the recording (so the saved file has song +
-      // voice, not just mic) and run Whisper word-level lyric alignment
-      // on the clean mic-only audio concurrently — independent work.
-      final audioUrl = SongAudioService.getAudioUrl(widget.songTitle);
-      final mixFuture = audioUrl != null
-          ? mixSongAndVoice(
-              songAssetPath: audioUrl,
-              songStartOffset: _recordStartPosition,
-              micWavBytes: wav,
-              playbackSpeed: _playbackSpeed,
-            )
-          : Future<Uint8List?>.value(null);
-      final alignFuture = _lyrics.isNotEmpty
-          ? alignLyrics(
-              lyrics: _lyrics,
-              recordedWavBytes: micOnlyWav!,
-              recordStartOffset: _recordStartPosition,
-            )
-          : Future<LyricAlignmentResult?>.value(null);
+        final audio = SongAudioService.resolve(widget.songTitle);
+        pendingMixedAudio = audio != null
+            ? mixSongAndVoice(
+                songPath: audio.path,
+                songIsAsset: audio.isAsset,
+                songStartOffset: _recordStartPosition,
+                micWavBytes: wav,
+                playbackSpeed: _playbackSpeed,
+              )
+            : null;
 
-      final results = await Future.wait([mixFuture, alignFuture]);
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
-      final mixed = results[0] as Uint8List?;
-      alignment = results[1] as LyricAlignmentResult?;
-      if (mixed != null) wav = mixed;
+        // Transcribe the clean mic-only audio with Whisper once — its
+        // output feeds both the existing lyric-alignment card and (for
+        // songs with a ground truth) the pitch segments' "what did I
+        // actually sing" word — and, only if this song has a ground truth
+        // melody, run batch CREPE pitch analysis over that same mic-only
+        // audio for target-vs-actual pitch comparison. Independent work,
+        // run concurrently; this is what the result screen actually needs
+        // before it can show anything, so it's the only thing still
+        // awaited here.
+        final hasGroundTruth = groundTruth != null && groundTruth.isNotEmpty;
+        debugPrint('Ground truth for "${widget.songTitle}": '
+            '${groundTruth?.length ?? 'null'} syllables, hasGroundTruth=$hasGroundTruth, '
+            'recordStartOffset=$_recordStartPosition, recordEndOffset=$recordEndOffset');
+
+        // Whisper and CREPE are independent analyses — one throwing (a bad
+        // model load, a native decode error, whatever) must not also take
+        // down the other, since Future.wait rejects as soon as either
+        // future does. Each is caught individually so a single failure
+        // degrades gracefully (empty result for that one) instead of
+        // silently discarding both, which previously made buildSingingSegments
+        // never even run and the whole ground-truth UI look empty even
+        // though nothing was actually wrong with the pitch analysis itself.
+        // The lyrics are NOT handed to Whisper, even though this song's
+        // are known. The transcript is only displayed — as the words we
+        // heard — so biasing the decoder toward the expected text would
+        // show those words to a singer who sang something else, and
+        // nothing on screen would distinguish that from a correct
+        // reading. Scoring comes from pitch and is unaffected.
+        final transcribeFuture = transcribeWords(
+          micOnlyWav!,
+          // Per-song: forcing Tagalog on an English song degrades the whole
+          // decode, and at least one catalogued song is sung in English.
+          lang: SongCatalogService.languageFor(widget.songTitle),
+        ).catchError((e, st) {
+          debugPrint('Whisper transcription step failed: $e\n$st');
+          return <TranscribedWord>[];
+        });
+        // Only the syllable windows are worth model time: the segment
+        // builder reads frames inside a ground-truth syllable's window and
+        // discards everything else, so a full sweep spent most of its
+        // inference on frames nothing would ever look at. Padded by the
+        // same tolerance the builder's nearest-frame fallback uses, so
+        // narrowing the analysis cannot remove a frame it would have used.
+        final analysisWindows = hasGroundTruth
+            ? groundTruth
+                .where((g) =>
+                    g.endTime >= _recordStartPosition &&
+                    g.startTime <= recordEndOffset)
+                .map((g) => AnalysisWindow(
+                      g.startTime.inMilliseconds -
+                          _recordStartPosition.inMilliseconds,
+                      g.endTime.inMilliseconds -
+                          _recordStartPosition.inMilliseconds,
+                    ).padded(kNearestFrameToleranceMs))
+                .toList()
+            : const <AnalysisWindow>[];
+
+        final crepeFuture = hasGroundTruth
+            ? _offlineCrepe
+                .analyzeOffline(
+                _pcmBytesToInt16(_recordedPcm),
+                hopMs: 50,
+                windows: analysisWindows,
+              )
+                .catchError((e, st) {
+                debugPrint('CREPE analysis step failed: $e\n$st');
+                return <PitchFrame>[];
+              })
+            : Future<List<PitchFrame>>.value(const <PitchFrame>[]);
+
+        // Bounded so an unforeseen hang anywhere in this pipeline can never
+        // leave the "Preparing the result..." dialog stuck up forever.
+        //
+        // Scaled with the recording rather than a flat two minutes. A
+        // whole song is three to four minutes of audio, and Whisper's own
+        // budget for that is longer than two minutes — so the outer cap
+        // was the one that fired, cancelling a decode that was still
+        // working and losing the pitch analysis with it.
+        final results = await Future.wait([transcribeFuture, crepeFuture])
+            .timeout(whisperTimeoutFor(micOnlyWav.length) +
+                const Duration(minutes: 1));
+        final recognizedWords = results[0] as List<TranscribedWord>;
+        final pitchFrames = results[1] as List<PitchFrame>;
+        debugPrint('recognizedWords=${recognizedWords.length}, '
+            'pitchFrames=${pitchFrames.length} '
+            '(voiced=${pitchFrames.where((f) => f.hasSignal).length})');
+
+        if (hasGroundTruth) {
+          singingSegments = buildSingingSegments(
+            groundTruth: groundTruth,
+            pitchFrames: pitchFrames,
+            recordStartOffset: _recordStartPosition,
+            recordEndOffset: recordEndOffset,
+            recognizedWords: recognizedWords,
+          );
+          debugPrint('singingSegments=${singingSegments.length} '
+              '(noSignal=${singingSegments.where((s) => s.status == PitchFeedback.noSignal).length})');
+        }
+      } catch (e, st) {
+        // Whatever failed, the recording itself is still fine to save and
+        // show — just without alignment/pitch data. Silently losing the
+        // whole result because one optional analysis step failed would be
+        // worse than showing a partial one.
+        debugPrint('Post-recording analysis failed: $e\n$st');
+      } finally {
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      }
     }
 
     if (!mounted) return;
     final session = SessionResult(
       songTitle: widget.songTitle, songArtist: widget.songArtist,
       songImage: widget.songImage, completedAt: DateTime.now(),
-      lyricResults: _buildLyricResults(), durationSeconds: _position.inSeconds,
+      lyricResults: _buildLyricResults(recordEndOffset), durationSeconds: _position.inSeconds,
+      singingSegments: singingSegments,
     );
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (_) => ResultsPage(
-        session: session, isAssignment: widget.isAssignment, recordedVoiceWav: wav,
-        lyricAlignment: alignment),
+        session: session, recordedVoiceWav: wav,
+        pendingMixedAudio: pendingMixedAudio),
     ));
   }
 
@@ -382,17 +592,21 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
       builder: (_) => PopScope(
         canPop: false,
         child: Dialog(
-          backgroundColor: const Color(0xFF1A1A1A),
+          backgroundColor: AppColors.cardBg,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: const Padding(
             padding: EdgeInsets.all(24),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: Color(0xFF00E5FF)),
+                CircularProgressIndicator(color: AppColors.primaryCyan),
                 SizedBox(width: 16),
-                Text('Mixing your recording...',
-                    style: TextStyle(color: Colors.white, fontFamily: 'Roboto')),
+                Flexible(
+                  child: Text(
+                    'Preparing the result...',
+                    style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -401,18 +615,88 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
   }
 
-  List<LyricPitchData> _buildLyricResults() {
+  /// Maps each lyric LINE's own expected time window onto [_rawHz]/
+  /// [_rawCents], skipping any line whose window falls entirely outside
+  /// [recordEndOffset] — [_recordStartPosition, recordEndOffset] is what was
+  /// actually recorded. The previous approach divided the whole recording
+  /// into one bucket per lyric line in the FULL SONG regardless of how much
+  /// of it was actually covered, so a short recording still "produced" a
+  /// result for every line, including ones the user never reached, by
+  /// stretching whatever little real data existed across all of them —
+  /// which is how lines nobody sang ended up labeled with a pitch status.
+  ///
+  /// Readings have no individual timestamp, but the live pitch stream fires
+  /// at a roughly steady cadence, so the actual recorded duration divided by
+  /// the reading count is a reasonable estimate of time-per-reading for
+  /// mapping a line's time window to an array-index range.
+  List<LyricPitchData> _buildLyricResults(Duration recordEndOffset) {
     final total = _rawHz.length;
     if (total == 0) return [];
-    final seg = _lyrics.isNotEmpty ? _lyrics.length.clamp(1, 30) : 30;
-    final sz = (total / seg).ceil();
-    return List.generate(seg, (i) {
-      final s = i * sz; final e = (s + sz).clamp(0, total);
-      if (s >= total) return null;
-      return LyricPitchData(
-        lyricText: i < _lyrics.length ? _lyrics[i].text : 'Segment ${i + 1}',
-        pitchReadings: _rawHz.sublist(s, e), centsReadings: _rawCents.sublist(s, e));
-    }).whereType<LyricPitchData>().toList();
+
+    if (_lyrics.isEmpty) {
+      // No timed lyrics to match lines against — fall back to a generic
+      // even split across the whole recording.
+      const seg = 30;
+      final sz = (total / seg).ceil();
+      return List.generate(seg, (i) {
+        final s = i * sz;
+        final e = (s + sz).clamp(0, total);
+        if (s >= total) return null;
+        return LyricPitchData(
+          lyricText: 'Segment ${i + 1}',
+          pitchReadings: _rawHz.sublist(s, e),
+          centsReadings: _rawCents.sublist(s, e),
+        );
+      }).whereType<LyricPitchData>().toList();
+    }
+
+    final recordedDurationMs =
+        (recordEndOffset - _recordStartPosition).inMilliseconds;
+    if (recordedDurationMs <= 0) return [];
+    final msPerReading = recordedDurationMs / total;
+
+    final results = <LyricPitchData>[];
+    for (var i = 0; i < _lyrics.length; i++) {
+      final lineStart = _lyrics[i].timestamp;
+      final lineEnd = i + 1 < _lyrics.length
+          ? _lyrics[i + 1].timestamp
+          : lineStart + const Duration(seconds: 5);
+
+      // Line's time window doesn't overlap the recorded window at all —
+      // the user never reached (or had already passed) this line.
+      if (lineEnd <= _recordStartPosition || lineStart >= recordEndOffset) {
+        continue;
+      }
+
+      final startMs = (lineStart - _recordStartPosition)
+          .inMilliseconds
+          .clamp(0, recordedDurationMs);
+      final endMs = (lineEnd - _recordStartPosition)
+          .inMilliseconds
+          .clamp(0, recordedDurationMs);
+      final s = (startMs / msPerReading).round().clamp(0, total);
+      final e = (endMs / msPerReading).round().clamp(s, total);
+      if (s >= e) continue;
+
+      results.add(LyricPitchData(
+        lyricText: _lyrics[i].text,
+        pitchReadings: _rawHz.sublist(s, e),
+        centsReadings: _rawCents.sublist(s, e),
+      ));
+    }
+    return results;
+  }
+
+  /// The mic's rawBytes stream (buffered into [_recordedPcm]) is raw PCM16LE
+  /// bytes, one element per byte — CREPE's batch analysis needs actual int16
+  /// sample values, so decode each little-endian pair.
+  List<int> _pcmBytesToInt16(List<int> bytes) {
+    final byteData = Uint8List.fromList(bytes).buffer.asByteData();
+    final samples = <int>[];
+    for (var i = 0; i + 1 < bytes.length; i += 2) {
+      samples.add(byteData.getInt16(i, Endian.little));
+    }
+    return samples;
   }
 
   Uint8List _buildWav(List<int> pcm) {
@@ -429,7 +713,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     b.setUint16(34,bps,Endian.little);
     b.setUint8(36,0x64);b.setUint8(37,0x61);b.setUint8(38,0x74);b.setUint8(39,0x61);
     b.setUint32(40,n,Endian.little);
-    for(int i=0;i<n;i++) b.setUint8(44+i,pcm[i]&0xFF);
+    for(int i=0;i<n;i++) {
+      b.setUint8(44+i,pcm[i]&0xFF);
+    }
     return b.buffer.asUint8List();
   }
 
@@ -456,6 +742,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     _lyricPositionNotifier.dispose();
     _scoreTick.dispose();
     _bytesSub?.cancel(); _micSub?.cancel(); _micService?.dispose();
+    _offlineCrepe.dispose();
     super.dispose();
   }
 
@@ -466,7 +753,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.bgDark,
       body: SafeArea(
         child: Column(
           children: [
@@ -521,12 +808,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
                   margin: const EdgeInsets.only(right: 6),
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                    color: AppColors.primaryCyan.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5)),
+                    border: Border.all(color: AppColors.primaryCyan.withValues(alpha: 0.5)),
                   ),
                   child: Text(_detectorLabel,
-                      style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Roboto', letterSpacing: 0.3)),
+                      style: const TextStyle(color: AppColors.primaryCyan, fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Roboto', letterSpacing: 0.3)),
                 ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -556,7 +843,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             width: 56, height: 56,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: const Color(0xFF1A1A1A),
+              color: AppColors.cardBg,
               boxShadow: [
                 BoxShadow(
                   color: Colors.white.withValues(alpha: 0.05),
@@ -566,10 +853,14 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
               ],
             ),
             clipBehavior: Clip.antiAlias,
-            child: widget.songImage.isNotEmpty
-                ? Image.network(widget.songImage, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _albumPlaceholder())
-                : _albumPlaceholder(),
+            // borderRadius 0: the parent Container already clips this
+            // with its own rounded shape and antialiasing.
+            child: SongCoverArt(
+              image: widget.songImage,
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: 0,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -591,15 +882,11 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     );
   }
 
-  Widget _albumPlaceholder() => Container(
-    color: const Color(0xFF1E1E1E),
-    child: const Center(child: Icon(Icons.music_note, color: Color(0xFF00E5FF), size: 28)),
-  );
 
   // ── LYRICS BODY — Spotify-style scrolling lyrics ──
   Widget _buildLyricsBody() {
     if (_lyricsLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)));
+      return const Center(child: CircularProgressIndicator(color: AppColors.primaryCyan));
     }
     if (_lyrics.isEmpty) {
       return Center(
@@ -639,6 +926,10 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         blendMode: BlendMode.dstIn,
         child: ListView.builder(
           controller: _lyricsScrollCtrl,
+          // Build well beyond the viewport so the next line is already
+          // laid out when it becomes current — otherwise every advance
+          // falls back to the estimate this change exists to avoid.
+          cacheExtent: 1200,
           padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
           itemCount: _lyrics.length,
           itemBuilder: (ctx, i) {
@@ -647,6 +938,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
             if (isCurrent) {
               return ValueListenableBuilder<Duration>(
+                key: _currentLyricKey,
                 valueListenable: _lyricPositionNotifier,
                 builder: (context, pos, _) =>
                     _buildCurrentLyricLine(i, _getHighlightedCharCount(pos)),
@@ -690,7 +982,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             return TextSpan(
               text: text[i],
               style: TextStyle(
-                color: i < highlightCount ? const Color(0xFF1DB954) : Colors.white,
+                color: isSung ? AppColors.primaryCyan : Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 fontFamily: 'Roboto',
@@ -821,18 +1113,18 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         decoration: BoxDecoration(
           color: _playbackSpeed == 1.0
               ? Colors.white.withValues(alpha: 0.06)
-              : const Color(0xFF00E5FF).withValues(alpha: 0.15),
+              : AppColors.primaryCyan.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: _playbackSpeed == 1.0
                 ? Colors.white.withValues(alpha: 0.1)
-                : const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                : AppColors.primaryCyan.withValues(alpha: 0.4),
           ),
         ),
         child: Text(
           '${_playbackSpeed.toStringAsFixed(1)}x',
           style: TextStyle(
-            color: _playbackSpeed == 1.0 ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF00E5FF),
+            color: _playbackSpeed == 1.0 ? Colors.white.withValues(alpha: 0.5) : AppColors.primaryCyan,
             fontSize: 10,
             fontWeight: FontWeight.w700,
             fontFamily: 'Roboto',

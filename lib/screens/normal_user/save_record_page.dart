@@ -214,13 +214,17 @@ class _SaveRecordPageState extends State<SaveRecordPage> {
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Text(
-                    'Saved Recordings',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                      fontFamily: 'Roboto',
+                  const Expanded(
+                    child: Text(
+                      'Saved Recordings',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                        fontFamily: 'Roboto',
+                      ),
                     ),
                   ),
                 ],

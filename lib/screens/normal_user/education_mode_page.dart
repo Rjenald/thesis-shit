@@ -4,7 +4,7 @@ import 'package:final_thesis_ui/screens/normal_user/music_lessons_page.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import '../student/practice_drill_page.dart';
+import 'practice_drill_page.dart';
 
 class EducationModePage extends StatelessWidget {
   const EducationModePage({super.key});
@@ -143,9 +143,6 @@ class EducationModePage extends StatelessWidget {
             ),
             BottomNavBar(
               currentIndex: 3,
-              onTap: (index) {
-                if (index != 3) Navigator.pop(context);
-              },
             ),
           ],
         ),
